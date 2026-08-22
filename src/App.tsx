@@ -1,5 +1,7 @@
 import React from 'react';
 import { TitanProvider, useTitan } from './context/TitanContext';
+import { NavigationSidebar } from './components/layout/NavigationSidebar';
+import { MobileBottomNav } from './components/layout/MobileBottomNav';
 import { HeaderHUD } from './components/layout/HeaderHUD';
 import { DecayPenaltyBanner } from './components/layout/DecayPenaltyBanner';
 import { OverviewDashboard } from './components/layout/OverviewDashboard';
@@ -18,22 +20,26 @@ import { DeviceSyncModal } from './components/modals/DeviceSyncModal';
 import { QuizModal } from './components/modals/QuizModal';
 import { VictoryRewardModal } from './components/modals/VictoryRewardModal';
 import { ActiveAlarmModal } from './components/modals/ActiveAlarmModal';
-import { Terminal } from 'lucide-react';
+import { Shield } from 'lucide-react';
 
 const DashboardContent: React.FC = () => {
   const { activeTab, isSyncModalOpen, setIsSyncModalOpen } = useTitan();
 
   return (
-    <div className="min-h-screen flex flex-col justify-between cockpit-grid">
-      <div>
-        {/* Tactical Header HUD */}
+    <div className="min-h-screen flex bg-[#04060a] text-slate-100 selection:bg-cyan-500 selection:text-black">
+      {/* Left Desktop Sidebar (X / Linear Style) */}
+      <NavigationSidebar />
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen">
+        {/* Sleek Top Navigation Bar */}
         <HeaderHUD />
 
-        {/* Missed Day Decay Punishment Alert Banner */}
+        {/* Missed Day Penalty Alert Banner */}
         <DecayPenaltyBanner />
 
-        {/* Dynamic Main Workspace */}
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 w-full">
+        {/* Dynamic Viewport Canvas */}
+        <main className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-12 w-full space-y-6">
           {activeTab === 'overview' && <OverviewDashboard />}
 
           {activeTab === 'charts' && (
@@ -57,29 +63,28 @@ const DashboardContent: React.FC = () => {
           {activeTab === 'quests' && <DailyQuests />}
           {activeTab === 'curriculum' && <CurriculumEngine />}
         </main>
+
+        {/* Minimalist Modern Footer */}
+        <footer className="border-t border-white/[0.06] bg-[#05070d]/60 backdrop-blur-md py-6 px-6 text-xs text-slate-500">
+          <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-2 text-slate-400 font-medium">
+              <Shield className="h-4 w-4 text-cyan-400" />
+              <span>TITAN PROTOCOL • 99.9% PERCENTILE ENGINE</span>
+            </div>
+
+            <div className="text-[11px] text-slate-500 flex flex-wrap items-center gap-3">
+              <span>Φ(z) Gaussian Normal Integration</span>
+              <span>•</span>
+              <span>100% Client Persistence</span>
+              <span>•</span>
+              <span className="text-emerald-400 font-medium">Real-Time Sync Active</span>
+            </div>
+          </div>
+        </footer>
       </div>
 
-      {/* Tactical Footer & Normative Math Citations */}
-      <footer className="border-t border-slate-800/80 bg-titan-surface/60 backdrop-blur-md py-6 mt-12 text-xs font-mono text-slate-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-slate-400">
-            <Terminal className="h-4 w-4 text-titan-cyan" />
-            <span>TITAN PROTOCOL // HIGH-PERFORMANCE PERCENTILE TRACKER</span>
-          </div>
-
-          <div className="text-[11px] text-slate-500 flex flex-wrap items-center gap-4">
-            <span>Φ(z) Error Function Gaussian Integration</span>
-            <span>•</span>
-            <span>Decay Punishment Code: 1 Missed Day = 1 Day Gain Erased</span>
-            <span>•</span>
-            <span>Real-Time Cross-Device Cloud Sync Active</span>
-          </div>
-
-          <div className="text-[11px] text-slate-400">
-            PERSISTENCE: <span className="text-emerald-400">LOCAL + CLOUD SYNC ACTIVE</span>
-          </div>
-        </div>
-      </footer>
+      {/* Mobile Bottom Navigation (Instagram Style) */}
+      <MobileBottomNav />
 
       {/* Global Modals */}
       <SettingsModal />
