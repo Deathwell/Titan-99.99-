@@ -86,6 +86,8 @@ interface TitanContextType {
   setIsBackupOpen: (open: boolean) => void;
   isSyncModalOpen: boolean;
   setIsSyncModalOpen: (open: boolean) => void;
+  isMobilePushSetupOpen: boolean;
+  setIsMobilePushSetupOpen: (open: boolean) => void;
   isVictoryModalOpen: boolean;
   openVictoryModal: () => void;
   closeVictoryModal: () => void;
@@ -175,6 +177,7 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isBackupOpen, setIsBackupOpen] = useState(false);
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
+  const [isMobilePushSetupOpen, setIsMobilePushSetupOpen] = useState(false);
   const [isVictoryModalOpen, setIsVictoryModalOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [analyticsSubTab, setAnalyticsSubTab] = useState<'CHARTS' | 'ALARMS' | 'CURRICULUM' | 'DOSSIER'>('CHARTS');
@@ -1380,6 +1383,8 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setIsBackupOpen,
         isSyncModalOpen,
         setIsSyncModalOpen,
+        isMobilePushSetupOpen,
+        setIsMobilePushSetupOpen,
         isVictoryModalOpen,
         openVictoryModal,
         closeVictoryModal,

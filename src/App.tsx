@@ -14,6 +14,7 @@ import { QuizModal } from './components/modals/QuizModal';
 import { VictoryRewardModal } from './components/modals/VictoryRewardModal';
 import { ActiveAlarmModal } from './components/modals/ActiveAlarmModal';
 import { CommandPaletteModal } from './components/modals/CommandPaletteModal';
+import { MobilePushSetupModal } from './components/modals/MobilePushSetupModal';
 import { ConfettiCanvas } from './components/effects/ConfettiCanvas';
 import { WelcomeOnboardingModal } from './components/onboarding/WelcomeOnboardingModal';
 import { DecayPenaltyBanner } from './components/layout/DecayPenaltyBanner';
@@ -24,6 +25,8 @@ const DashboardContent: React.FC = () => {
     activeTab,
     isSyncModalOpen,
     setIsSyncModalOpen,
+    isMobilePushSetupOpen,
+    setIsMobilePushSetupOpen,
     isCommandPaletteOpen,
     setIsCommandPaletteOpen
   } = useTitan();
@@ -80,6 +83,7 @@ const DashboardContent: React.FC = () => {
       <SettingsModal />
       <BackupModal />
       <DeviceSyncModal isOpen={isSyncModalOpen} onClose={() => setIsSyncModalOpen(false)} />
+      <MobilePushSetupModal isOpen={isMobilePushSetupOpen} onClose={() => setIsMobilePushSetupOpen(false)} />
       <QuizModal />
       <VictoryRewardModal />
       <ActiveAlarmModal />

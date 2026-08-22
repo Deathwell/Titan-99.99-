@@ -8,3 +8,12 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <App />
   </React.StrictMode>,
 );
+
+// Register Service Worker for Background Push Notifications & PWA
+if ('serviceWorker' in navigator && process.env.NODE_ENV !== 'development') {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch((err) => {
+      console.log('ServiceWorker registration error:', err);
+    });
+  });
+}

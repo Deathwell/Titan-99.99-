@@ -10,7 +10,8 @@ import {
   ArrowRight,
   Skull,
   Bell,
-  BellRing
+  BellRing,
+  Smartphone
 } from 'lucide-react';
 import { useTitan } from '../../context/TitanContext';
 import { soundEngine } from '../../lib/audio';
@@ -23,7 +24,8 @@ export const ThreatClockBanner: React.FC = () => {
     profile,
     simulateMissedDays,
     requestPushPermission,
-    sendTestPushAlert
+    sendTestPushAlert,
+    setIsMobilePushSetupOpen
   } = useTitan();
 
   const [timeLeft, setTimeLeft] = useState<{ hours: number; minutes: number; seconds: number }>({
@@ -152,13 +154,21 @@ export const ThreatClockBanner: React.FC = () => {
 
             {/* Test Simulation & Push Alert Controls */}
             <div className="pt-1.5 flex items-center gap-2 flex-wrap">
+              <button
+                onClick={() => setIsMobilePushSetupOpen(true)}
+                className="px-2.5 py-0.5 rounded bg-cyan-950/70 hover:bg-cyan-900 border border-cyan-500/50 text-cyan-300 text-[10px] font-mono font-bold transition-all flex items-center gap-1 shadow-sm"
+              >
+                <Smartphone className="h-3 w-3" />
+                <span>📱 Phone Lockscreen Push</span>
+              </button>
+
               {pushPermission !== 'granted' ? (
                 <button
                   onClick={() => requestPushPermission()}
-                  className="px-2.5 py-0.5 rounded bg-cyan-950/60 hover:bg-cyan-900 border border-cyan-500/40 text-cyan-300 text-[10px] font-mono font-bold transition-all flex items-center gap-1 shadow-sm"
+                  className="px-2 py-0.5 rounded bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-zinc-300 text-[10px] font-mono transition-all flex items-center gap-1"
                 >
                   <Bell className="h-3 w-3" />
-                  <span>Enable Push Alarms</span>
+                  <span>Enable Browser Push</span>
                 </button>
               ) : (
                 <button
@@ -166,7 +176,7 @@ export const ThreatClockBanner: React.FC = () => {
                   className="px-2 py-0.5 rounded bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-zinc-300 text-[10px] font-mono transition-all flex items-center gap-1"
                 >
                   <BellRing className="h-3 w-3 text-emerald-400" />
-                  <span>Test Push Alert</span>
+                  <span>Test Push Ping</span>
                 </button>
               )}
 
