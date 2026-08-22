@@ -11,9 +11,11 @@ import {
   CheckCircle2,
   AlarmClock,
   ChevronRight,
-  Radio
+  Radio,
+  Zap
 } from 'lucide-react';
 import { useTitan } from '../../context/TitanContext';
+import { CountUpNumber } from '../effects/CountUpNumber';
 import { DailyStoryReelModal } from '../modals/DailyStoryReelModal';
 import { MysteryLootModal, isMysteryDropClaimedToday } from '../modals/MysteryLootModal';
 
@@ -79,8 +81,17 @@ export const HeaderHUD: React.FC = () => {
             </div>
           </div>
 
-          {/* Right: Clean Utility Controls */}
+          {/* Right: Total XP Earned & Utility Controls */}
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Total XP Earned Badge (Top Right Corner) */}
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border border-amber-500/30 text-amber-300 shadow-sm backdrop-blur-md">
+              <Zap className="h-3.5 w-3.5 text-amber-400 fill-amber-400 animate-pulse" />
+              <span className="text-[10px] text-amber-200/70 font-semibold hidden xs:inline">Total XP:</span>
+              <span className="font-mono font-bold text-xs text-white">
+                <CountUpNumber end={profile.xp} decimals={0} suffix=" XP" />
+              </span>
+            </div>
+
             {/* Tactical Alarms Button */}
             <button
               onClick={() => setActiveTab('charts')}
@@ -93,7 +104,7 @@ export const HeaderHUD: React.FC = () => {
             >
               <AlarmClock className="h-3.5 w-3.5" />
               <span className="hidden sm:inline text-[11px]">
-                {activeAlarmsCount > 0 ? `${activeAlarmsCount} Active` : 'Alarms'}
+                {activeAlarmsCount > 0 ? `${activeAlarmsCount}` : 'Alarms'}
               </span>
             </button>
 

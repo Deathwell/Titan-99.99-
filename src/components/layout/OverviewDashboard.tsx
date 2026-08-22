@@ -52,8 +52,8 @@ function formatDurationLabel(minutes: number): { time: string; xp: number; isMax
   return { time, xp, isMax };
 }
 
-// Compute high-energy vibrant neon luminescence for the slider
-function getSliderLuminescence(value: number, accentColor: 'emerald' | 'gold') {
+// Compute dynamic DARKENING luminescence (gets darker & deeper as you slide forward)
+function getDarkeningLuminescence(value: number, accentColor: 'emerald' | 'gold') {
   const ratio = Math.max(0, Math.min(1, value / 240));
   const isEmerald = accentColor === 'emerald';
   const hue = isEmerald ? 156 : 42; // 156 = Cyber Emerald, 42 = Porsche Gold
@@ -61,7 +61,7 @@ function getSliderLuminescence(value: number, accentColor: 'emerald' | 'gold') {
   if (value === 0) {
     return {
       ratio: 0,
-      lightness: 40,
+      lightness: 65,
       glowRadius: 0,
       primaryColor: '#64748b',
       fillGradient: 'rgba(255,255,255,0.06)',
@@ -73,13 +73,15 @@ function getSliderLuminescence(value: number, accentColor: 'emerald' | 'gold') {
     };
   }
 
-  // Scaling lightness & intense neon glow
-  const lightness = Math.round(42 + ratio * 50); // 42% (rich neon) -> 92% (white-hot laser)
-  const primaryColor = `hsl(${hue}, 100%, ${lightness}%)`;
-  const glowColor = `hsla(${hue}, 100%, 55%, ${0.4 + ratio * 0.6})`;
-  const glowRadius = Math.round(4 + ratio * 20); // 4px -> 24px
+  // Lightness starts bright (75%) and gets progressively DARKER down to deep dark (28%) as you slide forward!
+  const lightness = Math.round(75 - ratio * 47); // 75% -> 28% (Visibly darkens as dragged!)
+  const saturation = Math.round(80 + ratio * 20); // Saturation increases from 80% -> 100% (richer tone)
+  const primaryColor = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+  const glowColor = `hsla(${hue}, 100%, ${lightness}%, ${0.4 + ratio * 0.4})`;
+  const glowRadius = Math.round(3 + ratio * 14);
 
-  const fillGradient = `linear-gradient(90deg, hsl(${hue}, 100%, 35%) 0%, hsl(${hue}, 100%, ${lightness}%) 75%, hsl(${hue}, 100%, ${Math.min(98, lightness + 15)}%) 100%)`;
+  // Gradient: transitions from lighter vibrant at the start to deep dark stealth tone at the thumb!
+  const fillGradient = `linear-gradient(90deg, hsl(${hue}, 95%, 72%) 0%, hsl(${hue}, 100%, ${lightness}%) 100%)`;
 
   return {
     ratio,
@@ -88,10 +90,10 @@ function getSliderLuminescence(value: number, accentColor: 'emerald' | 'gold') {
     primaryColor,
     glowColor,
     fillGradient,
-    thumbGlow: `0 0 ${glowRadius + 6}px ${glowColor}, 0 0 2px #ffffff`,
-    badgeBg: `hsla(${hue}, 100%, 25%, ${0.15 + ratio * 0.25})`,
-    badgeBorder: `hsla(${hue}, 100%, ${lightness}%, ${0.35 + ratio * 0.45})`,
-    badgeText: `hsl(${hue}, 100%, ${Math.min(95, lightness + 8)}%)`
+    thumbGlow: `0 0 ${glowRadius + 4}px ${glowColor}, 0 2px 6px rgba(0,0,0,0.9)`,
+    badgeBg: `hsla(${hue}, 100%, 20%, 0.35)`,
+    badgeBorder: `hsla(${hue}, 100%, ${lightness}%, 0.45)`,
+    badgeText: `hsl(${hue}, 100%, ${Math.max(45, lightness + 15)}%)`
   };
 }
 
@@ -102,7 +104,7 @@ interface PrecisionSliderProps {
   title: string;
 }
 
-const VibrantGlowSlider: React.FC<PrecisionSliderProps> = ({ value, onChange, accentColor, title }) => {
+const DarkeningPrecisionSlider: React.FC<PrecisionSliderProps> = ({ value, onChange, accentColor, title }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const lastTickRef = useRef<number>(Math.floor(value / 15));
@@ -110,7 +112,7 @@ const VibrantGlowSlider: React.FC<PrecisionSliderProps> = ({ value, onChange, ac
 
   const percentage = Math.min(100, Math.max(0, (value / 240) * 100));
   const { time, xp, isMax } = formatDurationLabel(value);
-  const lum = getSliderLuminescence(value, accentColor);
+  const lum = getDarkeningLuminescence(value, accentColor);
 
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawVal = parseInt(e.target.value, 10);
@@ -181,7 +183,7 @@ const VibrantGlowSlider: React.FC<PrecisionSliderProps> = ({ value, onChange, ac
         </div>
       </div>
 
-      {/* Vibrant Glowing Laser Slider Capsule */}
+      {/* Darkening Laser Slider Capsule */}
       <div className="relative py-2 flex items-center group">
         {/* Floating Minimalist Telemetry Pill */}
         {(isHovered || isDragging) && (
@@ -201,13 +203,13 @@ const VibrantGlowSlider: React.FC<PrecisionSliderProps> = ({ value, onChange, ac
 
         {/* 5px Recessed Dark Track */}
         <div className="relative w-full h-1.5 rounded-full bg-black/50 border border-white/[0.08] overflow-hidden shadow-inner">
-          {/* Active Liquid Laser Fill with Vibrant Neon Glow */}
+          {/* Active Liquid Laser Fill with Darkening Gradient */}
           <div
             className="absolute top-0 bottom-0 left-0 rounded-full transition-all duration-75"
             style={{
               width: `${percentage}%`,
               background: lum.fillGradient,
-              boxShadow: value > 0 ? `0 0 ${lum.glowRadius}px ${lum.glowColor}, 0 0 ${lum.glowRadius * 1.8}px ${lum.glowColor}` : 'none'
+              boxShadow: value > 0 ? `0 0 ${lum.glowRadius}px ${lum.glowColor}` : 'none'
             }}
           />
         </div>
@@ -228,7 +230,7 @@ const VibrantGlowSlider: React.FC<PrecisionSliderProps> = ({ value, onChange, ac
           title={`Set ${title} duration`}
         />
 
-        {/* Vibrant Glowing Dial Thumb */}
+        {/* Darkening Dial Thumb */}
         <div
           className="absolute top-1/2 -translate-y-1/2 -ml-2 h-4 w-4 rounded-full pointer-events-none transition-transform duration-75 flex items-center justify-center z-10"
           style={{
@@ -242,7 +244,7 @@ const VibrantGlowSlider: React.FC<PrecisionSliderProps> = ({ value, onChange, ac
             className="h-1.5 w-1.5 rounded-full transition-colors duration-150"
             style={{
               backgroundColor: lum.primaryColor,
-              boxShadow: value > 0 ? `0 0 6px ${lum.glowColor}` : 'none'
+              boxShadow: value > 0 ? `0 0 4px ${lum.glowColor}` : 'none'
             }}
           />
         </div>
@@ -254,7 +256,7 @@ const VibrantGlowSlider: React.FC<PrecisionSliderProps> = ({ value, onChange, ac
         <span style={{ color: value >= 60 && value < 120 ? lum.primaryColor : undefined, fontWeight: value >= 60 && value < 120 ? 'bold' : 'normal' }}>1h</span>
         <span style={{ color: value >= 120 && value < 180 ? lum.primaryColor : undefined, fontWeight: value >= 120 && value < 180 ? 'bold' : 'normal' }}>2h</span>
         <span style={{ color: value >= 180 && value < 240 ? lum.primaryColor : undefined, fontWeight: value >= 180 && value < 240 ? 'bold' : 'normal' }}>3h</span>
-        <span style={{ color: isMax ? lum.primaryColor : undefined, fontWeight: isMax ? 'bold' : 'normal', textShadow: isMax ? `0 0 8px ${lum.glowColor}` : 'none' }}>
+        <span style={{ color: isMax ? lum.primaryColor : undefined, fontWeight: isMax ? 'bold' : 'normal', textShadow: isMax ? `0 0 6px ${lum.glowColor}` : 'none' }}>
           4h MAX
         </span>
       </div>
@@ -325,7 +327,7 @@ export const OverviewDashboard: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto select-none font-sans py-2">
-      {/* 1. Ultra-Sleek Telemetry Header (Clean, Modern, No Clunky Box or Shield) */}
+      {/* 1. Ultra-Sleek Telemetry Header (Clean, Modern, with Total XP in Top Right) */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -335,10 +337,17 @@ export const OverviewDashboard: React.FC = () => {
             </span>
           </div>
 
-          {/* Minimalist Streak Pill */}
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-300 font-semibold text-xs backdrop-blur-md">
-            <Flame className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
-            <span className="font-mono">{profile.streakDays}d Streak</span>
+          {/* Top Right Total XP & Streak Badges */}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-300 font-semibold text-xs backdrop-blur-md">
+              <Zap className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
+              <span className="font-mono font-bold"><CountUpNumber end={profile.xp} decimals={0} suffix=" Total XP" /></span>
+            </div>
+
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/25 text-orange-300 font-semibold text-xs backdrop-blur-md">
+              <Flame className="h-3.5 w-3.5 text-orange-400 fill-orange-400" />
+              <span className="font-mono">{profile.streakDays}d Streak</span>
+            </div>
           </div>
         </div>
 
@@ -362,16 +371,13 @@ export const OverviewDashboard: React.FC = () => {
               <strong className="text-white"><CountUpNumber end={composite.humansDefeated / 1000000} decimals={1} suffix="M" /></strong> Defeated
             </span>
             <span className="px-3 py-1 rounded-lg bg-white/[0.04] text-slate-300 border border-white/[0.08] font-medium">
-              Tier {profile.level}
-            </span>
-            <span className="px-3 py-1 rounded-lg bg-cyan-500/10 text-cyan-300 border border-cyan-400/25 font-mono font-semibold">
-              {profile.xp} XP
+              Tier {profile.level} Operator
             </span>
           </div>
         </div>
       </div>
 
-      {/* 2. Daily Excellence Tasks with Vibrant Glowing Sliders */}
+      {/* 2. Daily Excellence Tasks with Darkening Progressive Sliders */}
       <div className="space-y-3.5">
         <div className="flex items-center justify-between px-0.5">
           <div className="flex items-center gap-2">
@@ -381,7 +387,7 @@ export const OverviewDashboard: React.FC = () => {
             </h3>
           </div>
           <span className="text-[10px] text-cyan-400 font-mono font-bold">
-            SLIDE TO BOOST INTENSITY & XP
+            DRAG FORWARD TO DEEPEN INTENSITY
           </span>
         </div>
 
@@ -423,8 +429,8 @@ export const OverviewDashboard: React.FC = () => {
             )}
           </div>
 
-          {/* Vibrant Glowing Slider */}
-          <VibrantGlowSlider
+          {/* Darkening Precision Slider */}
+          <DarkeningPrecisionSlider
             value={workoutMinutes}
             onChange={(val, x, y) => handleDurationChange('STRENGTH', val, x, y)}
             accentColor="emerald"
@@ -470,8 +476,8 @@ export const OverviewDashboard: React.FC = () => {
             )}
           </div>
 
-          {/* Vibrant Glowing Slider */}
-          <VibrantGlowSlider
+          {/* Darkening Precision Slider */}
+          <DarkeningPrecisionSlider
             value={financeMinutes}
             onChange={(val, x, y) => handleDurationChange('MODELING', val, x, y)}
             accentColor="gold"
