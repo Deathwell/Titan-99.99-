@@ -46,10 +46,10 @@ export const NeuralHologramScanner: React.FC = () => {
 
   // 3D Hologram Morph Controls
   const [targetBodyFat, setTargetBodyFat] = useState<number>(20.0);
-  const [colorTheme, setColorTheme] = useState<HologramColorTheme>('REALISTIC_3D');
+  const [colorTheme, setColorTheme] = useState<HologramColorTheme>('CYBER_CYAN');
   const [wireframe, setWireframe] = useState<boolean>(false);
   const [showScanlines, setShowScanlines] = useState<boolean>(true);
-  const [autoRotate, setAutoRotate] = useState<boolean>(false);
+  const [autoRotate, setAutoRotate] = useState<boolean>(true);
   const [userWeightKg, setUserWeightKg] = useState<number>(profile.bodyWeightKg || metrics.bodyWeightKg || 80);
   const [isAdopted, setIsAdopted] = useState<boolean>(false);
 
@@ -77,7 +77,7 @@ export const NeuralHologramScanner: React.FC = () => {
         targetBodyFat,
         baselineBodyFat: scanResult?.estimatedBodyFatPercent || 20.0
       },
-      selectedImageSrc
+      scanResult?.faceCropDataUrl
     );
     threeSceneRef.current = scene;
 
@@ -109,28 +109,26 @@ export const NeuralHologramScanner: React.FC = () => {
     soundEngine.playJarvisHudPing();
 
     try {
-      await new Promise(r => setTimeout(r, 300));
+      await new Promise(r => setTimeout(r, 250));
       setScanStepText('EXTRACTING ANTI-ALIASED SUBJECT SILHOUETTE...');
 
-      await new Promise(r => setTimeout(r, 350));
-      setScanStepText('CALCULATING WAIST-TO-SHOULDER & ADIPOSITY RATIOS...');
+      await new Promise(r => setTimeout(r, 300));
+      setScanStepText('CALCULATING DEXA ADIPOSITY & VOLUME INDICES...');
 
       const result = await biometricVisionEngine.analyzeBiometricPhoto(
         src,
-        userWeightKg,
+        undefined, // Allow accurate automatic weight estimation
         profile.heightCm || 180
       );
 
-      await new Promise(r => setTimeout(r, 300));
-      setScanStepText('BUILDING 16,384-VERTEX 3D REALISTIC HOLOGRAPHIC MESH...');
+      await new Promise(r => setTimeout(r, 250));
+      setScanStepText('SYNTHESIZING 3D VOLUMETRIC HOLOGRAPHIC AVATAR...');
 
       setScanResult(result);
       setUserWeightKg(result.estimatedUserWeightKg);
       setTargetBodyFat(result.estimatedBodyFatPercent);
 
-      // Rebuild 3D mesh with isolated cutout
       if (threeSceneRef.current) {
-        threeSceneRef.current.buildPerson3DMesh(result.isolatedSubjectDataUrl);
         threeSceneRef.current.updateMorph(result.estimatedBodyFatPercent);
       }
 
@@ -141,7 +139,7 @@ export const NeuralHologramScanner: React.FC = () => {
       setIsScanning(false);
       soundEngine.playAlert();
     }
-  }, [userWeightKg, profile.heightCm]);
+  }, [profile.heightCm]);
 
   // Initial scan on mount
   useEffect(() => {
@@ -262,14 +260,14 @@ export const NeuralHologramScanner: React.FC = () => {
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-base font-bold text-white tracking-wider flex items-center gap-2">
-                  REALISTIC 3D NEURAL HOLOGRAM
+                  ADVANCED 3D BIOMETRIC HOLOGRAM
                 </h2>
                 <span className="px-2 py-0.5 rounded-full bg-cyan-950 border border-cyan-500/60 text-[10px] text-titan-cyan font-bold animate-pulse">
                   3D WEBGL ENGINE
                 </span>
               </div>
               <p className="text-xs text-slate-400 font-sans mt-0.5">
-                Volumetric 3D Avatar of You • 360° Interactive Orbit • True 3D Parametric Body Fat Morphing (5% - 75%)
+                Volumetric 3D Anatomical Avatar • 360° Interactive Orbit • True 3D Parametric Body Fat Morphing (5% - 75%)
               </p>
             </div>
           </div>
@@ -328,7 +326,7 @@ export const NeuralHologramScanner: React.FC = () => {
             <div className="absolute top-3 left-3 right-3 z-10 flex items-center justify-between pointer-events-none">
               {/* Color Theme Selector */}
               <div className="flex items-center gap-1.5 pointer-events-auto bg-slate-900/90 border border-slate-800 rounded-lg p-1">
-                {(['REALISTIC_3D', 'CYBER_CYAN', 'MATRIX_GREEN', 'ANATOMICAL_XRAY'] as HologramColorTheme[]).map(t => (
+                {(['CYBER_CYAN', 'MATRIX_GREEN', 'ANATOMICAL_XRAY', 'TITAN_GOLD'] as HologramColorTheme[]).map(t => (
                   <button
                     key={t}
                     onClick={() => {
@@ -341,10 +339,10 @@ export const NeuralHologramScanner: React.FC = () => {
                         : 'text-slate-400 hover:text-slate-200'
                     }`}
                   >
-                    {t === 'REALISTIC_3D' && 'REALISTIC 3D'}
                     {t === 'CYBER_CYAN' && 'CYBER CYAN'}
                     {t === 'MATRIX_GREEN' && 'MATRIX GREEN'}
                     {t === 'ANATOMICAL_XRAY' && 'BIO X-RAY'}
+                    {t === 'TITAN_GOLD' && 'TITAN GOLD'}
                   </button>
                 ))}
               </div>
@@ -430,7 +428,7 @@ export const NeuralHologramScanner: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Sliders className="h-4 w-4 text-titan-cyan" />
                 <span className="text-xs font-bold text-white tracking-wider">
-                  3D VOLUMETRIC MORPH SLIDER (5.0% - 75.0%)
+                  3D ANTHROPOMETRIC MORPH SLIDER (5.0% - 75.0%)
                 </span>
               </div>
               <div className="flex items-baseline gap-2">
