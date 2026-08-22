@@ -8,7 +8,8 @@ import {
   Award,
   Sparkles,
   Gift,
-  CheckCircle2
+  CheckCircle2,
+  AlarmClock
 } from 'lucide-react';
 import { useTitan } from '../../context/TitanContext';
 import { DailyStoryReelModal } from '../modals/DailyStoryReelModal';
@@ -19,9 +20,13 @@ export const HeaderHUD: React.FC = () => {
     profile,
     composite,
     syncStatus,
+    alarms,
+    setActiveTab,
     setIsSettingsOpen,
     setIsSyncModalOpen
   } = useTitan();
+
+  const activeAlarmsCount = alarms.filter(a => a.isEnabled).length;
 
   const [dateStr, setDateStr] = useState<string>('');
   const [timeStr, setTimeStr] = useState<string>('');
@@ -119,6 +124,24 @@ export const HeaderHUD: React.FC = () => {
 
           {/* Right: Quick Action Controls */}
           <div className="flex items-center gap-2">
+            {/* Direct Tactical Alarms Shortcut */}
+            <button
+              onClick={() => setActiveTab('charts')}
+              className={`p-2 rounded-xl border transition-all text-xs flex items-center gap-1.5 ${
+                activeAlarmsCount > 0
+                  ? 'bg-rose-950/40 border-rose-500/40 text-rose-300 hover:bg-rose-950/60'
+                  : 'bg-white/[0.03] border-white/[0.08] text-slate-400 hover:text-white hover:bg-white/[0.06]'
+              }`}
+              title="Tactical Alarms & Sounds"
+            >
+              <AlarmClock className="h-4 w-4 text-rose-400" />
+              {activeAlarmsCount > 0 && (
+                <span className="hidden sm:inline font-mono font-bold text-[11px]">
+                  {activeAlarmsCount} Active
+                </span>
+              )}
+            </button>
+
             <button
               onClick={() => setIsSyncModalOpen(true)}
               className={`p-2 rounded-xl border transition-all text-xs flex items-center gap-1.5 ${
