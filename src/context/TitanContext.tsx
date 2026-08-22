@@ -87,6 +87,11 @@ interface TitanContextType {
   isVictoryModalOpen: boolean;
   openVictoryModal: () => void;
   closeVictoryModal: () => void;
+  isCommandPaletteOpen: boolean;
+  setIsCommandPaletteOpen: (open: boolean) => void;
+  analyticsSubTab: 'CHARTS' | 'ALARMS' | 'CURRICULUM';
+  setAnalyticsSubTab: (tab: 'CHARTS' | 'ALARMS' | 'CURRICULUM') => void;
+  openAlarmsTab: () => void;
   activeQuizTopic: SyllabusTopic | null;
   setActiveQuizTopic: (topic: SyllabusTopic | null) => void;
   activeDecayAlert: DecayPenaltyEvent | null;
@@ -165,8 +170,28 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [isBackupOpen, setIsBackupOpen] = useState(false);
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const [isVictoryModalOpen, setIsVictoryModalOpen] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [analyticsSubTab, setAnalyticsSubTab] = useState<'CHARTS' | 'ALARMS' | 'CURRICULUM'>('CHARTS');
   const [activeQuizTopic, setActiveQuizTopic] = useState<SyllabusTopic | null>(null);
   const [activeDecayAlert, setActiveDecayAlert] = useState<DecayPenaltyEvent | null>(null);
+
+  const openAlarmsTab = () => {
+    setActiveTab('charts');
+    setAnalyticsSubTab('ALARMS');
+    soundEngine.playClick(750);
+  };
+
+  // Listen globally for ⌘K or Ctrl+K
+  useEffect(() => {
+    const handleGlobalKbd = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKbd);
+    return () => window.removeEventListener('keydown', handleGlobalKbd);
+  }, []);
 
   const [syncCode, setSyncCode] = useState<string | null>(cloudSyncEngine.getStoredSyncCode);
   const [syncStatus, setSyncStatus] = useState<'DISCONNECTED' | 'CONNECTING' | 'SYNCED' | 'SYNCING' | 'ERROR'>(
@@ -1310,6 +1335,11 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         isVictoryModalOpen,
         openVictoryModal,
         closeVictoryModal,
+        isCommandPaletteOpen,
+        setIsCommandPaletteOpen,
+        analyticsSubTab,
+        setAnalyticsSubTab,
+        openAlarmsTab,
         activeQuizTopic,
         setActiveQuizTopic,
         activeDecayAlert,

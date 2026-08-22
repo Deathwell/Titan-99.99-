@@ -23,12 +23,13 @@ export const AnalyticsProfileView: React.FC = () => {
     profile,
     composite,
     alarms,
+    analyticsSubTab,
+    setAnalyticsSubTab,
     setIsSettingsOpen,
     setIsBackupOpen,
     setIsSyncModalOpen
   } = useTitan();
 
-  const [activeSubTab, setActiveSubTab] = useState<'CHARTS' | 'ALARMS' | 'CURRICULUM'>('CHARTS');
   const activeAlarmsCount = alarms.filter(a => a.isEnabled).length;
 
   return (
@@ -37,22 +38,22 @@ export const AnalyticsProfileView: React.FC = () => {
       <div className="flex flex-wrap items-center justify-between gap-4 p-1.5 bg-white/[0.03] border border-white/[0.08] rounded-2xl backdrop-blur-xl">
         <div className="flex flex-wrap items-center gap-1.5">
           <button
-            onClick={() => setActiveSubTab('CHARTS')}
+            onClick={() => setAnalyticsSubTab('CHARTS')}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeSubTab === 'CHARTS'
-                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 shadow-matrix-cyan'
-                : 'text-slate-400 hover:text-white'
+              analyticsSubTab === 'CHARTS'
+                ? 'bg-rose-500/20 text-rose-300 border border-rose-400/40 shadow-sm'
+                : 'text-zinc-400 hover:text-white'
             }`}
           >
             📊 Bell Curves & Percentile Analytics
           </button>
           
           <button
-            onClick={() => setActiveSubTab('ALARMS')}
+            onClick={() => setAnalyticsSubTab('ALARMS')}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
-              activeSubTab === 'ALARMS'
+              analyticsSubTab === 'ALARMS'
                 ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-sm'
-                : 'text-slate-400 hover:text-white'
+                : 'text-zinc-400 hover:text-white'
             }`}
           >
             <AlarmClock className="h-3.5 w-3.5 text-rose-400" />
@@ -65,11 +66,11 @@ export const AnalyticsProfileView: React.FC = () => {
           </button>
 
           <button
-            onClick={() => setActiveSubTab('CURRICULUM')}
+            onClick={() => setAnalyticsSubTab('CURRICULUM')}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-              activeSubTab === 'CURRICULUM'
+              analyticsSubTab === 'CURRICULUM'
                 ? 'bg-purple-500/20 text-purple-300 border border-purple-400/40 shadow-sm'
-                : 'text-slate-400 hover:text-white'
+                : 'text-zinc-400 hover:text-white'
             }`}
           >
             <GraduationCap className="h-4 w-4 text-purple-400" />
@@ -80,16 +81,16 @@ export const AnalyticsProfileView: React.FC = () => {
         <div className="flex items-center gap-2 pr-2">
           <button
             onClick={() => setIsSettingsOpen(true)}
-            className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition-all border border-white/10"
+            className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 text-xs font-semibold flex items-center gap-1.5 transition-all border border-white/10"
           >
-            <Settings className="h-4 w-4 text-cyan-400" />
+            <Settings className="h-4 w-4 text-rose-400" />
             <span className="hidden sm:inline">Settings</span>
           </button>
         </div>
       </div>
 
       {/* Sub-Tab Viewport Content */}
-      {activeSubTab === 'CHARTS' && (
+      {analyticsSubTab === 'CHARTS' && (
         <div className="space-y-6">
           <ProgressionChart />
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -103,8 +104,8 @@ export const AnalyticsProfileView: React.FC = () => {
         </div>
       )}
 
-      {activeSubTab === 'ALARMS' && <AlarmHub />}
-      {activeSubTab === 'CURRICULUM' && <CurriculumEngine />}
+      {analyticsSubTab === 'ALARMS' && <AlarmHub />}
+      {analyticsSubTab === 'CURRICULUM' && <CurriculumEngine />}
     </div>
   );
 };

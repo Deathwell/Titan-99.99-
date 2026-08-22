@@ -13,13 +13,20 @@ import { DeviceSyncModal } from './components/modals/DeviceSyncModal';
 import { QuizModal } from './components/modals/QuizModal';
 import { VictoryRewardModal } from './components/modals/VictoryRewardModal';
 import { ActiveAlarmModal } from './components/modals/ActiveAlarmModal';
+import { CommandPaletteModal } from './components/modals/CommandPaletteModal';
 import { ConfettiCanvas } from './components/effects/ConfettiCanvas';
 import { WelcomeOnboardingModal } from './components/onboarding/WelcomeOnboardingModal';
 import { DecayPenaltyBanner } from './components/layout/DecayPenaltyBanner';
 import { Shield } from 'lucide-react';
 
 const DashboardContent: React.FC = () => {
-  const { activeTab, isSyncModalOpen, setIsSyncModalOpen } = useTitan();
+  const {
+    activeTab,
+    isSyncModalOpen,
+    setIsSyncModalOpen,
+    isCommandPaletteOpen,
+    setIsCommandPaletteOpen
+  } = useTitan();
 
   return (
     <div className="min-h-screen flex bg-[#04060a] text-slate-100 selection:bg-rose-500 selection:text-white">
@@ -52,7 +59,7 @@ const DashboardContent: React.FC = () => {
         <footer className="border-t border-white/[0.06] bg-[#05070d]/60 backdrop-blur-md py-6 px-6 text-xs text-slate-500">
           <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-slate-400 font-medium">
-              <Shield className="h-4 w-4 text-cyan-400" />
+              <Shield className="h-4 w-4 text-rose-400" />
               <span>TITAN PROTOCOL • 99.9% PERCENTILE ENGINE</span>
             </div>
 
@@ -69,6 +76,7 @@ const DashboardContent: React.FC = () => {
       <MobileBottomNav />
 
       {/* Global Modals */}
+      <CommandPaletteModal isOpen={isCommandPaletteOpen} onClose={() => setIsCommandPaletteOpen(false)} />
       <SettingsModal />
       <BackupModal />
       <DeviceSyncModal isOpen={isSyncModalOpen} onClose={() => setIsSyncModalOpen(false)} />

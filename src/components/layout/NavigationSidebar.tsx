@@ -33,6 +33,7 @@ export const NavigationSidebar: React.FC = () => {
     activeTab,
     setActiveTab,
     setIsSettingsOpen,
+    setIsCommandPaletteOpen,
     setIsBackupOpen,
     setIsSyncModalOpen,
     syncStatus,
@@ -96,7 +97,7 @@ export const NavigationSidebar: React.FC = () => {
 
         {/* Quick Search Bar */}
         <div
-          onClick={() => setIsSettingsOpen(true)}
+          onClick={() => setIsCommandPaletteOpen(true)}
           className="flex items-center justify-between px-3 py-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 text-xs text-zinc-300 cursor-pointer transition-all shadow-inner"
         >
           <div className="flex items-center gap-2">

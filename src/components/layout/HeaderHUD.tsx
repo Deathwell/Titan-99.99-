@@ -27,6 +27,7 @@ export const HeaderHUD: React.FC = () => {
     alarms,
     activeTab,
     setActiveTab,
+    openAlarmsTab,
     setIsSettingsOpen,
     setIsSyncModalOpen
   } = useTitan();
@@ -94,7 +95,7 @@ export const HeaderHUD: React.FC = () => {
 
             {/* Tactical Alarms Button */}
             <button
-              onClick={() => setActiveTab('charts')}
+              onClick={openAlarmsTab}
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-semibold transition-all ${
                 activeAlarmsCount > 0
                   ? 'bg-rose-500/15 border-rose-500/30 text-rose-300'
