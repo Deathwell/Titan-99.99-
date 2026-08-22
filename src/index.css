@@ -1,23 +1,21 @@
 @import "tailwindcss";
 
 @theme {
-  --color-titan-bg: #030508;
-  --color-titan-surface: #070a12;
-  --color-titan-card: #0c101c;
-  --color-titan-cardBorder: rgba(255, 255, 255, 0.08);
-  --color-titan-cardHover: rgba(255, 255, 255, 0.15);
-  --color-titan-cyan: #38bdf8;
-  --color-titan-cyanLight: #7dd3fc;
-  --color-titan-emerald: #34d399;
-  --color-titan-emeraldLight: #6ee7b7;
-  --color-titan-amber: #fbbf24;
-  --color-titan-amberLight: #fde68a;
-  --color-titan-crimson: #f43f5e;
-  --color-titan-purple: #a855f7;
-  --color-titan-slate: #64748b;
-  --color-titan-slateLight: #94a3b8;
-  --color-titan-textMuted: #94a3b8;
-  --color-titan-textDim: #475569;
+  --color-linear-bg: #08090c;
+  --color-linear-surface: #0e0f15;
+  --color-linear-card: #12141c;
+  --color-linear-cardHover: #181b26;
+  --color-linear-border: rgba(255, 255, 255, 0.08);
+  --color-linear-borderHover: rgba(255, 255, 255, 0.16);
+  --color-linear-indigo: #5e6ad2;
+  --color-linear-indigoLight: #7c88f2;
+  --color-linear-cyan: #56b6f7;
+  --color-linear-emerald: #30a46c;
+  --color-linear-amber: #f5a623;
+  --color-linear-rose: #e5484d;
+  --color-linear-text: #ededef;
+  --color-linear-textMuted: #8a8f98;
+  --color-linear-textDim: #62666d;
 }
 
 :root {
@@ -25,98 +23,96 @@
 }
 
 body {
-  background-color: #030508;
+  background-color: #08090c;
   background-image: 
-    radial-gradient(circle at 50% -10%, rgba(56, 189, 248, 0.07) 0%, transparent 50%),
-    radial-gradient(circle at 100% 100%, rgba(168, 85, 247, 0.05) 0%, transparent 40%),
-    linear-gradient(to bottom, #030508, #060911);
+    radial-gradient(circle at 50% 0%, rgba(94, 106, 210, 0.08) 0%, transparent 60%),
+    radial-gradient(circle at 100% 100%, rgba(86, 182, 247, 0.04) 0%, transparent 40%),
+    linear-gradient(to bottom, #08090c, #0b0c12);
   background-attachment: fixed;
-  color: #f8fafc;
+  color: #ededef;
   overflow-x: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  letter-spacing: -0.015em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Luxury Glassmorphism Card (Apple Pro / Linear standard) */
-.social-card, .luxury-card {
-  background: rgba(12, 16, 28, 0.6);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+/* Linear-Grade Precision Card */
+.linear-card, .social-card, .luxury-card {
+  background: rgba(14, 15, 21, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 
-    0 16px 40px -10px rgba(0, 0, 0, 0.6),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  border-radius: 1.5rem;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    0 12px 32px -8px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.social-card:hover, .luxury-card:hover {
+.linear-card:hover, .social-card:hover, .luxury-card:hover {
   border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(18, 20, 28, 0.85);
   box-shadow: 
-    0 24px 60px -15px rgba(0, 0, 0, 0.7),
-    0 0 25px -5px rgba(56, 189, 248, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    0 20px 48px -12px rgba(0, 0, 0, 0.8),
+    0 0 20px -5px rgba(94, 106, 210, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
-/* Hairline Platinum Border */
-.hairline-border {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-/* Subtle Specular Highlights */
-.specular-highlight {
+/* Linear's Signature Glowing Top Border Beam */
+.linear-beam-card {
   position: relative;
   overflow: hidden;
+  background: rgba(14, 15, 21, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-.specular-highlight::after {
+.linear-beam-card::before {
   content: '';
   position: absolute;
   top: 0;
-  left: -100%;
-  width: 50%;
-  height: 100%;
-  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.06), transparent);
-  transform: skewX(-25deg);
-  transition: 0.75s;
-  pointer-events: none;
+  left: 20%;
+  right: 20%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(94, 106, 210, 0.8), rgba(86, 182, 247, 0.8), transparent);
 }
 
-.specular-highlight:hover::after {
-  left: 200%;
+/* Linear Keyboard Shortcut Keycap */
+.linear-kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.375rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #8a8f98;
+  line-height: 1;
 }
 
-/* Neon & Metallic Glows */
+/* Subtle Linear Glows */
+.shadow-glow-indigo {
+  box-shadow: 0 0 25px -4px rgba(94, 106, 210, 0.4);
+}
+
 .shadow-glow-cyan {
-  box-shadow: 0 0 30px -4px rgba(56, 189, 248, 0.35);
+  box-shadow: 0 0 25px -4px rgba(86, 182, 247, 0.35);
 }
 
 .shadow-glow-emerald {
-  box-shadow: 0 0 30px -4px rgba(52, 211, 153, 0.35);
-}
-
-.shadow-glow-purple {
-  box-shadow: 0 0 30px -4px rgba(168, 85, 247, 0.4);
-}
-
-.shadow-glow-amber {
-  box-shadow: 0 0 30px -4px rgba(251, 191, 36, 0.35);
-}
-
-/* Glowing Text */
-.text-glow-cyan {
-  text-shadow: 0 0 16px rgba(56, 189, 248, 0.5);
-}
-
-.text-glow-purple {
-  text-shadow: 0 0 16px rgba(168, 85, 247, 0.5);
+  box-shadow: 0 0 25px -4px rgba(48, 164, 108, 0.35);
 }
 
 /* Ultra Minimalist Scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
@@ -124,10 +120,10 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.2);
 }
