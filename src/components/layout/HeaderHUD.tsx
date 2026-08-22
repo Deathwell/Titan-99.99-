@@ -7,11 +7,12 @@ import {
   TrendingUp,
   Award,
   Sparkles,
-  Gift
+  Gift,
+  CheckCircle2
 } from 'lucide-react';
 import { useTitan } from '../../context/TitanContext';
 import { DailyStoryReelModal } from '../modals/DailyStoryReelModal';
-import { MysteryLootModal } from '../modals/MysteryLootModal';
+import { MysteryLootModal, isMysteryDropClaimedToday } from '../modals/MysteryLootModal';
 
 export const HeaderHUD: React.FC = () => {
   const {
@@ -26,6 +27,7 @@ export const HeaderHUD: React.FC = () => {
   const [timeStr, setTimeStr] = useState<string>('');
   const [isStoryOpen, setIsStoryOpen] = useState<boolean>(false);
   const [isLootOpen, setIsLootOpen] = useState<boolean>(false);
+  const [claimedToday, setClaimedToday] = useState<boolean>(false);
 
   const isSynced = syncStatus === 'SYNCED';
 
@@ -34,6 +36,7 @@ export const HeaderHUD: React.FC = () => {
       const now = new Date();
       setDateStr(now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }));
       setTimeStr(now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }));
+      setClaimedToday(isMysteryDropClaimedToday());
     };
     updateClocks();
     const interval = setInterval(updateClocks, 1000);
@@ -90,14 +93,27 @@ export const HeaderHUD: React.FC = () => {
               <span className="text-slate-400 text-[11px] hidden sm:inline">Streak</span>
             </div>
 
-            {/* Mystery Loot Pill */}
+            {/* Mystery Loot Pill (1/1 Per Day) */}
             <button
               onClick={() => setIsLootOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/15 border border-purple-500/40 text-xs text-purple-300 font-bold hover:bg-purple-500/25 transition-all shadow-glow-purple active:scale-95"
-              title="Open Mystery Daily Drop"
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-bold transition-all active:scale-95 ${
+                claimedToday
+                  ? 'bg-white/[0.03] border-white/[0.08] text-slate-400'
+                  : 'bg-purple-500/15 border-purple-500/40 text-purple-300 shadow-glow-purple hover:bg-purple-500/25'
+              }`}
+              title={claimedToday ? 'Daily Drop Claimed (1/1)' : 'Open Daily Mystery Drop (1/1 Available)'}
             >
-              <Gift className="h-3.5 w-3.5 text-purple-400 animate-bounce" />
-              <span className="hidden sm:inline">Mystery Drop</span>
+              {claimedToday ? (
+                <>
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                  <span className="hidden sm:inline">Drop Claimed</span>
+                </>
+              ) : (
+                <>
+                  <Gift className="h-3.5 w-3.5 text-purple-400 animate-bounce" />
+                  <span className="hidden sm:inline">Daily Drop (1/1)</span>
+                </>
+              )}
             </button>
           </div>
 
@@ -129,7 +145,10 @@ export const HeaderHUD: React.FC = () => {
 
       {/* Modals */}
       <DailyStoryReelModal isOpen={isStoryOpen} onClose={() => setIsStoryOpen(false)} />
-      <MysteryLootModal isOpen={isLootOpen} onClose={() => setIsLootOpen(false)} />
+      <MysteryLootModal isOpen={isLootOpen} onClose={() => {
+        setIsLootOpen(false);
+        setClaimedToday(isMysteryDropClaimedToday());
+      }} />
     </>
   );
 };

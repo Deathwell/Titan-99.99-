@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Gift,
   Sparkles,
   X,
+  Clock,
   Zap,
   Award,
-  Flame,
   CheckCircle2,
   Lock,
   Crown
@@ -29,15 +29,43 @@ const MYSTERY_TITLES = [
   'TITAN PROTOCOL COMMANDER'
 ];
 
+export const isMysteryDropClaimedToday = (): boolean => {
+  const todayKey = new Date().toISOString().split('T')[0];
+  const lastClaim = localStorage.getItem('titan_last_mystery_drop_date');
+  return lastClaim === todayKey;
+};
+
 export const MysteryLootModal: React.FC<MysteryLootModalProps> = ({ isOpen, onClose }) => {
   const { gainXP } = useTitan();
   const [phase, setPhase] = useState<'READY' | 'SHAKING' | 'OPENED'>('READY');
   const [droppedReward, setDroppedReward] = useState<{ xp: number; title: string } | null>(null);
+  const [isClaimedToday, setIsClaimedToday] = useState<boolean>(false);
+  const [timeLeft, setTimeLeft] = useState<string>('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsClaimedToday(isMysteryDropClaimedToday());
+      setPhase('READY');
+      setDroppedReward(null);
+
+      const updateCountdown = () => {
+        const now = new Date();
+        const endOfDay = new Date();
+        endOfDay.setHours(23, 59, 59, 999);
+        const diffMs = endOfDay.getTime() - now.getTime();
+        const hours = Math.floor(diffMs / (1000 * 60 * 60));
+        const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+        setTimeLeft(`${hours}h ${mins}m`);
+      };
+
+      updateCountdown();
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
   const handleOpenCapsule = () => {
-    if (phase !== 'READY') return;
+    if (phase !== 'READY' || isClaimedToday) return;
 
     setPhase('SHAKING');
     soundEngine.playLootTension();
@@ -46,8 +74,12 @@ export const MysteryLootModal: React.FC<MysteryLootModalProps> = ({ isOpen, onCl
       const xp = 100 + Math.floor(Math.random() * 200);
       const title = MYSTERY_TITLES[Math.floor(Math.random() * MYSTERY_TITLES.length)];
 
+      const todayKey = new Date().toISOString().split('T')[0];
+      localStorage.setItem('titan_last_mystery_drop_date', todayKey);
+
       setDroppedReward({ xp, title });
       gainXP(xp);
+      setIsClaimedToday(true);
       setPhase('OPENED');
 
       triggerGlobalConfetti(window.innerWidth / 2, window.innerHeight / 2);
@@ -75,11 +107,47 @@ export const MysteryLootModal: React.FC<MysteryLootModalProps> = ({ isOpen, onCl
           <X className="h-4 w-4" />
         </button>
 
-        {phase !== 'OPENED' ? (
+        {isClaimedToday && phase !== 'OPENED' ? (
+          /* Locked / Already Claimed State */
+          <div className="space-y-6">
+            <div>
+              <span className="text-[10px] font-extrabold tracking-widest text-slate-400 uppercase font-mono">
+                DAILY LIMIT REACHED (1/1)
+              </span>
+              <h3 className="text-xl font-extrabold text-white mt-1">
+                CAPSULE RECHARGING
+              </h3>
+              <p className="text-xs text-slate-400 mt-1">
+                You have claimed your 1 mystery drop for today.
+              </p>
+            </div>
+
+            {/* Recharging Pod */}
+            <div className="h-40 w-40 mx-auto rounded-3xl bg-white/[0.04] border border-white/[0.08] p-1 flex items-center justify-center">
+              <div className="h-full w-full rounded-[22px] bg-black/50 flex flex-col items-center justify-center relative">
+                <Lock className="h-12 w-12 text-slate-500 mb-2" />
+                <span className="text-[11px] font-mono text-purple-400 font-bold">
+                  Next in {timeLeft}
+                </span>
+                <span className="text-[9px] text-slate-500 mt-0.5 font-mono">
+                  (Resets at 00:00 midnight)
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={onClose}
+              className="w-full py-3.5 rounded-2xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-white font-bold text-xs transition-all"
+            >
+              COME BACK TOMORROW
+            </button>
+          </div>
+        ) : phase !== 'OPENED' ? (
+          /* Ready To Unlock State */
           <div className="space-y-6">
             <div>
               <span className="text-[10px] font-extrabold tracking-widest text-purple-400 uppercase font-mono">
-                MYSTERY DAILY DROP
+                MYSTERY DAILY DROP (1/1 AVAILABLE)
               </span>
               <h3 className="text-xl font-extrabold text-white mt-1">
                 CYBERNETIC LOOT CAPSULE
@@ -109,14 +177,15 @@ export const MysteryLootModal: React.FC<MysteryLootModalProps> = ({ isOpen, onCl
               disabled={phase === 'SHAKING'}
               className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white font-extrabold text-xs shadow-glow-purple transition-all active:scale-95"
             >
-              {phase === 'SHAKING' ? 'CRACKING CAPSULE...' : 'OPEN LOOT CAPSULE'}
+              {phase === 'SHAKING' ? 'CRACKING CAPSULE...' : 'OPEN DAILY CAPSULE'}
             </button>
           </div>
         ) : (
+          /* Opened Reward State */
           <div className="space-y-6 animate-in zoom-in-95 duration-300">
             <div>
               <span className="text-[10px] font-extrabold tracking-widest text-emerald-400 uppercase font-mono flex items-center justify-center gap-1">
-                <Sparkles className="h-3 w-3" /> REWARD UNLOCKED
+                <Sparkles className="h-3 w-3" /> DAILY REWARD UNLOCKED
               </span>
               <h3 className="text-2xl font-black text-white mt-1">
                 +{droppedReward?.xp} XP SECURED!
