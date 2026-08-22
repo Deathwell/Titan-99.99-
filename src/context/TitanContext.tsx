@@ -344,6 +344,10 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   // Sync Management methods
   const generateNewSyncKey = async (): Promise<string | null> => {
+    const immediateCode = cloudSyncEngine.generateNewSyncCode();
+    setSyncCode(immediateCode);
+    setSyncStatus('SYNCED');
+
     const payload: FullBackupPayload = {
       version: '2.6.0',
       exportedAt: new Date().toISOString(),
@@ -359,15 +363,10 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       alarms
     };
 
-    const newCode = await cloudSyncEngine.createNewSyncChannel(payload);
-    if (newCode) {
-      setSyncCode(newCode);
-      setSyncStatus('SYNCED');
-      cloudSyncEngine.startRealTimeListener(newCode, handleRemoteCloudUpdate);
-      setLastSyncedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
-      return newCode;
-    }
-    return null;
+    cloudSyncEngine.startRealTimeListener(immediateCode, handleRemoteCloudUpdate);
+    cloudSyncEngine.pushStateToCloud(payload, immediateCode);
+    setLastSyncedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+    return immediateCode;
   };
 
   const connectSyncCode = async (code: string): Promise<boolean> => {

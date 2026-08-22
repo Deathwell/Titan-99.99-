@@ -267,10 +267,20 @@ export const DeviceSyncModal: React.FC<DeviceSyncModalProps> = ({ isOpen, onClos
     }
   };
 
-  const handleGenerateNew = () => {
-    const newKey = generateNewSyncKey();
+  // Auto-generate Sync Key on first mount if not paired so QR is immediately visible
+  useEffect(() => {
+    if (isOpen && !syncCode) {
+      generateNewSyncKey();
+    }
+  }, [isOpen, syncCode]);
+
+  const handleGenerateNew = async () => {
+    setScanError(null);
     soundEngine.playQuestComplete();
-    showToast(`Generated New Operator Key: ${newKey}`, 'info');
+    const newKey = await generateNewSyncKey();
+    if (newKey) {
+      showToast(`Generated Operator Key: ${newKey}`, 'success');
+    }
   };
 
   if (!isOpen) return null;

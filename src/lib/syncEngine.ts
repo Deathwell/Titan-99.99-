@@ -61,6 +61,19 @@ class CloudSyncEngine {
   }
 
   /**
+   * Generate a clean 6-character Operator Sync Code (e.g. TITAN-784X)
+   */
+  public generateNewSyncCode(): string {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = 'TITAN-';
+    for (let i = 0; i < 4; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    this.setStoredSyncCode(code);
+    return code;
+  }
+
+  /**
    * Create a new Cloud Sync Channel on the cloud relay
    */
   public async createNewSyncChannel(initialPayload: FullBackupPayload): Promise<string | null> {
