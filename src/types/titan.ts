@@ -40,6 +40,7 @@ export interface MetricScoreDetail {
   benchmark: NormativeBenchmark;
   isTitan: boolean;
   isWeakest?: boolean;
+  isStrongest?: boolean;
 }
 
 export interface UserMetricsState {
@@ -88,9 +89,15 @@ export interface CompositeCalculationResult {
   tier: OperatorTier;
   weakestMetric: MetricScoreDetail;
   strongestMetric: MetricScoreDetail;
-  // Human scale statistics (8.0 Billion Population)
+  // Human scale statistics (8.15 Billion Global Population)
   humansDefeated: number;
   humansRemaining: number;
+  globalRank: number;
+  globalRankFormatted: string;
+  oneInN: number;
+  oneInNFormatted: string;
+  gapToTopPointOneZ: number;
+  isApexTopPointOne: boolean;
 }
 
 export type OperatorTierLevel = 'TIER_1' | 'TIER_2' | 'TIER_3' | 'TIER_4' | 'TIER_TITAN';

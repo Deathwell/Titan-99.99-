@@ -364,22 +364,64 @@ export const OverviewDashboard: React.FC = () => {
             <span className="text-xs text-zinc-400 font-medium block">
               {greeting}, <strong className="text-white font-semibold">{profile.callsign || 'Operator'}</strong>
             </span>
-            <div className="text-3xl sm:text-5xl font-black text-white tracking-tight mt-1 flex items-baseline gap-3">
+            <div className="text-3xl sm:text-5xl font-black text-white tracking-tight mt-1 flex items-baseline gap-3 flex-wrap">
               <span>TOP</span>
               <span className="text-metallic-crimson">
-                <CountUpNumber end={topPercent} decimals={1} suffix="%" />
+                <CountUpNumber end={topPercent} decimals={topPercent < 1 ? 2 : 1} suffix="%" />
+              </span>
+              <span className="text-xs sm:text-sm font-mono font-bold text-zinc-400">
+                ({composite.oneInNFormatted})
               </span>
             </div>
           </div>
 
-          {/* Key Metric Indicators */}
+          {/* Key Metric Indicators (Exact Global Rank & Defeated Count out of 8.15B Humans) */}
           <div className="flex flex-wrap items-center gap-2 text-xs">
+            <span className="px-3 py-1 rounded-lg bg-rose-950/50 text-rose-300 border border-rose-500/30 font-mono shadow-sm">
+              Global Rank <strong className="text-white">{composite.globalRankFormatted}</strong> / 8.15B
+            </span>
             <span className="px-3 py-1 rounded-lg bg-white/[0.04] text-zinc-300 border border-white/[0.08] font-mono">
               <strong className="text-white"><CountUpNumber end={composite.humansDefeated / 1000000} decimals={1} suffix="M" /></strong> Defeated
             </span>
             <span className="px-3 py-1 rounded-lg bg-white/[0.04] text-zinc-300 border border-white/[0.08] font-medium">
               Tier {profile.level} Operator
             </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Road to 99.9%+ (Top 0.1% Club) Target Telemetry */}
+      <div className={`p-3.5 rounded-xl border font-sans text-xs transition-all ${
+        composite.isApexTopPointOne
+          ? 'bg-rose-950/40 border-rose-500/60 shadow-[0_0_25px_rgba(255,46,77,0.25)]'
+          : 'bg-[#101015]/90 border-white/[0.08]'
+      }`}>
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2.5">
+            <div className={`p-2 rounded-lg border ${
+              composite.isApexTopPointOne
+                ? 'bg-rose-500/25 border-rose-500 text-rose-300 animate-pulse'
+                : 'bg-white/[0.05] border-white/10 text-rose-400'
+            }`}>
+              <Sparkles className="h-4 w-4" />
+            </div>
+            <div>
+              <span className="font-bold text-white block">
+                {composite.isApexTopPointOne
+                  ? '👑 APEX 99.9%+ STATUS ACHIEVED'
+                  : '🎯 MISSION OBJECTIVE: BREACH TOP 0.1% GLOBALLY (99.9%+)'}
+              </span>
+              <span className="text-[11px] text-zinc-400">
+                {composite.isApexTopPointOne
+                  ? 'You are officially in the top 1 in 1,000 humans on the planet across dual-domain fitness & finance.'
+                  : `Currently ${composite.percentileGlobal.toFixed(2)}th percentile vs 8.15B humans. Z-Score Distance to Top 0.1%: +${composite.gapToTopPointOneZ.toFixed(2)}σ`}
+              </span>
+            </div>
+          </div>
+
+          <div className="text-right font-mono">
+            <span className="text-[10px] text-zinc-500 uppercase block">TITAN TARGET THRESHOLD</span>
+            <span className="text-xs font-black text-rose-400">TOP 0.10% (#8.15M RANK)</span>
           </div>
         </div>
       </div>
