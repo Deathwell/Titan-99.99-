@@ -20,7 +20,8 @@ import {
   Radio,
   Gauge,
   Clock,
-  Moon
+  Moon,
+  ZapOff
 } from 'lucide-react';
 import { useTitan } from '../../context/TitanContext';
 import { soundEngine } from '../../lib/audio';
@@ -56,10 +57,12 @@ interface ChainSliderProps {
   value: number; // 0 to 240
   onChange: (val: number, clientX?: number, clientY?: number) => void;
   accentColor: 'emerald' | 'gold';
+  title: string;
 }
 
-const ChainTrackSlider: React.FC<ChainSliderProps> = ({ value, onChange, accentColor }) => {
-  const isDraggingRef = useRef(false);
+const LuxuryChainTrackSlider: React.FC<ChainSliderProps> = ({ value, onChange, accentColor, title }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const trackRef = useRef<HTMLDivElement>(null);
 
   const percentage = (value / 240) * 100;
@@ -76,92 +79,136 @@ const ChainTrackSlider: React.FC<ChainSliderProps> = ({ value, onChange, accentC
   const isEmerald = accentColor === 'emerald';
 
   return (
-    <div className="space-y-2 mt-3 pt-3 border-t border-white/[0.08]" ref={trackRef}>
-      {/* Time & XP Readout */}
+    <div
+      className="space-y-3 mt-4 pt-3.5 border-t border-white/[0.08] relative"
+      ref={trackRef}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => {
+        setIsHovered(false);
+        setIsDragging(false);
+      }}
+    >
+      {/* Telemetry Readout Header */}
       <div className="flex items-center justify-between text-xs">
         <div className="flex items-center gap-2">
           <Clock className={`h-3.5 w-3.5 ${isEmerald ? 'text-emerald-400' : 'text-amber-400'}`} />
-          <span className="text-slate-400 font-medium">Session Duration:</span>
-          <span className={`font-mono font-black text-sm ${
+          <span className="text-slate-400 font-semibold tracking-tight">Active Protocol Time:</span>
+          <span className={`font-mono font-extrabold text-sm tracking-tight ${
             value > 0 ? (isEmerald ? 'text-emerald-300' : 'text-amber-300') : 'text-slate-500'
           }`}>
             {time}
           </span>
           {isMax && (
-            <span className="px-1.5 py-0.2 rounded bg-red-500/20 border border-red-500/40 text-red-400 font-mono font-extrabold text-[9px] uppercase animate-pulse">
+            <span className="px-2 py-0.5 rounded-full bg-red-500/20 border border-red-500/40 text-red-400 font-mono font-extrabold text-[9px] uppercase tracking-wider animate-pulse shadow-sm">
               🔥 4H MAX APEX
             </span>
           )}
         </div>
 
         <div className="flex items-center gap-1.5 font-mono">
-          <span className={`px-2 py-0.5 rounded-lg border font-bold text-[11px] ${
+          <span className={`px-2.5 py-1 rounded-xl border font-bold text-xs ${
             value > 0
-              ? (isEmerald ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300 shadow-sm' : 'bg-amber-500/15 border-amber-500/30 text-amber-300 shadow-sm')
-              : 'bg-white/[0.03] border-white/[0.06] text-slate-500'
+              ? (isEmerald ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300 shadow-cyber-emerald' : 'bg-amber-500/20 border-amber-500/40 text-amber-300 shadow-porsche-gold')
+              : 'bg-white/[0.03] border-white/[0.08] text-slate-500'
           }`}>
             +{xp} XP
           </span>
         </div>
       </div>
 
-      {/* Luxury Chain Track Input */}
-      <div className="relative py-2 select-none">
-        {/* Visual Chain-Link Background Notches (Every 15m = 16 notches total) */}
-        <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 h-3 rounded-full bg-[#080b14] border border-white/10 overflow-hidden flex items-center justify-between px-1">
-          {Array.from({ length: 17 }).map((_, i) => (
-            <div
-              key={i}
-              className={`h-2 w-1 rounded-sm transition-colors ${
-                (i * 15) <= value && value > 0
-                  ? (isEmerald ? 'bg-emerald-400' : 'bg-amber-400')
-                  : 'bg-white/15'
-              }`}
-            />
-          ))}
+      {/* Horology & Supercar Machined Chain Track */}
+      <div className="relative py-3 select-none group">
+        {/* Floating Holographic Telemetry HUD (Follows Thumb during Drag or Hover) */}
+        {(isHovered || isDragging || value > 0) && (
+          <div
+            className="floating-hud-badge"
+            style={{
+              left: `${Math.max(12, Math.min(88, percentage))}%`,
+              borderColor: isEmerald ? 'rgba(52, 211, 153, 0.4)' : 'rgba(251, 191, 36, 0.4)'
+            }}
+          >
+            <div className="flex items-center gap-1.5 text-[11px] font-mono font-bold">
+              <span className={isEmerald ? 'text-emerald-300' : 'text-amber-300'}>{time}</span>
+              <span className="text-slate-500">•</span>
+              <span className="text-white">+{xp} XP</span>
+            </div>
+          </div>
+        )}
+
+        {/* Machined Titanium Rail Housing */}
+        <div className="relative h-4 rounded-full bg-[#05070d] border border-white/15 overflow-hidden shadow-inner flex items-center justify-between px-1.5">
+          {/* 16 Precision CNC Chain Notches */}
+          {Array.from({ length: 17 }).map((_, i) => {
+            const notchMinutes = i * 15;
+            const isFilled = notchMinutes <= value && value > 0;
+            const isHourMark = notchMinutes % 60 === 0;
+
+            return (
+              <div
+                key={i}
+                className={`transition-all ${
+                  isHourMark ? 'h-3 w-1' : 'h-1.5 w-0.5'
+                } rounded-sm ${
+                  isFilled
+                    ? (isEmerald ? 'bg-emerald-300 shadow-cyber-emerald' : 'bg-amber-300 shadow-porsche-gold')
+                    : 'bg-white/20'
+                }`}
+              />
+            );
+          })}
+
+          {/* Illuminated Liquid Laser Conduit Fill */}
+          <div
+            className={`absolute top-0 bottom-0 left-0 transition-all pointer-events-none ${
+              isEmerald
+                ? 'bg-gradient-to-r from-emerald-500/40 via-emerald-400/80 to-emerald-300 shadow-cyber-emerald'
+                : 'bg-gradient-to-r from-amber-500/40 via-amber-400/80 to-amber-300 shadow-porsche-gold'
+            }`}
+            style={{ width: `${percentage}%` }}
+          />
         </div>
 
-        {/* Illuminated Fluid Fill */}
-        <div
-          className={`absolute top-1/2 -translate-y-1/2 left-0 h-3 rounded-full transition-all pointer-events-none ${
-            isEmerald
-              ? 'bg-gradient-to-r from-emerald-600/60 to-emerald-400/90 shadow-cyber-emerald'
-              : 'bg-gradient-to-r from-amber-600/60 to-amber-400/90 shadow-porsche-gold'
-          }`}
-          style={{ width: `${percentage}%` }}
-        />
-
-        {/* Real Range Slider Control */}
+        {/* Real Transparent Range Slider for Smooth Scrubbing */}
         <input
           type="range"
           min="0"
           max="240"
           step="15"
           value={value}
+          onMouseDown={() => setIsDragging(true)}
+          onTouchStart={() => setIsDragging(true)}
+          onMouseUp={() => setIsDragging(false)}
+          onTouchEnd={() => setIsDragging(false)}
           onChange={handleSliderChange}
-          className="relative w-full h-7 opacity-0 cursor-pointer z-10"
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30"
+          title={`Drag ${title} chain slider (0 to 4 hours)`}
         />
 
-        {/* Chain Dial Thumb */}
+        {/* Diamond Knurled Milled Titanium Dial Thumb */}
         <div
-          className={`absolute top-1/2 -translate-y-1/2 h-6 w-6 rounded-full border-2 bg-[#060913] pointer-events-none transition-transform flex items-center justify-center -ml-3 shadow-lg ${
-            isEmerald
-              ? 'border-emerald-400 shadow-cyber-emerald text-emerald-400'
-              : 'border-amber-400 shadow-porsche-gold text-amber-400'
+          className={`machined-knurl-dial absolute top-1/2 -translate-y-1/2 h-7 w-7 rounded-full pointer-events-none transition-all flex items-center justify-center -ml-3.5 z-20 ${
+            value > 0
+              ? (isEmerald ? 'border-emerald-400 ring-2 ring-emerald-500/30' : 'border-amber-400 ring-2 ring-amber-500/30')
+              : 'border-slate-500 ring-1 ring-white/10'
           }`}
           style={{ left: `${percentage}%` }}
         >
-          <div className={`h-2 w-2 rounded-full ${isEmerald ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+          {/* Inner Gemstone Glow */}
+          <div className={`h-2.5 w-2.5 rounded-full ${
+            value > 0
+              ? (isEmerald ? 'bg-emerald-400 shadow-cyber-emerald animate-pulse' : 'bg-amber-400 shadow-porsche-gold animate-pulse')
+              : 'bg-slate-500'
+          }`} />
         </div>
       </div>
 
-      {/* Chain Track Step Markers */}
-      <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 px-0.5">
-        <span>0h</span>
-        <span>1h</span>
-        <span>2h</span>
-        <span>3h</span>
-        <span className={isMax ? (isEmerald ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold') : ''}>
+      {/* Laser-Engraved Hour Markers */}
+      <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 px-1 font-semibold">
+        <span className={value === 0 ? 'text-white' : ''}>0h</span>
+        <span className={value >= 60 && value < 120 ? (isEmerald ? 'text-emerald-400' : 'text-amber-400') : ''}>1h</span>
+        <span className={value >= 120 && value < 180 ? (isEmerald ? 'text-emerald-400' : 'text-amber-400') : ''}>2h</span>
+        <span className={value >= 180 && value < 240 ? (isEmerald ? 'text-emerald-400' : 'text-amber-400') : ''}>3h</span>
+        <span className={isMax ? (isEmerald ? 'text-emerald-400 font-bold drop-shadow-[0_0_8px_rgba(0,230,153,0.8)]' : 'text-amber-400 font-bold drop-shadow-[0_0_8px_rgba(229,185,92,0.8)]') : ''}>
           4h (MAX)
         </span>
       </div>
@@ -220,7 +267,7 @@ export const OverviewDashboard: React.FC = () => {
     }
   };
 
-  // Clean 1-Tap Toggle for Sleep / Discipline Protocol (No Slider)
+  // Clean 1-Tap Toggle for Sleep / Tactical Discipline (No Slider)
   const handleDisciplineToggle = (e: React.MouseEvent) => {
     const isNowDone = toggleDailyAccomplishment('QUANT');
     if (isNowDone) {
@@ -316,9 +363,9 @@ export const OverviewDashboard: React.FC = () => {
         </div>
 
         {/* Task 1: Workout Protocol with 4h Chain Slider (Cyber Emerald) */}
-        <div className={`p-4 sm:p-5 rounded-2xl border transition-all duration-200 ${
+        <div className={`p-5 rounded-2xl border transition-all duration-200 ${
           workoutMinutes > 0
-            ? 'laser-conduit-emerald bg-emerald-950/30 border-emerald-500/50 shadow-cyber-emerald pl-5'
+            ? 'laser-conduit-emerald bg-emerald-950/30 border-emerald-500/50 shadow-cyber-emerald pl-6'
             : 'bg-[#0f1424]/80 border-white/10 hover:border-emerald-500/30'
         }`}>
           <div className="flex items-center justify-between">
@@ -336,12 +383,12 @@ export const OverviewDashboard: React.FC = () => {
                   <span className="text-[10px] font-mono font-extrabold text-emerald-400 bg-emerald-950/60 px-1.5 py-0.2 rounded border border-emerald-500/30">
                     PHYSIQUE
                   </span>
-                  <h4 className="text-sm font-bold text-white tracking-tight">
+                  <h4 className="text-sm font-extrabold text-white tracking-tight">
                     Physical Workout Protocol
                   </h4>
                 </div>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Compound strength, lifting or cardio endurance (drag chain up to 4h)
+                  Compound lifting or aerobic stamina (drag chain up to 4h)
                 </p>
               </div>
             </div>
@@ -353,18 +400,19 @@ export const OverviewDashboard: React.FC = () => {
             )}
           </div>
 
-          {/* Mechanical Chain Track Slider (0 to 4h in 15m steps) */}
-          <ChainTrackSlider
+          {/* Luxury Machined Chain Track Slider */}
+          <LuxuryChainTrackSlider
             value={workoutMinutes}
             onChange={(val, x, y) => handleChainChange('STRENGTH', val, x, y)}
             accentColor="emerald"
+            title="Workout"
           />
         </div>
 
         {/* Task 2: Financial Mastery with 4h Chain Slider (Porsche Gold) */}
-        <div className={`p-4 sm:p-5 rounded-2xl border transition-all duration-200 ${
+        <div className={`p-5 rounded-2xl border transition-all duration-200 ${
           financeMinutes > 0
-            ? 'laser-conduit-gold bg-amber-950/30 border-amber-500/50 shadow-porsche-gold pl-5'
+            ? 'laser-conduit-gold bg-amber-950/30 border-amber-500/50 shadow-porsche-gold pl-6'
             : 'bg-[#0f1424]/80 border-white/10 hover:border-amber-500/30'
         }`}>
           <div className="flex items-center justify-between">
@@ -382,7 +430,7 @@ export const OverviewDashboard: React.FC = () => {
                   <span className="text-[10px] font-mono font-extrabold text-amber-400 bg-amber-950/60 px-1.5 py-0.2 rounded border border-amber-500/30">
                     WEALTH
                   </span>
-                  <h4 className="text-sm font-bold text-white tracking-tight">
+                  <h4 className="text-sm font-extrabold text-white tracking-tight">
                     Financial Modeling & Capital Markets
                   </h4>
                 </div>
@@ -399,20 +447,21 @@ export const OverviewDashboard: React.FC = () => {
             )}
           </div>
 
-          {/* Mechanical Chain Track Slider (0 to 4h in 15m steps) */}
-          <ChainTrackSlider
+          {/* Luxury Machined Chain Track Slider */}
+          <LuxuryChainTrackSlider
             value={financeMinutes}
             onChange={(val, x, y) => handleChainChange('MODELING', val, x, y)}
             accentColor="gold"
+            title="Finance"
           />
         </div>
 
         {/* Task 3: Sleep Hygiene & Tactical Discipline (Clean 1-Tap Toggle - NO SLIDER) */}
         <div
           onClick={handleDisciplineToggle}
-          className={`p-4 sm:p-5 rounded-2xl border transition-all duration-200 cursor-pointer flex items-center justify-between group active:scale-[0.99] ${
+          className={`p-5 rounded-2xl border transition-all duration-200 cursor-pointer flex items-center justify-between group active:scale-[0.99] ${
             hasDisciplineToday
-              ? 'laser-conduit-cyan bg-purple-950/30 border-purple-500/50 shadow-electric-violet text-white pl-5'
+              ? 'laser-conduit-cyan bg-purple-950/30 border-purple-500/50 shadow-electric-violet text-white pl-6'
               : 'bg-[#0f1424]/80 border-white/10 hover:border-purple-500/40 hover:bg-[#141b30]'
           }`}
         >
@@ -429,7 +478,7 @@ export const OverviewDashboard: React.FC = () => {
                 <span className="text-[10px] font-mono font-extrabold text-purple-300 bg-purple-950/60 px-1.5 py-0.2 rounded border border-purple-500/30">
                   DISCIPLINE
                 </span>
-                <span className={`text-sm font-bold tracking-tight ${hasDisciplineToday ? 'line-through text-slate-400' : 'text-white'}`}>
+                <span className={`text-sm font-extrabold tracking-tight ${hasDisciplineToday ? 'line-through text-slate-400' : 'text-white'}`}>
                   8-Hour Sleep Hygiene & Cold Exposure
                 </span>
               </div>
