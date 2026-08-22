@@ -26,46 +26,36 @@ export const OverviewDashboard: React.FC = () => {
   const {
     profile,
     composite,
+    workoutLogs,
+    financeLogs,
     toggleDailyAccomplishment,
-    setActiveTab,
-    gainXP
+    setActiveTab
   } = useTitan();
 
   const [greeting, setGreeting] = useState<string>('Welcome');
   const [isLootOpen, setIsLootOpen] = useState<boolean>(false);
-  const [habitsCompleted, setHabitsCompleted] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
     const hour = new Date().getHours();
     if (hour < 12) setGreeting('Good morning');
     else if (hour < 18) setGreeting('Good afternoon');
     else setGreeting('Good evening');
-
-    // Load today's completed habit state from localStorage
-    const todayKey = new Date().toISOString().split('T')[0];
-    const saved = localStorage.getItem(`titan_habits_${todayKey}`);
-    if (saved) {
-      try {
-        setHabitsCompleted(JSON.parse(saved));
-      } catch {
-        // Ignore
-      }
-    }
   }, []);
 
-  const handleHabitToggle = (e: React.MouseEvent, habitId: string, habitType: 'STRENGTH' | 'MODELING' | 'QUANT') => {
-    const isNowDone = !habitsCompleted[habitId];
-    const updated = { ...habitsCompleted, [habitId]: isNowDone };
-    setHabitsCompleted(updated);
+  // Compute live state from today's real logs
+  const todayStr = new Date().toISOString().split('T')[0];
+  const hasWorkoutToday = workoutLogs.some(w => w.pillar === 'STRENGTH' && w.timestamp.startsWith(todayStr));
+  const hasFinanceToday = financeLogs.some(f => (f.discipline === 'PRIVATE_EQUITY' || f.discipline === 'INVESTMENT_BANKING') && f.timestamp.startsWith(todayStr));
+  const hasDisciplineToday = financeLogs.some(f => (f.discipline === 'QUANT_DERIVATIVES' || f.discipline === 'FACTOR_RISK') && f.timestamp.startsWith(todayStr));
 
-    const todayKey = new Date().toISOString().split('T')[0];
-    localStorage.setItem(`titan_habits_${todayKey}`, JSON.stringify(updated));
+  const completedCount = (hasWorkoutToday ? 1 : 0) + (hasFinanceToday ? 1 : 0) + (hasDisciplineToday ? 1 : 0);
 
-    if (isNowDone) {
+  const handleHabitToggle = (e: React.MouseEvent, habitType: 'STRENGTH' | 'MODELING' | 'QUANT') => {
+    const isNowRecorded = toggleDailyAccomplishment(habitType);
+
+    if (isNowRecorded) {
       triggerGlobalConfetti(e.clientX, e.clientY);
       soundEngine.playQuestComplete();
-      gainXP(50);
-      toggleDailyAccomplishment(habitType);
     } else {
       soundEngine.playClick(600);
     }
@@ -131,32 +121,32 @@ export const OverviewDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. Today's 3 Daily Habits (1-Tap Complete) */}
+      {/* 3. Today's 3 Daily Habits (1-Tap Complete & Uncheck Reversible) */}
       <div className="space-y-3">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-sm font-bold text-white tracking-tight">
             TODAY'S 3 DAILY HABITS
           </h3>
           <span className="text-xs text-slate-400 font-medium">
-            {Object.values(habitsCompleted).filter(Boolean).length} / 3 Completed
+            {completedCount} / 3 Completed
           </span>
         </div>
 
         {/* Habit 1: Workout */}
         <div
-          onClick={(e) => handleHabitToggle(e, 'habit_workout', 'STRENGTH')}
+          onClick={(e) => handleHabitToggle(e, 'STRENGTH')}
           className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between active:scale-[0.98] ${
-            habitsCompleted['habit_workout']
+            hasWorkoutToday
               ? 'bg-emerald-950/20 border-emerald-500/40 text-white'
               : 'bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.05]'
           }`}
         >
           <div className="flex items-center gap-3.5">
-            <div className={`p-2.5 rounded-xl ${habitsCompleted['habit_workout'] ? 'bg-emerald-500 text-black shadow-glow-emerald' : 'bg-emerald-500/10 text-emerald-400'}`}>
+            <div className={`p-2.5 rounded-xl ${hasWorkoutToday ? 'bg-emerald-500 text-black shadow-glow-emerald' : 'bg-emerald-500/10 text-emerald-400'}`}>
               <Dumbbell className="h-5 w-5" />
             </div>
             <div>
-              <div className={`text-sm font-bold ${habitsCompleted['habit_workout'] ? 'line-through text-slate-400' : 'text-white'}`}>
+              <div className={`text-sm font-bold ${hasWorkoutToday ? 'line-through text-slate-400' : 'text-white'}`}>
                 Complete Daily Physical Workout
               </div>
               <div className="text-xs text-slate-400 mt-0.5">
@@ -166,7 +156,7 @@ export const OverviewDashboard: React.FC = () => {
           </div>
 
           <div>
-            {habitsCompleted['habit_workout'] ? (
+            {hasWorkoutToday ? (
               <CheckCircle2 className="h-6 w-6 text-emerald-400" />
             ) : (
               <Circle className="h-6 w-6 text-slate-500 hover:text-slate-300" />
@@ -176,19 +166,19 @@ export const OverviewDashboard: React.FC = () => {
 
         {/* Habit 2: Finance */}
         <div
-          onClick={(e) => handleHabitToggle(e, 'habit_finance', 'MODELING')}
+          onClick={(e) => handleHabitToggle(e, 'MODELING')}
           className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between active:scale-[0.98] ${
-            habitsCompleted['habit_finance']
+            hasFinanceToday
               ? 'bg-amber-950/20 border-amber-500/40 text-white'
               : 'bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.05]'
           }`}
         >
           <div className="flex items-center gap-3.5">
-            <div className={`p-2.5 rounded-xl ${habitsCompleted['habit_finance'] ? 'bg-amber-500 text-black shadow-glow-amber' : 'bg-amber-500/10 text-amber-400'}`}>
+            <div className={`p-2.5 rounded-xl ${hasFinanceToday ? 'bg-amber-500 text-black shadow-glow-amber' : 'bg-amber-500/10 text-amber-400'}`}>
               <LineChart className="h-5 w-5" />
             </div>
             <div>
-              <div className={`text-sm font-bold ${habitsCompleted['habit_finance'] ? 'line-through text-slate-400' : 'text-white'}`}>
+              <div className={`text-sm font-bold ${hasFinanceToday ? 'line-through text-slate-400' : 'text-white'}`}>
                 Study Financial Modeling & Markets
               </div>
               <div className="text-xs text-slate-400 mt-0.5">
@@ -198,7 +188,7 @@ export const OverviewDashboard: React.FC = () => {
           </div>
 
           <div>
-            {habitsCompleted['habit_finance'] ? (
+            {hasFinanceToday ? (
               <CheckCircle2 className="h-6 w-6 text-amber-400" />
             ) : (
               <Circle className="h-6 w-6 text-slate-500 hover:text-slate-300" />
@@ -208,19 +198,19 @@ export const OverviewDashboard: React.FC = () => {
 
         {/* Habit 3: Discipline */}
         <div
-          onClick={(e) => handleHabitToggle(e, 'habit_discipline', 'QUANT')}
+          onClick={(e) => handleHabitToggle(e, 'QUANT')}
           className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between active:scale-[0.98] ${
-            habitsCompleted['habit_discipline']
+            hasDisciplineToday
               ? 'bg-purple-950/20 border-purple-500/40 text-white'
               : 'bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.05]'
           }`}
         >
           <div className="flex items-center gap-3.5">
-            <div className={`p-2.5 rounded-xl ${habitsCompleted['habit_discipline'] ? 'bg-purple-500 text-black shadow-glow-purple' : 'bg-purple-500/10 text-purple-400'}`}>
+            <div className={`p-2.5 rounded-xl ${hasDisciplineToday ? 'bg-purple-500 text-black shadow-glow-purple' : 'bg-purple-500/10 text-purple-400'}`}>
               <Target className="h-5 w-5" />
             </div>
             <div>
-              <div className={`text-sm font-bold ${habitsCompleted['habit_discipline'] ? 'line-through text-slate-400' : 'text-white'}`}>
+              <div className={`text-sm font-bold ${hasDisciplineToday ? 'line-through text-slate-400' : 'text-white'}`}>
                 Tactical Discipline Execution
               </div>
               <div className="text-xs text-slate-400 mt-0.5">
@@ -230,7 +220,7 @@ export const OverviewDashboard: React.FC = () => {
           </div>
 
           <div>
-            {habitsCompleted['habit_discipline'] ? (
+            {hasDisciplineToday ? (
               <CheckCircle2 className="h-6 w-6 text-purple-400" />
             ) : (
               <Circle className="h-6 w-6 text-slate-500 hover:text-slate-300" />
