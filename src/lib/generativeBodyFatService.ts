@@ -82,6 +82,7 @@ export const DISCRETE_BODY_FAT_STEPS: FilmstripStep[] = [
 
 const CONFIG_STORAGE_KEY = 'titan_generative_backend_config';
 const CACHE_STORAGE_PREFIX = 'titan_filmstrip_cache_';
+const DEFAULT_FAL_KEY = '32bebb96-3c12-4d12-8b70-5894e11000c3:609bce56370b56614c37a814c45afb44';
 
 export class GenerativeBodyFatService {
   /**
@@ -90,13 +91,16 @@ export class GenerativeBodyFatService {
   public getConfig(): GenerativeBackendConfig {
     try {
       const saved = localStorage.getItem(CONFIG_STORAGE_KEY);
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.apiKey) return parsed;
+      }
     } catch (e) {
       console.warn('Failed to load generative config:', e);
     }
     return {
       provider: 'fal_ai',
-      apiKey: ''
+      apiKey: DEFAULT_FAL_KEY
     };
   }
 
@@ -125,19 +129,14 @@ export class GenerativeBodyFatService {
       return cached;
     }
 
-    if (!config.apiKey && config.provider !== 'custom') {
-      // Return enhanced local procedural reference when API key not yet set
-      onProgress?.('Synthesizing high-fidelity anatomical reference...');
-      await new Promise(r => setTimeout(r, 600));
-      return sourceImageDataUrl;
-    }
+    const key = config.apiKey || DEFAULT_FAL_KEY;
 
     onProgress?.(`Dispatching to ${config.provider.toUpperCase()} GPU worker...`);
 
     if (config.provider === 'fal_ai') {
-      return this.callFalAi(sourceImageDataUrl, step, config.apiKey, onProgress);
+      return this.callFalAi(sourceImageDataUrl, step, key, onProgress);
     } else if (config.provider === 'replicate') {
-      return this.callReplicate(sourceImageDataUrl, step, config.apiKey, onProgress);
+      return this.callReplicate(sourceImageDataUrl, step, key, onProgress);
     } else {
       return this.callCustomEndpoint(sourceImageDataUrl, step, config.customEndpointUrl || '', onProgress);
     }
@@ -157,33 +156,40 @@ export class GenerativeBodyFatService {
     // fal.ai instant-id endpoint
     const endpoint = 'https://fal.run/fal-ai/instant-id';
     
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Key ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        image_url: sourceImg,
-        prompt: step.prompt,
-        negative_prompt: 'cartoon, drawing, blurry, distorted face, low quality, deformed, extra limbs',
-        identity_strength: 0.82,
-        num_inference_steps: 30,
-        guidance_scale: 7.0
-      })
-    });
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Key ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          image_url: sourceImg,
+          prompt: step.prompt,
+          negative_prompt: 'cartoon, drawing, blurry, distorted face, low quality, deformed, extra limbs',
+          identity_strength: 0.82,
+          num_inference_steps: 30,
+          guidance_scale: 7.0
+        })
+      });
 
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(`fal.ai generation failed: ${errText}`);
+      if (!response.ok) {
+        const errText = await response.text();
+        if (errText.includes('TOP_UP') || response.status === 403) {
+          throw new Error('fal.ai account is pending credit top-up. Please add credits on fal.ai/dashboard/billing to activate cloud GPU inference.');
+        }
+        throw new Error(`fal.ai GPU error: ${errText}`);
+      }
+
+      const data = await response.json();
+      const generatedUrl = data.images?.[0]?.url || data.image?.url;
+      if (!generatedUrl) throw new Error('No image returned from fal.ai');
+
+      this.saveToCache(this.getCacheKey(sourceImg, step.bodyFatPercent), generatedUrl);
+      return generatedUrl;
+    } catch (err: any) {
+      throw err;
     }
-
-    const data = await response.json();
-    const generatedUrl = data.images?.[0]?.url || data.image?.url;
-    if (!generatedUrl) throw new Error('No image returned from fal.ai');
-
-    this.saveToCache(this.getCacheKey(sourceImg, step.bodyFatPercent), generatedUrl);
-    return generatedUrl;
   }
 
   /**
