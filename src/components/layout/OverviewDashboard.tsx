@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Dumbbell,
   LineChart,
@@ -19,9 +19,8 @@ import {
   Crown,
   Radio,
   Gauge,
-  Plus,
-  Minus,
-  Clock
+  Clock,
+  Moon
 } from 'lucide-react';
 import { useTitan } from '../../context/TitanContext';
 import { soundEngine } from '../../lib/audio';
@@ -29,7 +28,146 @@ import { triggerGlobalConfetti } from '../effects/ConfettiCanvas';
 import { CountUpNumber } from '../effects/CountUpNumber';
 import { MysteryLootModal, isMysteryDropClaimedToday } from '../modals/MysteryLootModal';
 
-const TIME_PRESETS = [0, 15, 30, 45, 60, 90, 120];
+// Helper to format minutes into clean luxury readouts
+function formatDurationLabel(minutes: number): { time: string; xp: number; isMax: boolean } {
+  const isMax = minutes >= 240;
+  const xp = Math.floor(minutes * 1.5);
+
+  if (minutes === 0) {
+    return { time: '0m', xp: 0, isMax: false };
+  }
+
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+
+  let time = '';
+  if (h > 0 && m > 0) {
+    time = `${h}h ${m}m`;
+  } else if (h > 0) {
+    time = `${h}h 00m`;
+  } else {
+    time = `${m}m`;
+  }
+
+  return { time, xp, isMax };
+}
+
+interface ChainSliderProps {
+  value: number; // 0 to 240
+  onChange: (val: number, clientX?: number, clientY?: number) => void;
+  accentColor: 'emerald' | 'gold';
+}
+
+const ChainTrackSlider: React.FC<ChainSliderProps> = ({ value, onChange, accentColor }) => {
+  const isDraggingRef = useRef(false);
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  const percentage = (value / 240) * 100;
+  const { time, xp, isMax } = formatDurationLabel(value);
+
+  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawVal = parseInt(e.target.value, 10);
+    const rect = trackRef.current?.getBoundingClientRect();
+    const x = rect ? rect.left + (rect.width * (rawVal / 240)) : window.innerWidth / 2;
+    const y = rect ? rect.top : window.innerHeight / 2;
+    onChange(rawVal, x, y);
+  };
+
+  const isEmerald = accentColor === 'emerald';
+
+  return (
+    <div className="space-y-2 mt-3 pt-3 border-t border-white/[0.08]" ref={trackRef}>
+      {/* Time & XP Readout */}
+      <div className="flex items-center justify-between text-xs">
+        <div className="flex items-center gap-2">
+          <Clock className={`h-3.5 w-3.5 ${isEmerald ? 'text-emerald-400' : 'text-amber-400'}`} />
+          <span className="text-slate-400 font-medium">Session Duration:</span>
+          <span className={`font-mono font-black text-sm ${
+            value > 0 ? (isEmerald ? 'text-emerald-300' : 'text-amber-300') : 'text-slate-500'
+          }`}>
+            {time}
+          </span>
+          {isMax && (
+            <span className="px-1.5 py-0.2 rounded bg-red-500/20 border border-red-500/40 text-red-400 font-mono font-extrabold text-[9px] uppercase animate-pulse">
+              🔥 4H MAX APEX
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-1.5 font-mono">
+          <span className={`px-2 py-0.5 rounded-lg border font-bold text-[11px] ${
+            value > 0
+              ? (isEmerald ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300 shadow-sm' : 'bg-amber-500/15 border-amber-500/30 text-amber-300 shadow-sm')
+              : 'bg-white/[0.03] border-white/[0.06] text-slate-500'
+          }`}>
+            +{xp} XP
+          </span>
+        </div>
+      </div>
+
+      {/* Luxury Chain Track Input */}
+      <div className="relative py-2 select-none">
+        {/* Visual Chain-Link Background Notches (Every 15m = 16 notches total) */}
+        <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 h-3 rounded-full bg-[#080b14] border border-white/10 overflow-hidden flex items-center justify-between px-1">
+          {Array.from({ length: 17 }).map((_, i) => (
+            <div
+              key={i}
+              className={`h-2 w-1 rounded-sm transition-colors ${
+                (i * 15) <= value && value > 0
+                  ? (isEmerald ? 'bg-emerald-400' : 'bg-amber-400')
+                  : 'bg-white/15'
+              }`}
+            />
+          ))}
+        </div>
+
+        {/* Illuminated Fluid Fill */}
+        <div
+          className={`absolute top-1/2 -translate-y-1/2 left-0 h-3 rounded-full transition-all pointer-events-none ${
+            isEmerald
+              ? 'bg-gradient-to-r from-emerald-600/60 to-emerald-400/90 shadow-cyber-emerald'
+              : 'bg-gradient-to-r from-amber-600/60 to-amber-400/90 shadow-porsche-gold'
+          }`}
+          style={{ width: `${percentage}%` }}
+        />
+
+        {/* Real Range Slider Control */}
+        <input
+          type="range"
+          min="0"
+          max="240"
+          step="15"
+          value={value}
+          onChange={handleSliderChange}
+          className="relative w-full h-7 opacity-0 cursor-pointer z-10"
+        />
+
+        {/* Chain Dial Thumb */}
+        <div
+          className={`absolute top-1/2 -translate-y-1/2 h-6 w-6 rounded-full border-2 bg-[#060913] pointer-events-none transition-transform flex items-center justify-center -ml-3 shadow-lg ${
+            isEmerald
+              ? 'border-emerald-400 shadow-cyber-emerald text-emerald-400'
+              : 'border-amber-400 shadow-porsche-gold text-amber-400'
+          }`}
+          style={{ left: `${percentage}%` }}
+        >
+          <div className={`h-2 w-2 rounded-full ${isEmerald ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+        </div>
+      </div>
+
+      {/* Chain Track Step Markers */}
+      <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 px-0.5">
+        <span>0h</span>
+        <span>1h</span>
+        <span>2h</span>
+        <span>3h</span>
+        <span className={isMax ? (isEmerald ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold') : ''}>
+          4h (MAX)
+        </span>
+      </div>
+    </div>
+  );
+};
 
 export const OverviewDashboard: React.FC = () => {
   const {
@@ -38,6 +176,7 @@ export const OverviewDashboard: React.FC = () => {
     workoutLogs,
     financeLogs,
     setDailyTaskDuration,
+    toggleDailyAccomplishment,
     setActiveTab
   } = useTitan();
 
@@ -55,71 +194,40 @@ export const OverviewDashboard: React.FC = () => {
   const todayStr = new Date().toISOString().split('T')[0];
   const todayWorkout = workoutLogs.find(w => w.pillar === 'STRENGTH' && w.timestamp.startsWith(todayStr));
   const todayFinance = financeLogs.find(f => (f.discipline === 'PRIVATE_EQUITY' || f.discipline === 'INVESTMENT_BANKING') && f.timestamp.startsWith(todayStr));
-  const todayDiscipline = financeLogs.find(f => (f.discipline === 'QUANT_DERIVATIVES' || f.discipline === 'FACTOR_RISK') && f.timestamp.startsWith(todayStr));
+  const hasDisciplineToday = financeLogs.some(f => (f.discipline === 'QUANT_DERIVATIVES' || f.discipline === 'FACTOR_RISK') && f.timestamp.startsWith(todayStr));
 
   const workoutMinutes = todayWorkout?.durationMinutes || 0;
   const financeMinutes = todayFinance?.durationMinutes || 0;
-  const disciplineMinutes = todayDiscipline?.durationMinutes || 0;
 
-  const completedCount = (workoutMinutes > 0 ? 1 : 0) + (financeMinutes > 0 ? 1 : 0) + (disciplineMinutes > 0 ? 1 : 0);
+  const completedCount = (workoutMinutes > 0 ? 1 : 0) + (financeMinutes > 0 ? 1 : 0) + (hasDisciplineToday ? 1 : 0);
 
-  // Time-Cone Step Handler in 15-Minute Increments
-  const handleDurationStep = (
-    e: React.MouseEvent,
-    type: 'STRENGTH' | 'MODELING' | 'QUANT',
-    currentMin: number,
-    delta: number
+  // Chain Slider Drag Handler
+  const handleChainChange = (
+    type: 'STRENGTH' | 'MODELING',
+    newMinutes: number,
+    clientX?: number,
+    clientY?: number
   ) => {
-    e.stopPropagation();
-    const newMinutes = Math.max(0, Math.min(180, currentMin + delta));
     setDailyTaskDuration(type, newMinutes);
 
-    // Audio Feedback
-    if (newMinutes > currentMin) {
-      const pitchFactor = 0.8 + (newMinutes / 120) * 0.8;
-      soundEngine.playSliderTick(pitchFactor);
-      if (newMinutes % 30 === 0 && newMinutes > 0) {
-        triggerGlobalConfetti(e.clientX, e.clientY);
-        soundEngine.playQuestComplete();
-      }
-    } else {
-      soundEngine.playClick(500);
-    }
-  };
-
-  // Direct Time Preset Click
-  const handlePresetSelect = (
-    e: React.MouseEvent,
-    type: 'STRENGTH' | 'MODELING' | 'QUANT',
-    presetMinutes: number
-  ) => {
-    e.stopPropagation();
-    setDailyTaskDuration(type, presetMinutes);
-    const pitchFactor = 0.8 + (presetMinutes / 120) * 0.8;
+    // Audio Feedback: Ascending acoustic marimba tick
+    const pitchFactor = 0.7 + (newMinutes / 240) * 0.9;
     soundEngine.playSliderTick(pitchFactor);
 
-    if (presetMinutes > 0) {
-      triggerGlobalConfetti(e.clientX, e.clientY);
-      soundEngine.playQuestComplete();
-    } else {
-      soundEngine.playClick(500);
+    if (newMinutes === 240) {
+      if (clientX && clientY) triggerGlobalConfetti(clientX, clientY);
+      soundEngine.playMilestoneFanfare();
     }
   };
 
-  // Toggle 0 <-> 60m
-  const handleQuickToggle = (
-    e: React.MouseEvent,
-    type: 'STRENGTH' | 'MODELING' | 'QUANT',
-    currentMin: number
-  ) => {
-    const nextMin = currentMin > 0 ? 0 : 60;
-    setDailyTaskDuration(type, nextMin);
-
-    if (nextMin > 0) {
+  // Clean 1-Tap Toggle for Sleep / Discipline Protocol (No Slider)
+  const handleDisciplineToggle = (e: React.MouseEvent) => {
+    const isNowDone = toggleDailyAccomplishment('QUANT');
+    if (isNowDone) {
       triggerGlobalConfetti(e.clientX, e.clientY);
       soundEngine.playQuestComplete();
     } else {
-      soundEngine.playClick(500);
+      soundEngine.playClick(600);
     }
   };
 
@@ -193,32 +301,28 @@ export const OverviewDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. 15-Minute Time-Cone Productivity Missions */}
+      {/* 3. Daily Excellence Tasks */}
       <div className="space-y-4">
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-cyan-400 animate-pulse" />
+            <Radio className="h-4 w-4 text-cyan-400 animate-pulse" />
             <h3 className="text-xs font-black tracking-widest text-slate-300 uppercase">
-              15-MIN TIME-CONE PRODUCTIVITY ({completedCount}/3)
+              DAILY EXCELLENCE PROTOCOLS ({completedCount}/3)
             </h3>
           </div>
           <span className="text-[11px] text-cyan-400 font-mono font-bold">
-            MORE TIME = HIGHER XP & APEX RANK
+            DRAG CHAIN (UP TO 4H MAX XP)
           </span>
         </div>
 
-        {/* Mission 1: Workout Protocol (Cyber Emerald) */}
+        {/* Task 1: Workout Protocol with 4h Chain Slider (Cyber Emerald) */}
         <div className={`p-4 sm:p-5 rounded-2xl border transition-all duration-200 ${
           workoutMinutes > 0
             ? 'laser-conduit-emerald bg-emerald-950/30 border-emerald-500/50 shadow-cyber-emerald pl-5'
             : 'bg-[#0f1424]/80 border-white/10 hover:border-emerald-500/30'
         }`}>
-          {/* Header Row */}
-          <div className="flex items-center justify-between gap-4">
-            <div
-              onClick={(e) => handleQuickToggle(e, 'STRENGTH', workoutMinutes)}
-              className="flex items-center gap-3.5 cursor-pointer flex-1"
-            >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3.5">
               <div className={`p-2.5 rounded-xl transition-all ${
                 workoutMinutes > 0
                   ? 'bg-emerald-400 text-black shadow-cyber-emerald scale-105'
@@ -237,72 +341,34 @@ export const OverviewDashboard: React.FC = () => {
                   </h4>
                 </div>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Compound strength or aerobic zone • <strong className="text-emerald-300">+{Math.floor(workoutMinutes * 1.5)} XP Earned</strong>
+                  Compound strength, lifting or cardio endurance (drag chain up to 4h)
                 </p>
               </div>
             </div>
 
-            {/* Stepper Buttons (-15m / +15m) */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={(e) => handleDurationStep(e, 'STRENGTH', workoutMinutes, -15)}
-                disabled={workoutMinutes <= 0}
-                className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] disabled:opacity-30 border border-white/10 text-slate-300 hover:text-white transition-all active:scale-90"
-                title="Subtract 15 mins"
-              >
-                <Minus className="h-3.5 w-3.5" />
-              </button>
-
-              <div className="px-3 py-1 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-mono font-black text-xs sm:text-sm min-w-[70px] text-center shadow-sm">
-                {workoutMinutes}m
-              </div>
-
-              <button
-                onClick={(e) => handleDurationStep(e, 'STRENGTH', workoutMinutes, 15)}
-                className="p-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 transition-all active:scale-90 shadow-sm"
-                title="Add 15 mins"
-              >
-                <Plus className="h-3.5 w-3.5" />
-              </button>
-            </div>
+            {workoutMinutes > 0 ? (
+              <CheckCircle2 className="h-6 w-6 text-emerald-400 drop-shadow-[0_0_8px_rgba(0,230,153,0.8)]" />
+            ) : (
+              <Circle className="h-6 w-6 text-slate-600" />
+            )}
           </div>
 
-          {/* Time Cone Segmented Progress Bar */}
-          <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between gap-1.5">
-            {TIME_PRESETS.map((preset) => {
-              const isCurrentOrPassed = workoutMinutes >= preset && preset > 0;
-              const isExact = workoutMinutes === preset;
-              return (
-                <button
-                  key={preset}
-                  onClick={(e) => handlePresetSelect(e, 'STRENGTH', preset)}
-                  className={`flex-1 py-1 px-1 rounded-lg text-[10px] font-mono font-bold transition-all ${
-                    isExact
-                      ? 'bg-emerald-400 text-black shadow-cyber-emerald scale-105'
-                      : isCurrentOrPassed
-                      ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-500/40'
-                      : 'bg-white/[0.03] text-slate-500 hover:text-slate-300 border border-white/[0.04]'
-                  }`}
-                >
-                  {preset === 0 ? '0m' : `${preset}m`}
-                </button>
-              );
-            })}
-          </div>
+          {/* Mechanical Chain Track Slider (0 to 4h in 15m steps) */}
+          <ChainTrackSlider
+            value={workoutMinutes}
+            onChange={(val, x, y) => handleChainChange('STRENGTH', val, x, y)}
+            accentColor="emerald"
+          />
         </div>
 
-        {/* Mission 2: Financial Mastery (Porsche Gold) */}
+        {/* Task 2: Financial Mastery with 4h Chain Slider (Porsche Gold) */}
         <div className={`p-4 sm:p-5 rounded-2xl border transition-all duration-200 ${
           financeMinutes > 0
             ? 'laser-conduit-gold bg-amber-950/30 border-amber-500/50 shadow-porsche-gold pl-5'
             : 'bg-[#0f1424]/80 border-white/10 hover:border-amber-500/30'
         }`}>
-          {/* Header Row */}
-          <div className="flex items-center justify-between gap-4">
-            <div
-              onClick={(e) => handleQuickToggle(e, 'MODELING', financeMinutes)}
-              className="flex items-center gap-3.5 cursor-pointer flex-1"
-            >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3.5">
               <div className={`p-2.5 rounded-xl transition-all ${
                 financeMinutes > 0
                   ? 'bg-amber-400 text-black shadow-porsche-gold scale-105'
@@ -321,141 +387,69 @@ export const OverviewDashboard: React.FC = () => {
                   </h4>
                 </div>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  LBO debt, cash sweeps & quant drills • <strong className="text-amber-300">+{Math.floor(financeMinutes * 1.5)} XP Earned</strong>
+                  LBO models, debt structuring & quant analysis (drag chain up to 4h)
                 </p>
               </div>
             </div>
 
-            {/* Stepper Buttons (-15m / +15m) */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={(e) => handleDurationStep(e, 'MODELING', financeMinutes, -15)}
-                disabled={financeMinutes <= 0}
-                className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] disabled:opacity-30 border border-white/10 text-slate-300 hover:text-white transition-all active:scale-90"
-                title="Subtract 15 mins"
-              >
-                <Minus className="h-3.5 w-3.5" />
-              </button>
-
-              <div className="px-3 py-1 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 font-mono font-black text-xs sm:text-sm min-w-[70px] text-center shadow-sm">
-                {financeMinutes}m
-              </div>
-
-              <button
-                onClick={(e) => handleDurationStep(e, 'MODELING', financeMinutes, 15)}
-                className="p-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 transition-all active:scale-90 shadow-sm"
-                title="Add 15 mins"
-              >
-                <Plus className="h-3.5 w-3.5" />
-              </button>
-            </div>
+            {financeMinutes > 0 ? (
+              <CheckCircle2 className="h-6 w-6 text-amber-400 drop-shadow-[0_0_8px_rgba(229,185,92,0.8)]" />
+            ) : (
+              <Circle className="h-6 w-6 text-slate-600" />
+            )}
           </div>
 
-          {/* Time Cone Segmented Progress Bar */}
-          <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between gap-1.5">
-            {TIME_PRESETS.map((preset) => {
-              const isCurrentOrPassed = financeMinutes >= preset && preset > 0;
-              const isExact = financeMinutes === preset;
-              return (
-                <button
-                  key={preset}
-                  onClick={(e) => handlePresetSelect(e, 'MODELING', preset)}
-                  className={`flex-1 py-1 px-1 rounded-lg text-[10px] font-mono font-bold transition-all ${
-                    isExact
-                      ? 'bg-amber-400 text-black shadow-porsche-gold scale-105'
-                      : isCurrentOrPassed
-                      ? 'bg-amber-500/25 text-amber-300 border border-amber-500/40'
-                      : 'bg-white/[0.03] text-slate-500 hover:text-slate-300 border border-white/[0.04]'
-                  }`}
-                >
-                  {preset === 0 ? '0m' : `${preset}m`}
-                </button>
-              );
-            })}
-          </div>
+          {/* Mechanical Chain Track Slider (0 to 4h in 15m steps) */}
+          <ChainTrackSlider
+            value={financeMinutes}
+            onChange={(val, x, y) => handleChainChange('MODELING', val, x, y)}
+            accentColor="gold"
+          />
         </div>
 
-        {/* Mission 3: Tactical Discipline (Electric Violet) */}
-        <div className={`p-4 sm:p-5 rounded-2xl border transition-all duration-200 ${
-          disciplineMinutes > 0
-            ? 'laser-conduit-cyan bg-purple-950/30 border-purple-500/50 shadow-electric-violet pl-5'
-            : 'bg-[#0f1424]/80 border-white/10 hover:border-purple-500/30'
-        }`}>
-          {/* Header Row */}
-          <div className="flex items-center justify-between gap-4">
-            <div
-              onClick={(e) => handleQuickToggle(e, 'QUANT', disciplineMinutes)}
-              className="flex items-center gap-3.5 cursor-pointer flex-1"
-            >
-              <div className={`p-2.5 rounded-xl transition-all ${
-                disciplineMinutes > 0
-                  ? 'bg-[#8c52ff] text-white shadow-electric-violet scale-105'
-                  : 'bg-purple-500/15 text-purple-400 border border-purple-500/30'
-              }`}>
-                <Target className="h-5 w-5" />
-              </div>
-
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono font-extrabold text-purple-300 bg-purple-950/60 px-1.5 py-0.2 rounded border border-purple-500/30">
-                    DISCIPLINE
-                  </span>
-                  <h4 className="text-sm font-bold text-white tracking-tight">
-                    Cold Exposure & Sleep Hygiene
-                  </h4>
-                </div>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Zero junk food, optimal hydration & recovery • <strong className="text-purple-300">+{Math.floor(disciplineMinutes * 1.5)} XP Earned</strong>
-                </p>
-              </div>
+        {/* Task 3: Sleep Hygiene & Tactical Discipline (Clean 1-Tap Toggle - NO SLIDER) */}
+        <div
+          onClick={handleDisciplineToggle}
+          className={`p-4 sm:p-5 rounded-2xl border transition-all duration-200 cursor-pointer flex items-center justify-between group active:scale-[0.99] ${
+            hasDisciplineToday
+              ? 'laser-conduit-cyan bg-purple-950/30 border-purple-500/50 shadow-electric-violet text-white pl-5'
+              : 'bg-[#0f1424]/80 border-white/10 hover:border-purple-500/40 hover:bg-[#141b30]'
+          }`}
+        >
+          <div className="flex items-center gap-4">
+            <div className={`p-2.5 rounded-xl transition-all ${
+              hasDisciplineToday
+                ? 'bg-[#8c52ff] text-white shadow-electric-violet scale-105'
+                : 'bg-purple-500/15 text-purple-400 border border-purple-500/30 group-hover:scale-105'
+            }`}>
+              <Moon className="h-5 w-5" />
             </div>
-
-            {/* Stepper Buttons (-15m / +15m) */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={(e) => handleDurationStep(e, 'QUANT', disciplineMinutes, -15)}
-                disabled={disciplineMinutes <= 0}
-                className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] disabled:opacity-30 border border-white/10 text-slate-300 hover:text-white transition-all active:scale-90"
-                title="Subtract 15 mins"
-              >
-                <Minus className="h-3.5 w-3.5" />
-              </button>
-
-              <div className="px-3 py-1 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-300 font-mono font-black text-xs sm:text-sm min-w-[70px] text-center shadow-sm">
-                {disciplineMinutes}m
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono font-extrabold text-purple-300 bg-purple-950/60 px-1.5 py-0.2 rounded border border-purple-500/30">
+                  DISCIPLINE
+                </span>
+                <span className={`text-sm font-bold tracking-tight ${hasDisciplineToday ? 'line-through text-slate-400' : 'text-white'}`}>
+                  8-Hour Sleep Hygiene & Cold Exposure
+                </span>
               </div>
-
-              <button
-                onClick={(e) => handleDurationStep(e, 'QUANT', disciplineMinutes, 15)}
-                className="p-2 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/40 text-purple-300 transition-all active:scale-90 shadow-sm"
-                title="Add 15 mins"
-              >
-                <Plus className="h-3.5 w-3.5" />
-              </button>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Zero junk food, optimal hydration, no screens before bed (+50 XP)
+              </p>
             </div>
           </div>
 
-          {/* Time Cone Segmented Progress Bar */}
-          <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between gap-1.5">
-            {TIME_PRESETS.map((preset) => {
-              const isCurrentOrPassed = disciplineMinutes >= preset && preset > 0;
-              const isExact = disciplineMinutes === preset;
-              return (
-                <button
-                  key={preset}
-                  onClick={(e) => handlePresetSelect(e, 'QUANT', preset)}
-                  className={`flex-1 py-1 px-1 rounded-lg text-[10px] font-mono font-bold transition-all ${
-                    isExact
-                      ? 'bg-[#8c52ff] text-white shadow-electric-violet scale-105'
-                      : isCurrentOrPassed
-                      ? 'bg-purple-500/25 text-purple-300 border border-purple-500/40'
-                      : 'bg-white/[0.03] text-slate-500 hover:text-slate-300 border border-white/[0.04]'
-                  }`}
-                >
-                  {preset === 0 ? '0m' : `${preset}m`}
-                </button>
-              );
-            })}
+          <div className="flex items-center gap-3">
+            <span className="px-2.5 py-1 rounded-lg bg-purple-500/15 text-purple-300 border border-purple-500/30 font-mono text-xs font-bold">
+              +50 XP
+            </span>
+            <div>
+              {hasDisciplineToday ? (
+                <CheckCircle2 className="h-6 w-6 text-purple-400 drop-shadow-[0_0_8px_rgba(140,82,255,0.8)]" />
+              ) : (
+                <Circle className="h-6 w-6 text-slate-600 group-hover:text-purple-400 transition-colors" />
+              )}
+            </div>
           </div>
         </div>
       </div>
