@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import {
+  BlackMarkEntry,
   CompositeCalculationResult,
   DailyQuest,
   DecayPenaltyEvent,
@@ -20,6 +21,7 @@ import { calculateCompositeState, DEFAULT_WEIGHTS } from '../lib/statsEngine';
 import { soundEngine } from '../lib/audio';
 import { neuralVoiceService } from '../lib/neuralVoiceService';
 import { cloudSyncEngine } from '../lib/syncEngine';
+import { tacticalPushService } from '../lib/pushNotifications';
 import {
   exportBackupJSON,
   importBackupJSON,
@@ -89,8 +91,8 @@ interface TitanContextType {
   closeVictoryModal: () => void;
   isCommandPaletteOpen: boolean;
   setIsCommandPaletteOpen: (open: boolean) => void;
-  analyticsSubTab: 'CHARTS' | 'ALARMS' | 'CURRICULUM';
-  setAnalyticsSubTab: (tab: 'CHARTS' | 'ALARMS' | 'CURRICULUM') => void;
+  analyticsSubTab: 'CHARTS' | 'ALARMS' | 'CURRICULUM' | 'DOSSIER';
+  setAnalyticsSubTab: (tab: 'CHARTS' | 'ALARMS' | 'CURRICULUM' | 'DOSSIER') => void;
   openAlarmsTab: () => void;
   activeQuizTopic: SyllabusTopic | null;
   setActiveQuizTopic: (topic: SyllabusTopic | null) => void;
@@ -106,6 +108,10 @@ interface TitanContextType {
   disconnectSync: () => void;
   forcePushCloud: () => Promise<boolean>;
   forcePullCloud: () => Promise<boolean>;
+
+  // Push Notification & Black Mark Methods
+  requestPushPermission: () => Promise<boolean>;
+  sendTestPushAlert: () => void;
 
   // Actions
   updateMetrics: (partial: Partial<UserMetricsState>) => void;
@@ -171,7 +177,7 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const [isVictoryModalOpen, setIsVictoryModalOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
-  const [analyticsSubTab, setAnalyticsSubTab] = useState<'CHARTS' | 'ALARMS' | 'CURRICULUM'>('CHARTS');
+  const [analyticsSubTab, setAnalyticsSubTab] = useState<'CHARTS' | 'ALARMS' | 'CURRICULUM' | 'DOSSIER'>('CHARTS');
   const [activeQuizTopic, setActiveQuizTopic] = useState<SyllabusTopic | null>(null);
   const [activeDecayAlert, setActiveDecayAlert] = useState<DecayPenaltyEvent | null>(null);
 
@@ -543,16 +549,30 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       return updated;
     });
 
+    const newBlackMark: BlackMarkEntry = {
+      id: `mark-${Date.now()}`,
+      dateTriggered: new Date().toISOString().split('T')[0],
+      penaltyXP,
+      missedDaysCount,
+      reason,
+      status: 'ACTIVE_INFRACTION',
+      streakAtInfraction: profile.streakDays || 0,
+      consecutiveStreakRequiredToExpunge: 30,
+      consecutiveDaysAchieved: 0
+    };
+
     setProfile(prev => {
       const nextXP = Math.max(0, prev.xp - penaltyXP);
       const nextLevel = Math.floor(Math.sqrt(nextXP / 12)) + 1;
+      const currentMarks = prev.blackMarks || [];
       const updated: UserProfile = {
         ...prev,
         streakDays: 0,
         xp: nextXP,
         level: Math.max(1, nextLevel),
         decayPenaltyActive: true,
-        lastActiveDate: new Date().toISOString().split('T')[0]
+        lastActiveDate: new Date().toISOString().split('T')[0],
+        blackMarks: [newBlackMark, ...currentMarks]
       };
       saveProfile(updated);
       return updated;
@@ -576,6 +596,34 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     setActiveDecayAlert(event);
     soundEngine.playAlert();
+
+    // Dispatch Push Notification Warning
+    tacticalPushService.sendNotification({
+      title: '☠️ TITAN PUNISHMENT PROTOCOL ACTIVATED',
+      body: `A Black Mark has been stamped on your permanent record. -${penaltyXP} XP deducted and prior gains erased.`,
+      tag: 'titan-decay-penalty',
+      requireInteraction: true
+    });
+  };
+
+  const requestPushPermission = async (): Promise<boolean> => {
+    const granted = await tacticalPushService.requestPermission();
+    if (granted) {
+      setProfile(prev => {
+        const updated = { ...prev, pushNotificationsEnabled: true };
+        saveProfile(updated);
+        return updated;
+      });
+    }
+    return granted;
+  };
+
+  const sendTestPushAlert = () => {
+    tacticalPushService.sendNotification({
+      title: '🚨 TITAN PROTOCOL • URGENT ACCOUNTABILITY TEST',
+      body: 'Tactical link active: 2 hours remaining to lock daily physical and financial mastery before decay engine triggers.',
+      tag: `titan-test-${Date.now()}`
+    });
   };
 
   const simulateMissedDays = (missedCount: number) => {
@@ -1352,6 +1400,8 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         disconnectSync,
         forcePushCloud,
         forcePullCloud,
+        requestPushPermission,
+        sendTestPushAlert,
         updateMetrics,
         updateProfile,
         updateWeights,

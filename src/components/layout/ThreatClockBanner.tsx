@@ -8,19 +8,35 @@ import {
   RotateCcw,
   ShieldAlert,
   ArrowRight,
-  Skull
+  Skull,
+  Bell,
+  BellRing
 } from 'lucide-react';
 import { useTitan } from '../../context/TitanContext';
 import { soundEngine } from '../../lib/audio';
+import { tacticalPushService } from '../../lib/pushNotifications';
 
 export const ThreatClockBanner: React.FC = () => {
-  const { workoutLogs, financeLogs, profile, simulateMissedDays } = useTitan();
+  const {
+    workoutLogs,
+    financeLogs,
+    profile,
+    simulateMissedDays,
+    requestPushPermission,
+    sendTestPushAlert
+  } = useTitan();
 
   const [timeLeft, setTimeLeft] = useState<{ hours: number; minutes: number; seconds: number }>({
     hours: 0,
     minutes: 0,
     seconds: 0
   });
+
+  // Check if today has at least 1 log or completed task
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayWorkouts = workoutLogs.filter(w => w.timestamp.startsWith(todayStr) && (w.durationMinutes || 0) > 0);
+  const todayFinance = financeLogs.filter(f => f.timestamp.startsWith(todayStr) && (f.durationMinutes || 0) > 0);
+  const hasLoggedToday = todayWorkouts.length > 0 || todayFinance.length > 0;
 
   // Calculate time remaining until midnight local time (end of day)
   useEffect(() => {
@@ -34,20 +50,16 @@ export const ThreatClockBanner: React.FC = () => {
       const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
 
+      // Automated Push Notification Interrogation Dispatch
+      tacticalPushService.checkAndDispatchInactivityAlerts(hours, hasLoggedToday, profile.streakDays || 0);
+
       setTimeLeft({ hours, minutes, seconds });
     };
 
     updateCountdown();
     const interval = setInterval(updateCountdown, 1000);
     return () => clearInterval(interval);
-  }, []);
-
-  // Check if today has at least 1 log or completed task
-  const todayStr = new Date().toISOString().split('T')[0];
-  const todayWorkouts = workoutLogs.filter(w => w.timestamp.startsWith(todayStr) && (w.durationMinutes || 0) > 0);
-  const todayFinance = financeLogs.filter(f => f.timestamp.startsWith(todayStr) && (f.durationMinutes || 0) > 0);
-
-  const hasLoggedToday = todayWorkouts.length > 0 || todayFinance.length > 0;
+  }, [hasLoggedToday, profile.streakDays]);
 
   // Dynamic Time Color Ramp: Starts as Dark Green (24h) and gets progressively REDDER every hour as it approaches 0!
   const totalSecondsLeft = timeLeft.hours * 3600 + timeLeft.minutes * 60 + timeLeft.seconds;
@@ -62,6 +74,8 @@ export const ThreatClockBanner: React.FC = () => {
   const timerGlow = `0 0 ${Math.round(8 + (1 - timeFraction) * 16)}px hsla(${dynamicHue}, 100%, 50%, ${0.25 + (1 - timeFraction) * 0.45})`;
 
   const padZero = (n: number) => n.toString().padStart(2, '0');
+
+  const pushPermission = tacticalPushService.getPermission();
 
   return (
     <div
@@ -136,25 +150,38 @@ export const ThreatClockBanner: React.FC = () => {
               )}
             </p>
 
-            {/* Test Simulation Controls */}
-            {!hasLoggedToday && (
-              <div className="pt-1 flex items-center gap-2 flex-wrap">
+            {/* Test Simulation & Push Alert Controls */}
+            <div className="pt-1.5 flex items-center gap-2 flex-wrap">
+              {pushPermission !== 'granted' ? (
                 <button
-                  onClick={() => simulateMissedDays(1)}
-                  className="px-2 py-0.5 rounded bg-rose-950/50 hover:bg-rose-900/80 border border-rose-500/30 text-rose-300 text-[10px] font-mono font-semibold transition-all"
-                  title="Simulate 1 missed day to test the decay penalty"
+                  onClick={() => requestPushPermission()}
+                  className="px-2.5 py-0.5 rounded bg-cyan-950/60 hover:bg-cyan-900 border border-cyan-500/40 text-cyan-300 text-[10px] font-mono font-bold transition-all flex items-center gap-1 shadow-sm"
                 >
-                  ⚡ Test Decay: Simulate 1 Missed Day
+                  <Bell className="h-3 w-3" />
+                  <span>Enable Push Alarms</span>
                 </button>
+              ) : (
                 <button
-                  onClick={() => simulateMissedDays(2)}
-                  className="px-2 py-0.5 rounded bg-rose-950/50 hover:bg-rose-900/80 border border-rose-500/30 text-rose-300 text-[10px] font-mono font-semibold transition-all"
-                  title="Simulate 2 missed days"
+                  onClick={() => sendTestPushAlert()}
+                  className="px-2 py-0.5 rounded bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-zinc-300 text-[10px] font-mono transition-all flex items-center gap-1"
                 >
-                  Simulate 2 Missed Days
+                  <BellRing className="h-3 w-3 text-emerald-400" />
+                  <span>Test Push Alert</span>
                 </button>
-              </div>
-            )}
+              )}
+
+              {!hasLoggedToday && (
+                <>
+                  <button
+                    onClick={() => simulateMissedDays(1)}
+                    className="px-2 py-0.5 rounded bg-rose-950/50 hover:bg-rose-900/80 border border-rose-500/30 text-rose-300 text-[10px] font-mono font-semibold transition-all"
+                    title="Simulate 1 missed day to test the decay penalty"
+                  >
+                    ⚡ Test Missed Day (+1 Mark)
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
 

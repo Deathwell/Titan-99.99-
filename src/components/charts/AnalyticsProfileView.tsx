@@ -16,6 +16,7 @@ import { BellCurveChart } from './BellCurveChart';
 import { RadarMetricChart } from './RadarMetricChart';
 import { AlarmHub } from '../hubs/AlarmHub';
 import { CurriculumEngine } from '../recommendations/CurriculumEngine';
+import { BlackMarkDossier } from '../achievements/BlackMarkDossier';
 import { useTitan } from '../../context/TitanContext';
 
 export const AnalyticsProfileView: React.FC = () => {
@@ -31,6 +32,7 @@ export const AnalyticsProfileView: React.FC = () => {
   } = useTitan();
 
   const activeAlarmsCount = alarms.filter(a => a.isEnabled).length;
+  const activeBlackMarksCount = (profile.blackMarks || []).filter(m => m.status === 'ACTIVE_INFRACTION').length;
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -61,6 +63,22 @@ export const AnalyticsProfileView: React.FC = () => {
             {activeAlarmsCount > 0 && (
               <span className="px-1.5 py-0.2 rounded-full bg-rose-500 text-black text-[9px] font-mono font-bold">
                 {activeAlarmsCount}
+              </span>
+            )}
+          </button>
+
+          <button
+            onClick={() => setAnalyticsSubTab('DOSSIER')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+              analyticsSubTab === 'DOSSIER'
+                ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-sm'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            <span>⚔️ Discipline Dossier</span>
+            {activeBlackMarksCount > 0 && (
+              <span className="px-1.5 py-0.2 rounded-full bg-rose-600 text-white text-[9px] font-mono font-bold animate-pulse">
+                {activeBlackMarksCount}
               </span>
             )}
           </button>
@@ -105,6 +123,7 @@ export const AnalyticsProfileView: React.FC = () => {
       )}
 
       {analyticsSubTab === 'ALARMS' && <AlarmHub />}
+      {analyticsSubTab === 'DOSSIER' && <BlackMarkDossier />}
       {analyticsSubTab === 'CURRICULUM' && <CurriculumEngine />}
     </div>
   );

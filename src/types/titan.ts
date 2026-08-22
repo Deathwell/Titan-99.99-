@@ -253,6 +253,19 @@ export interface SyllabusTopic {
   }[];
 }
 
+export interface BlackMarkEntry {
+  id: string;
+  dateTriggered: string;
+  penaltyXP: number;
+  missedDaysCount: number;
+  reason: string;
+  status: 'ACTIVE_INFRACTION' | 'EXPUNGED';
+  streakAtInfraction: number;
+  consecutiveStreakRequiredToExpunge: number;
+  consecutiveDaysAchieved: number;
+  expungedAt?: string;
+}
+
 export interface UserProfile {
   callsign: string;
   operatorId: string;
@@ -261,6 +274,7 @@ export interface UserProfile {
   bodyWeightKg: number;
   targetPercentile: number;
   soundEnabled: boolean;
+  pushNotificationsEnabled?: boolean;
   xp: number;
   level: number;
   streakDays: number;
@@ -268,5 +282,6 @@ export interface UserProfile {
   isFreshStart: boolean;
   decayPenaltyActive: boolean;
   lastDecayEvent?: DecayPenaltyEvent;
+  blackMarks?: BlackMarkEntry[];
   neuralVoice?: NeuralVoiceSettings;
 }
