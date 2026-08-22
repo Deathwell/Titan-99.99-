@@ -1,13 +1,9 @@
 import React from 'react';
 import {
   Activity,
-  TrendingUp,
-  Dumbbell,
   Eye,
-  LineChart,
-  AlarmClock,
   CheckSquare,
-  Compass,
+  TrendingUp,
   Shield,
   Settings,
   Volume2,
@@ -15,14 +11,13 @@ import {
   Database,
   ArrowRightLeft,
   Flame,
-  Zap,
-  Sparkles
+  Award
 } from 'lucide-react';
 import { useTitan } from '../../context/TitanContext';
 import { LivingFlameAvatar } from '../effects/LivingFlameAvatar';
 
 interface NavItem {
-  id: 'overview' | 'charts' | 'physique' | 'hologram' | 'finance' | 'alarms' | 'quests' | 'curriculum';
+  id: 'overview' | 'hologram' | 'quests' | 'charts';
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   badge?: string;
@@ -39,23 +34,17 @@ export const NavigationSidebar: React.FC = () => {
     setIsSyncModalOpen,
     syncStatus,
     toggleSound,
-    alarms,
     quests
   } = useTitan();
 
   const isSynced = syncStatus === 'SYNCED';
-  const activeAlarmsCount = alarms.filter(a => a.isEnabled).length;
   const pendingQuestsCount = quests.filter(q => !q.completed).length;
 
   const navItems: NavItem[] = [
-    { id: 'overview', label: 'Feed & Status', icon: Activity },
-    { id: 'hologram', label: 'Neural Hologram', icon: Eye, badge: 'AI', accent: 'text-cyan-400' },
-    { id: 'physique', label: 'Physique & Body', icon: Dumbbell, accent: 'text-emerald-400' },
-    { id: 'charts', label: 'Analytics & Curve', icon: TrendingUp },
-    { id: 'finance', label: 'Finance Mastery', icon: LineChart, accent: 'text-amber-400' },
-    { id: 'alarms', label: 'Tactical Alarms', icon: AlarmClock, badge: activeAlarmsCount > 0 ? `${activeAlarmsCount}` : undefined },
-    { id: 'quests', label: 'Quest Protocol', icon: CheckSquare, badge: pendingQuestsCount > 0 ? `${pendingQuestsCount}` : undefined },
-    { id: 'curriculum', label: 'Curriculum', icon: Compass }
+    { id: 'overview', label: 'Today', icon: Activity },
+    { id: 'hologram', label: 'Body Scanner', icon: Eye, badge: 'AI', accent: 'text-cyan-400' },
+    { id: 'quests', label: 'Quests & Badges', icon: CheckSquare, badge: pendingQuestsCount > 0 ? `${pendingQuestsCount}` : undefined },
+    { id: 'charts', label: 'Analytics & Profile', icon: TrendingUp }
   ];
 
   return (
@@ -74,7 +63,7 @@ export const NavigationSidebar: React.FC = () => {
                   99.9%
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 font-medium">Protocol OS v2.7</p>
+              <p className="text-[11px] text-slate-400 font-medium">Protocol OS</p>
             </div>
           </div>
 
@@ -87,7 +76,7 @@ export const NavigationSidebar: React.FC = () => {
           </button>
         </div>
 
-        {/* Navigation List */}
+        {/* 4 Clean Navigation Tabs */}
         <nav className="space-y-1.5">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -96,9 +85,9 @@ export const NavigationSidebar: React.FC = () => {
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl font-medium text-sm transition-all group relative ${
+                className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl font-semibold text-sm transition-all group relative ${
                   isActive
-                    ? 'bg-gradient-to-r from-cyan-500/15 via-blue-500/10 to-transparent text-white font-semibold border-l-2 border-cyan-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
+                    ? 'bg-gradient-to-r from-cyan-500/15 via-blue-500/10 to-transparent text-white border-l-2 border-cyan-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
                     : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'
                 }`}
               >
@@ -122,7 +111,7 @@ export const NavigationSidebar: React.FC = () => {
 
       {/* Living Streak Flame & Bottom Profile Tray */}
       <div className="pt-4 border-t border-white/[0.08] space-y-3">
-        {/* Living Fire Avatar Widget */}
+        {/* Living Fire Widget */}
         <LivingFlameAvatar />
 
         {/* Sync Status Banner */}
@@ -132,7 +121,7 @@ export const NavigationSidebar: React.FC = () => {
         >
           <div className="flex items-center gap-2">
             <span className={`h-2 w-2 rounded-full ${isSynced ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
-            <span className="text-slate-300 font-medium">{isSynced ? 'Cloud Synced' : 'Offline / Standalone'}</span>
+            <span className="text-slate-300 font-medium">{isSynced ? 'Cloud Synced' : 'Offline Mode'}</span>
           </div>
           <ArrowRightLeft className="h-3.5 w-3.5 text-slate-400" />
         </button>
@@ -145,11 +134,11 @@ export const NavigationSidebar: React.FC = () => {
             </div>
             <div className="overflow-hidden">
               <div className="text-xs font-bold text-white truncate flex items-center gap-1">
-                {profile.callsign || 'Operator-01'}
+                {profile.callsign || 'Operator'}
                 <Flame className="h-3 w-3 text-amber-400 shrink-0" />
               </div>
               <div className="text-[10px] text-slate-400 font-mono truncate">
-                Streak: {profile.streakDays}d • Level {profile.level}
+                Level {profile.level} • {profile.xp} XP
               </div>
             </div>
           </div>

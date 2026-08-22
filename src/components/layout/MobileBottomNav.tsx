@@ -2,15 +2,13 @@ import React from 'react';
 import {
   Activity,
   Eye,
-  Dumbbell,
-  LineChart,
-  AlarmClock,
-  CheckSquare
+  CheckSquare,
+  TrendingUp
 } from 'lucide-react';
 import { useTitan } from '../../context/TitanContext';
 
 interface MobileTabItem {
-  id: 'overview' | 'hologram' | 'physique' | 'finance' | 'alarms' | 'quests';
+  id: 'overview' | 'hologram' | 'quests' | 'charts';
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   isSpecial?: boolean;
@@ -18,23 +16,20 @@ interface MobileTabItem {
 }
 
 export const MobileBottomNav: React.FC = () => {
-  const { activeTab, setActiveTab, alarms, quests } = useTitan();
+  const { activeTab, setActiveTab, quests } = useTitan();
 
-  const activeAlarmsCount = alarms.filter(a => a.isEnabled).length;
   const pendingQuestsCount = quests.filter(q => !q.completed).length;
 
   const tabs: MobileTabItem[] = [
-    { id: 'overview', label: 'Feed', icon: Activity },
-    { id: 'hologram', label: 'Hologram', icon: Eye, isSpecial: true },
-    { id: 'physique', label: 'Body', icon: Dumbbell },
-    { id: 'finance', label: 'Finance', icon: LineChart },
-    { id: 'alarms', label: 'Alarms', icon: AlarmClock, badge: activeAlarmsCount > 0 ? `${activeAlarmsCount}` : undefined },
+    { id: 'overview', label: 'Today', icon: Activity },
+    { id: 'hologram', label: 'Scanner', icon: Eye, isSpecial: true },
     { id: 'quests', label: 'Quests', icon: CheckSquare, badge: pendingQuestsCount > 0 ? `${pendingQuestsCount}` : undefined },
+    { id: 'charts', label: 'Analytics', icon: TrendingUp },
   ];
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#060810]/95 backdrop-blur-2xl border-t border-white/[0.08] px-3 py-2">
-      <div className="flex items-center justify-around">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#060810]/95 backdrop-blur-2xl border-t border-white/[0.08] px-6 py-2">
+      <div className="flex items-center justify-around max-w-md mx-auto">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -66,7 +61,7 @@ export const MobileBottomNav: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className="flex flex-col items-center py-1 px-2 relative transition-all group"
+              className="flex flex-col items-center py-1 px-3 relative transition-all group"
             >
               <div className="relative">
                 <Icon className={`h-5 w-5 transition-transform group-hover:scale-110 ${

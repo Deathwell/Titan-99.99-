@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useTitan } from '../../context/TitanContext';
 import { MetricKey } from '../../types/titan';
+import { OperatorBadgeWall } from '../achievements/OperatorBadgeWall';
 
 export const DailyQuests: React.FC = () => {
   const { quests, toggleQuest, profile, gainXP } = useTitan();
@@ -184,6 +185,9 @@ export const DailyQuests: React.FC = () => {
           );
         })}
       </div>
+
+      {/* Collectible 3D Holographic Badges Section */}
+      <OperatorBadgeWall />
     </div>
   );
 };
