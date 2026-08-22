@@ -20,6 +20,7 @@ import { DeviceSyncModal } from './components/modals/DeviceSyncModal';
 import { QuizModal } from './components/modals/QuizModal';
 import { VictoryRewardModal } from './components/modals/VictoryRewardModal';
 import { ActiveAlarmModal } from './components/modals/ActiveAlarmModal';
+import { ConfettiCanvas } from './components/effects/ConfettiCanvas';
 import { Shield } from 'lucide-react';
 
 const DashboardContent: React.FC = () => {
@@ -27,6 +28,9 @@ const DashboardContent: React.FC = () => {
 
   return (
     <div className="min-h-screen flex bg-[#04060a] text-slate-100 selection:bg-cyan-500 selection:text-black">
+      {/* Global Particle Confetti Overlay */}
+      <ConfettiCanvas />
+
       {/* Left Desktop Sidebar (X / Linear Style) */}
       <NavigationSidebar />
 
