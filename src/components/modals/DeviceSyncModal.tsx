@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import jsQR from 'jsqr';
 import {
   Smartphone,
   Monitor,
@@ -12,7 +13,11 @@ import {
   Sparkles,
   QrCode,
   ShieldCheck,
-  Unlink
+  Unlink,
+  Camera,
+  CameraOff,
+  CheckCircle2,
+  Lock
 } from 'lucide-react';
 import { useTitan } from '../../context/TitanContext';
 import { soundEngine } from '../../lib/audio';
@@ -38,11 +43,116 @@ export const DeviceSyncModal: React.FC<DeviceSyncModalProps> = ({ isOpen, onClos
   const [copied, setCopied] = useState(false);
   const [isLinking, setIsLinking] = useState(false);
   const [showQR, setShowQR] = useState(true);
+  const [isCameraScanning, setIsCameraScanning] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
 
-  if (!isOpen) return null;
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
 
   const currentHost = typeof window !== 'undefined' ? window.location.origin : 'https://titan-protocol.vercel.app';
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&bgcolor=030712&color=06b6d4&data=${encodeURIComponent(`${currentHost}/?sync=${syncCode || ''}`)}`;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&bgcolor=030712&color=06b6d4&data=${encodeURIComponent(`${currentHost}/?sync=${syncCode || ''}`)}`;
+
+  // Stop camera on unmount or modal close
+  const stopCamera = () => {
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    setIsCameraScanning(false);
+    setScanError(null);
+  };
+
+  useEffect(() => {
+    if (!isOpen) {
+      stopCamera();
+    }
+  }, [isOpen]);
+
+  const handleStartCamera = async () => {
+    setScanError(null);
+    setIsCameraScanning(true);
+    soundEngine.playClick(850);
+
+    try {
+      const constraints: MediaStreamConstraints = {
+        video: { facingMode: { ideal: 'environment' } }
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      streamRef.current = stream;
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.setAttribute('playsinline', 'true'); // Critical for iOS Safari
+        await videoRef.current.play();
+        requestAnimationFrame(tickScan);
+      }
+    } catch (err: any) {
+      console.error('Camera access error:', err);
+      setScanError('Camera permission denied or camera not found. You can still type the Sync Key below!');
+      setIsCameraScanning(false);
+      soundEngine.playAlert();
+    }
+  };
+
+  const tickScan = () => {
+    if (videoRef.current && videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+
+      if (canvas) {
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        if (ctx) {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          
+          const qrResult = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: 'dontInvert'
+          });
+
+          if (qrResult && qrResult.data) {
+            handleScannedQRData(qrResult.data);
+            return;
+          }
+        }
+      }
+    }
+    animationFrameRef.current = requestAnimationFrame(tickScan);
+  };
+
+  const handleScannedQRData = async (data: string) => {
+    stopCamera();
+    soundEngine.playMilestoneFanfare();
+
+    let extractedCode = data.trim();
+    if (extractedCode.includes('sync=')) {
+      try {
+        const url = new URL(extractedCode);
+        const codeParam = url.searchParams.get('sync');
+        if (codeParam) {
+          extractedCode = codeParam;
+        }
+      } catch {
+        const match = extractedCode.match(/sync=([A-Za-z0-9_-]+)/);
+        if (match && match[1]) {
+          extractedCode = match[1];
+        }
+      }
+    }
+
+    extractedCode = extractedCode.toUpperCase();
+    setIsLinking(true);
+    await connectSyncCode(extractedCode);
+    setIsLinking(false);
+  };
 
   const handleCopy = () => {
     if (syncCode) {
@@ -75,16 +185,21 @@ export const DeviceSyncModal: React.FC<DeviceSyncModalProps> = ({ isOpen, onClos
     soundEngine.playQuestComplete();
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl animate-in fade-in font-mono">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-xl animate-in fade-in font-mono">
       <div
         onClick={e => e.stopPropagation()}
-        className="relative w-full max-w-xl rounded-3xl border-2 border-cyan-500/80 bg-gradient-to-b from-slate-950 via-slate-900 to-black p-6 sm:p-8 shadow-glow-cyan"
+        className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-3xl border-2 border-cyan-500/80 bg-gradient-to-b from-slate-950 via-slate-900 to-black p-5 sm:p-7 shadow-glow-cyan"
       >
         {/* Top Close Button */}
         <button
-          onClick={onClose}
-          className="absolute right-4 top-4 p-2 rounded-full border border-slate-800 bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-white transition-all"
+          onClick={() => {
+            stopCamera();
+            onClose();
+          }}
+          className="absolute right-4 top-4 p-2 rounded-full border border-slate-800 bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-white transition-all z-10"
         >
           <X className="h-5 w-5" />
         </button>
@@ -97,30 +212,79 @@ export const DeviceSyncModal: React.FC<DeviceSyncModalProps> = ({ isOpen, onClos
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-base sm:text-lg font-black text-white tracking-wider">
-                REAL-TIME CROSS-DEVICE CLOUD SYNC
+                TITAN CLOUD LINK
               </h2>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-950 border border-cyan-500/60 text-cyan-300 font-bold">
-                PC ⇄ MOBILE
+                PERMANENT SYNC
               </span>
             </div>
             <p className="text-xs text-slate-400 font-sans mt-0.5">
-              Instantly mirror alarms, daily accomplishments, percentiles, and XP between PC and Phone in real-time.
+              Alarms, workouts, daily accomplishments and percentiles stay synchronized forever across all paired devices.
             </p>
           </div>
         </div>
 
-        {/* Live Status Pill */}
+        {/* Live Persistent Status Pill */}
         <div className="mt-4 p-3 rounded-2xl bg-slate-950/80 border border-slate-800 flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
             <span className={`h-2.5 w-2.5 rounded-full ${syncStatus === 'SYNCED' ? 'bg-emerald-400 animate-ping' : 'bg-amber-400'}`} />
-            <span className="text-slate-300 font-bold">
-              STATUS: {syncStatus === 'SYNCED' ? 'LIVE CLOUD LINK ACTIVE' : 'STANDALONE (NOT PAIRED)'}
+            <span className="text-slate-300 font-bold flex items-center gap-1.5">
+              <Lock className="h-3 w-3 text-cyan-400" />
+              {syncStatus === 'SYNCED' ? 'PERMANENT CLOUD LINK ACTIVE' : 'STANDALONE (NOT PAIRED)'}
             </span>
           </div>
           {lastSyncedAt && (
-            <span className="text-[10px] text-cyan-400">Synced: {lastSyncedAt}</span>
+            <span className="text-[10px] text-cyan-400">Live: {lastSyncedAt}</span>
           )}
         </div>
+
+        {/* Direct In-App Camera QR Code Scanner Viewfinder */}
+        {isCameraScanning ? (
+          <div className="mt-5 rounded-2xl border-2 border-cyan-400/80 bg-black p-4 relative overflow-hidden flex flex-col items-center">
+            <div className="relative w-full max-w-xs aspect-square rounded-xl overflow-hidden border-2 border-cyan-500 bg-slate-950">
+              <video
+                ref={videoRef}
+                className="w-full h-full object-cover"
+                autoPlay
+                playsInline
+                muted
+              />
+              <canvas ref={canvasRef} className="hidden" />
+
+              {/* Holographic Targeting Reticle */}
+              <div className="absolute inset-0 border-4 border-cyan-400/30 rounded-xl pointer-events-none" />
+              <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent animate-pulse shadow-glow-cyan" />
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="h-44 w-44 border-2 border-cyan-400/60 rounded-2xl animate-pulse" />
+              </div>
+            </div>
+
+            <p className="mt-3 text-xs text-cyan-300 font-bold tracking-wider animate-pulse flex items-center gap-1.5">
+              <Camera className="h-4 w-4" /> Point camera at Desktop QR Code...
+            </p>
+
+            <button
+              onClick={stopCamera}
+              className="mt-3 px-4 py-1.5 rounded-xl border border-rose-800 bg-rose-950/60 hover:bg-rose-900 text-rose-200 text-xs font-bold transition-all"
+            >
+              Cancel Camera Scan
+            </button>
+          </div>
+        ) : (
+          /* Mobile 1-Tap Camera Scan Button */
+          <div className="mt-4">
+            <button
+              onClick={handleStartCamera}
+              className="w-full py-3 rounded-2xl bg-gradient-to-r from-cyan-600 via-teal-500 to-emerald-600 hover:from-cyan-500 hover:to-emerald-500 text-white font-black text-sm shadow-glow-cyan flex items-center justify-center gap-2 transition-all"
+            >
+              <Camera className="h-5 w-5 animate-bounce" />
+              <span>SCAN DESKTOP QR CODE WITH CAMERA</span>
+            </button>
+            {scanError && (
+              <p className="mt-2 text-[11px] text-rose-400 text-center">{scanError}</p>
+            )}
+          </div>
+        )}
 
         {/* Two Pairing Options */}
         <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -128,10 +292,10 @@ export const DeviceSyncModal: React.FC<DeviceSyncModalProps> = ({ isOpen, onClos
           <div className="rounded-2xl border border-cyan-500/40 bg-cyan-950/20 p-4 flex flex-col justify-between">
             <div>
               <span className="text-[11px] text-cyan-300 font-bold block mb-1">
-                OPTION 1: YOUR OPERATOR SYNC KEY
+                YOUR OPERATOR SYNC KEY
               </span>
               <p className="text-[11px] text-slate-400 font-sans">
-                Enter this code on your other device or scan the QR code to link instantly.
+                Scan this QR code from your phone app or copy the code.
               </p>
 
               {syncCode ? (
@@ -153,9 +317,9 @@ export const DeviceSyncModal: React.FC<DeviceSyncModalProps> = ({ isOpen, onClos
                       <img
                         src={qrUrl}
                         alt="Device Pairing QR"
-                        className="h-28 w-28 rounded-lg border border-cyan-500/40"
+                        className="h-32 w-32 rounded-lg border border-cyan-500/40"
                       />
-                      <span className="text-[10px] text-slate-400 mt-1">Scan with Phone Camera</span>
+                      <span className="text-[10px] text-cyan-400 font-bold mt-1.5">Scan from Mobile App</span>
                     </div>
                   )}
                 </div>
@@ -191,10 +355,10 @@ export const DeviceSyncModal: React.FC<DeviceSyncModalProps> = ({ isOpen, onClos
           <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4 flex flex-col justify-between">
             <div>
               <span className="text-[11px] text-emerald-300 font-bold block mb-1">
-                OPTION 2: LINK EXISTING DEVICE
+                MANUAL PAIRING CODE
               </span>
               <p className="text-[11px] text-slate-400 font-sans">
-                If your other device has a Sync Key, paste it here to connect both devices immediately.
+                Type the 6-character code from your other device to connect permanently.
               </p>
 
               <form onSubmit={handleConnectInput} className="mt-3 space-y-2">
@@ -210,7 +374,7 @@ export const DeviceSyncModal: React.FC<DeviceSyncModalProps> = ({ isOpen, onClos
                   disabled={isLinking || !inputCode.trim()}
                   className="w-full py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold text-xs shadow-glow-emerald transition-all disabled:opacity-50"
                 >
-                  {isLinking ? 'Linking Channels...' : 'Pair & Sync Now'}
+                  {isLinking ? 'Linking Devices...' : 'Pair & Remember Forever'}
                 </button>
               </form>
             </div>
@@ -244,11 +408,14 @@ export const DeviceSyncModal: React.FC<DeviceSyncModalProps> = ({ isOpen, onClos
         {/* Footer info */}
         <div className="mt-5 pt-3 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
           <span className="flex items-center gap-1">
-            <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
-            <span>End-to-End Real-Time WebSocket Streaming Active</span>
+            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+            <span>Auto-Remembered: Never needs re-pairing</span>
           </span>
           <button
-            onClick={onClose}
+            onClick={() => {
+              stopCamera();
+              onClose();
+            }}
             className="px-4 py-1.5 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-300 text-xs font-bold"
           >
             Close
