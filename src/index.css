@@ -1,19 +1,17 @@
 @import "tailwindcss";
 
 @theme {
-  --color-titan-bg: #04060b;
-  --color-titan-surface: #0a0d18;
-  --color-titan-card: #0f1424;
-  --color-titan-border: rgba(255, 255, 255, 0.12);
+  --color-titan-bg: #030509;
+  --color-titan-surface: #080c16;
+  --color-titan-card: #0c101d;
+  --color-titan-border: rgba(255, 255, 255, 0.08);
   
-  /* Automotive Luxury Accent Palette (Mercedes AMG / Audi RS / Porsche / Bugatti) */
+  /* Precision Accent Palette (Linear / Apple Pro / Supercar Cockpit) */
   --color-matrix-cyan: #00f0ff;
-  --color-matrix-cyanGlow: #00b4d8;
-  --color-amg-crimson: #ff1e42;
-  --color-porsche-gold: #e5b95c;
-  --color-champagne-bronze: #dfa15a;
-  --color-electric-violet: #8c52ff;
   --color-cyber-emerald: #00e699;
+  --color-porsche-gold: #e5b95c;
+  --color-electric-violet: #8c52ff;
+  --color-amg-crimson: #ff1e42;
   --color-titanium-silver: #e2e8f0;
 }
 
@@ -22,12 +20,11 @@
 }
 
 body {
-  background-color: #030509;
+  background-color: #030508;
   background-image: 
-    radial-gradient(circle at 50% -10%, rgba(0, 240, 255, 0.12) 0%, transparent 50%),
-    radial-gradient(circle at 10% 30%, rgba(140, 82, 255, 0.08) 0%, transparent 45%),
-    radial-gradient(circle at 90% 80%, rgba(229, 185, 92, 0.07) 0%, transparent 45%),
-    linear-gradient(to bottom, #030509 0%, #060913 50%, #030509 100%);
+    radial-gradient(circle at 50% -20%, rgba(0, 240, 255, 0.08) 0%, transparent 60%),
+    radial-gradient(circle at 85% 90%, rgba(140, 82, 255, 0.04) 0%, transparent 50%),
+    linear-gradient(to bottom, #030508 0%, #060912 50%, #030508 100%);
   background-attachment: fixed;
   color: #f1f5f9;
   overflow-x: hidden;
@@ -37,78 +34,72 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Luxury Automotive Cockpit Card */
+/* Linear / Apple Pro Ultra-Sleek Glass Card */
 .luxury-card, .mercedes-card, .linear-card, .social-card {
   position: relative;
-  background: linear-gradient(135deg, rgba(16, 22, 38, 0.75) 0%, rgba(8, 12, 22, 0.85) 100%);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-top: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(12, 16, 28, 0.7);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow: 
-    0 20px 50px -10px rgba(0, 0, 0, 0.8),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15),
-    inset 0 0 20px rgba(0, 240, 255, 0.02);
-  border-radius: 1.25rem;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    0 10px 30px -10px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .luxury-card:hover, .mercedes-card:hover, .linear-card:hover {
-  border-color: rgba(0, 240, 255, 0.35);
-  border-top: 1px solid rgba(255, 255, 255, 0.4);
+  border-color: rgba(255, 255, 255, 0.15);
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
   box-shadow: 
-    0 25px 60px -10px rgba(0, 0, 0, 0.9),
-    0 0 30px -5px rgba(0, 240, 255, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    0 14px 40px -10px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
-/* Hyper-Luxury Gold & Titanium Card */
+/* Hyper-Luxury Gold Vault Card */
 .gold-vault-card {
   position: relative;
-  background: linear-gradient(135deg, rgba(30, 22, 14, 0.8) 0%, rgba(14, 11, 8, 0.9) 100%);
-  backdrop-filter: blur(24px);
-  border: 1px solid rgba(229, 185, 92, 0.25);
-  border-top: 1px solid rgba(229, 185, 92, 0.5);
+  background: linear-gradient(135deg, rgba(24, 18, 10, 0.7) 0%, rgba(12, 10, 7, 0.85) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(229, 185, 92, 0.2);
+  border-top: 1px solid rgba(229, 185, 92, 0.35);
   box-shadow: 
-    0 20px 50px -10px rgba(0, 0, 0, 0.8),
-    0 0 30px -5px rgba(229, 185, 92, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  border-radius: 1.25rem;
+    0 10px 30px -10px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
 }
 
-/* Swiss Horology & Supercar Machined Dial Thumb */
+/* Precision Chamfered Metallic Dial Thumb */
 .machined-knurl-dial {
-  background: radial-gradient(circle at 35% 30%, #ffffff 0%, #cbd5e1 35%, #475569 85%, #1e293b 100%);
+  background: radial-gradient(circle at 35% 30%, #ffffff 0%, #cbd5e1 45%, #475569 100%);
   box-shadow: 
-    0 4px 14px rgba(0, 0, 0, 0.8),
+    0 2px 8px rgba(0, 0, 0, 0.8),
     inset 0 1px 1px rgba(255, 255, 255, 0.8),
     inset 0 -1px 2px rgba(0, 0, 0, 0.6);
-  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s ease;
 }
 
 .machined-knurl-dial:hover {
-  transform: scale(1.12);
-  box-shadow: 
-    0 6px 20px rgba(0, 0, 0, 0.9),
-    0 0 15px rgba(0, 240, 255, 0.5);
+  transform: scale(1.1);
 }
 
 .machined-knurl-dial:active {
   transform: scale(0.95);
 }
 
-/* Floating Holographic Telemetry HUD */
+/* Floating Telemetry HUD Pill */
 .floating-hud-badge {
   position: absolute;
-  bottom: calc(100% + 10px);
+  bottom: calc(100% + 8px);
   transform: translateX(-50%);
-  background: rgba(6, 9, 19, 0.92);
+  background: rgba(8, 12, 22, 0.95);
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 0.5rem;
-  padding: 0.25rem 0.6rem;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 0.375rem;
+  padding: 0.2rem 0.5rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.8);
   pointer-events: none;
   white-space: nowrap;
   z-index: 20;
@@ -120,52 +111,12 @@ body {
   top: 100%;
   left: 50%;
   transform: translateX(-50%);
-  border-width: 5px;
+  border-width: 4px;
   border-style: solid;
-  border-color: rgba(6, 9, 19, 0.92) transparent transparent transparent;
+  border-color: rgba(8, 12, 22, 0.95) transparent transparent transparent;
 }
 
-/* Matrix LED Glow Effects */
-.shadow-matrix-cyan {
-  box-shadow: 0 0 35px -5px rgba(0, 240, 255, 0.45), 0 0 15px rgba(0, 240, 255, 0.3);
-}
-
-.shadow-porsche-gold {
-  box-shadow: 0 0 35px -5px rgba(229, 185, 92, 0.4), 0 0 15px rgba(229, 185, 92, 0.25);
-}
-
-.shadow-amg-crimson {
-  box-shadow: 0 0 35px -5px rgba(255, 30, 66, 0.45), 0 0 15px rgba(255, 30, 66, 0.3);
-}
-
-.shadow-cyber-emerald {
-  box-shadow: 0 0 35px -5px rgba(0, 230, 153, 0.4), 0 0 15px rgba(0, 230, 153, 0.25);
-}
-
-.shadow-electric-violet {
-  box-shadow: 0 0 35px -5px rgba(140, 82, 255, 0.45), 0 0 15px rgba(140, 82, 255, 0.25);
-}
-
-/* Metallic Text Gradients */
-.text-metallic-silver {
-  background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 50%, #94a3b8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.text-metallic-gold {
-  background: linear-gradient(180deg, #fff2cc 0%, #e5b95c 60%, #b88628 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.text-metallic-cyan {
-  background: linear-gradient(180deg, #ffffff 0%, #38bdf8 50%, #0284c7 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* Audi Cockpit Laser Conduits */
+/* Crisp Tight Laser Accents (Clean 2px edge line instead of blurry giant clouds) */
 .laser-conduit-cyan {
   position: relative;
 }
@@ -173,11 +124,11 @@ body {
   content: '';
   position: absolute;
   left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: linear-gradient(to bottom, #00f0ff, #0284c7);
-  box-shadow: 0 0 12px #00f0ff;
+  top: 12px;
+  bottom: 12px;
+  width: 2.5px;
+  background: #00f0ff;
+  box-shadow: 0 0 8px #00f0ff;
   border-radius: 9999px;
 }
 
@@ -188,11 +139,11 @@ body {
   content: '';
   position: absolute;
   left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: linear-gradient(to bottom, #ffe082, #e5b95c);
-  box-shadow: 0 0 12px #e5b95c;
+  top: 12px;
+  bottom: 12px;
+  width: 2.5px;
+  background: #e5b95c;
+  box-shadow: 0 0 8px #e5b95c;
   border-radius: 9999px;
 }
 
@@ -203,35 +154,37 @@ body {
   content: '';
   position: absolute;
   left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: linear-gradient(to bottom, #6ee7b7, #00e699);
-  box-shadow: 0 0 12px #00e699;
+  top: 12px;
+  bottom: 12px;
+  width: 2.5px;
+  background: #00e699;
+  box-shadow: 0 0 8px #00e699;
   border-radius: 9999px;
 }
 
-/* Linear/Porsche Keycap */
-.linear-kbd {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.2rem 0.45rem;
-  border-radius: 0.375rem;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.03) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 2px 4px rgba(0, 0, 0, 0.4);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: #cbd5e1;
-  line-height: 1;
+/* Metallic Text Gradients */
+.text-metallic-silver {
+  background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 60%, #94a3b8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-metallic-gold {
+  background: linear-gradient(180deg, #fff5d6 0%, #e5b95c 60%, #c49430 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-metallic-cyan {
+  background: linear-gradient(180deg, #ffffff 0%, #38bdf8 50%, #0284c7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 /* Minimalist Luxury Scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
@@ -239,11 +192,10 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, rgba(0, 240, 255, 0.2), rgba(140, 82, 255, 0.2));
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(to bottom, rgba(0, 240, 255, 0.4), rgba(140, 82, 255, 0.4));
+  background: rgba(255, 255, 255, 0.3);
 }
