@@ -322,6 +322,11 @@ export const OverviewDashboard: React.FC = () => {
     }
   };
 
+  const todayWorkoutXP = Math.floor(workoutMinutes * 1.5);
+  const todayFinanceXP = Math.floor(financeMinutes * 1.5);
+  const todayDisciplineXP = hasDisciplineToday ? 50 : 0;
+  const todayTotalXP = todayWorkoutXP + todayFinanceXP + todayDisciplineXP;
+
   const topPercent = Math.max(0.01, 100 - (composite?.percentileGlobal || 50));
   const claimedDropToday = isMysteryDropClaimedToday();
 
@@ -337,11 +342,13 @@ export const OverviewDashboard: React.FC = () => {
             </span>
           </div>
 
-          {/* Top Right Total XP & Streak Badges */}
+          {/* Top Right XP Earned Today & Streak Badges */}
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-300 font-semibold text-xs backdrop-blur-md">
               <Zap className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
-              <span className="font-mono font-bold"><CountUpNumber end={profile.xp} decimals={0} suffix=" Total XP" /></span>
+              <span className="font-mono font-bold">
+                <CountUpNumber end={todayTotalXP} decimals={0} prefix="+" suffix=" XP Today" />
+              </span>
             </div>
 
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/25 text-rose-300 font-semibold text-xs backdrop-blur-md">

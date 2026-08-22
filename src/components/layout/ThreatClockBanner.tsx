@@ -48,7 +48,18 @@ export const ThreatClockBanner: React.FC = () => {
   const todayFinance = financeLogs.filter(f => f.timestamp.startsWith(todayStr) && (f.durationMinutes || 0) > 0);
 
   const hasLoggedToday = todayWorkouts.length > 0 || todayFinance.length > 0;
-  const isUrgent = timeLeft.hours < 6 && !hasLoggedToday;
+
+  // Dynamic Time Color Ramp: Starts as Dark Green (24h) and gets progressively REDDER every hour as it approaches 0!
+  const totalSecondsLeft = timeLeft.hours * 3600 + timeLeft.minutes * 60 + timeLeft.seconds;
+  const timeFraction = Math.max(0, Math.min(1, totalSecondsLeft / 86400));
+  // 150 = Emerald Green (at 24h), 45 = Amber (at 12h), 0 = Blood Red (at 0h)
+  const dynamicHue = Math.round(timeFraction * 150);
+  const isUrgent = timeLeft.hours < 6;
+
+  const timerColor = `hsl(${dynamicHue}, 100%, ${isUrgent ? 55 : 45}%)`;
+  const timerBg = `hsla(${dynamicHue}, 100%, 12%, 0.5)`;
+  const timerBorder = `hsla(${dynamicHue}, 100%, 45%, ${0.3 + (1 - timeFraction) * 0.4})`;
+  const timerGlow = `0 0 ${Math.round(8 + (1 - timeFraction) * 16)}px hsla(${dynamicHue}, 100%, 50%, ${0.25 + (1 - timeFraction) * 0.45})`;
 
   const padZero = (n: number) => n.toString().padStart(2, '0');
 
@@ -58,25 +69,38 @@ export const ThreatClockBanner: React.FC = () => {
         hasLoggedToday
           ? 'bg-[#0e1612]/90 border-emerald-500/30 shadow-lg'
           : isUrgent
-          ? 'bg-[#1c0c10]/95 border-rose-500/60 shadow-[0_0_25px_rgba(244,63,94,0.2)] animate-pulse'
-          : 'bg-[#161014]/90 border-rose-500/30 shadow-md'
+          ? 'bg-[#1c0a0e]/95 border-rose-500/70 shadow-[0_0_30px_rgba(244,63,94,0.25)] animate-pulse'
+          : 'bg-[#140e12]/90 shadow-md'
       }`}
+      style={{
+        borderColor: !hasLoggedToday ? timerBorder : undefined
+      }}
     >
-      {/* Background Left Laser Accent */}
-      <div className={`absolute top-0 left-0 bottom-0 w-1 ${
-        hasLoggedToday ? 'bg-emerald-400' : isUrgent ? 'bg-rose-500 animate-pulse' : 'bg-rose-500'
-      }`} />
+      {/* Background Left Laser Accent - Transitions from Green to Blood Red */}
+      <div
+        className={`absolute top-0 left-0 bottom-0 w-1 transition-colors duration-500 ${isUrgent && !hasLoggedToday ? 'animate-pulse' : ''}`}
+        style={{
+          backgroundColor: hasLoggedToday ? '#10b981' : timerColor,
+          boxShadow: `0 0 10px ${hasLoggedToday ? '#10b981' : timerColor}`
+        }}
+      />
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pl-1">
-        {/* Left: Authoritative Warning & N-for-N Erasure Rule */}
+        {/* Left: Warning & Compounding Gain Erasure Rule */}
         <div className="flex items-start gap-3.5">
-          <div className={`p-2.5 rounded-xl border shrink-0 ${
-            hasLoggedToday
-              ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
-              : isUrgent
-              ? 'bg-rose-500/20 border-rose-500/50 text-rose-400 animate-bounce'
-              : 'bg-rose-500/15 border-rose-500/30 text-rose-400'
-          }`}>
+          <div
+            className={`p-2.5 rounded-xl border shrink-0 transition-colors ${
+              hasLoggedToday
+                ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+                : isUrgent
+                ? 'bg-rose-500/25 border-rose-500/60 text-rose-400 animate-bounce'
+                : 'bg-zinc-900 border-zinc-700 text-zinc-300'
+            }`}
+            style={{
+              borderColor: !hasLoggedToday ? timerBorder : undefined,
+              color: !hasLoggedToday ? timerColor : undefined
+            }}
+          >
             {hasLoggedToday ? (
               <ShieldCheck className="h-5 w-5 stroke-[2.5]" />
             ) : isUrgent ? (
@@ -88,11 +112,14 @@ export const ThreatClockBanner: React.FC = () => {
 
           <div className="space-y-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className={`text-[10px] font-black tracking-widest uppercase font-mono px-2 py-0.5 rounded border ${
-                hasLoggedToday
-                  ? 'bg-emerald-950/60 border-emerald-500/40 text-emerald-300'
-                  : 'bg-rose-950/80 border-rose-500/50 text-rose-300'
-              }`}>
+              <span
+                className="text-[10px] font-black tracking-widest uppercase font-mono px-2 py-0.5 rounded border transition-colors"
+                style={{
+                  backgroundColor: hasLoggedToday ? 'rgba(6, 78, 59, 0.6)' : timerBg,
+                  borderColor: hasLoggedToday ? 'rgba(16, 185, 129, 0.4)' : timerBorder,
+                  color: hasLoggedToday ? '#6ee7b7' : timerColor
+                }}
+              >
                 {hasLoggedToday ? '🛡️ GAINS SECURED FOR TODAY' : '⚠️ INACTIVITY THREAT: COMPOUNDING GAIN ERASURE ACTIVE'}
               </span>
             </div>
@@ -111,7 +138,7 @@ export const ThreatClockBanner: React.FC = () => {
 
             {/* Test Simulation Controls */}
             {!hasLoggedToday && (
-              <div className="pt-1 flex items-center gap-2">
+              <div className="pt-1 flex items-center gap-2 flex-wrap">
                 <button
                   onClick={() => simulateMissedDays(1)}
                   className="px-2 py-0.5 rounded bg-rose-950/50 hover:bg-rose-900/80 border border-rose-500/30 text-rose-300 text-[10px] font-mono font-semibold transition-all"
@@ -131,13 +158,28 @@ export const ThreatClockBanner: React.FC = () => {
           </div>
         </div>
 
-        {/* Right: Real-time Countdown Until Day Closes */}
+        {/* Right: Dynamic Countdown Clock - Shifts Green -> Yellow -> Orange -> Blood Red every hour */}
         <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-white/[0.06]">
-          <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-black/60 border border-white/[0.1] font-mono text-xs shadow-inner">
-            <Clock className={`h-4 w-4 ${hasLoggedToday ? 'text-emerald-400' : isUrgent ? 'text-rose-400 animate-spin' : 'text-rose-400'}`} />
+          <div
+            className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl border font-mono text-xs shadow-inner transition-all duration-500"
+            style={{
+              backgroundColor: timerBg,
+              borderColor: timerBorder,
+              boxShadow: timerGlow
+            }}
+          >
+            <Clock
+              className={`h-4 w-4 transition-colors ${isUrgent ? 'animate-spin' : ''}`}
+              style={{ color: timerColor }}
+            />
             <div className="flex flex-col">
-              <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider">DAY CLOSES IN:</span>
-              <span className={`text-sm font-black tracking-widest ${hasLoggedToday ? 'text-emerald-400' : isUrgent ? 'text-rose-400' : 'text-rose-300'}`}>
+              <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider">
+                DAY CLOSES IN:
+              </span>
+              <span
+                className="text-sm font-black tracking-widest transition-colors"
+                style={{ color: timerColor }}
+              >
                 {padZero(timeLeft.hours)}:{padZero(timeLeft.minutes)}:{padZero(timeLeft.seconds)}
               </span>
             </div>
