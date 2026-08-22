@@ -27,56 +27,56 @@ export const DISCRETE_BODY_FAT_STEPS: FilmstripStep[] = [
     label: '8% Titan Apex',
     category: 'STAGE SHREDDED',
     anatomicalDescription: 'Depleted subcutaneous adipose, razor-sharp rectus abdominis separation, serratus striations, and chiseled vascular V-taper.',
-    prompt: 'raw ultra-realistic photo of the same person, athletic shredded physique, 8 percent body fat, defined 6-pack abs, serratus anterior, vascularity, razor sharp jawline, high definition anatomical lighting'
+    prompt: 'raw ultra-realistic photograph of the same person, athletic shredded physique, 8 percent body fat, defined 6-pack abs, serratus anterior, vascularity, razor sharp jawline, high definition anatomical lighting, 8k uhd'
   },
   {
     bodyFatPercent: 12.0,
     label: '12% Athletic Elite',
     category: 'FITNESS MODEL',
     anatomicalDescription: 'Top 1% athletic frame, flat tight core with visible 6-pack, defined obliques, and athletic shoulder flare.',
-    prompt: 'raw ultra-realistic photo of the same person, athletic lean physique, 12 percent body fat, visible six-pack abs, athletic chest, defined jawline, studio lighting'
+    prompt: 'raw ultra-realistic photograph of the same person, athletic lean physique, 12 percent body fat, visible six-pack abs, athletic chest, defined jawline, studio lighting, 8k uhd'
   },
   {
     bodyFatPercent: 16.0,
     label: '16% Lean Optimal',
     category: 'LEAN ATHLETIC',
     anatomicalDescription: 'Lean muscular profile, flat stomach, solid upper body V-taper, and subtle core definition.',
-    prompt: 'raw ultra-realistic photo of the same person, lean healthy fit physique, 16 percent body fat, flat stomach, athletic build, natural lighting'
+    prompt: 'raw ultra-realistic photograph of the same person, lean healthy fit physique, 16 percent body fat, flat stomach, athletic build, natural lighting, 8k uhd'
   },
   {
     bodyFatPercent: 20.0,
     label: '20% Baseline Fit',
     category: 'AVERAGE FIT',
     anatomicalDescription: 'Standard healthy baseline with smooth abdominal wall, natural waistline, and moderate subcutaneous padding.',
-    prompt: 'raw ultra-realistic photo of the same person, average healthy build, 20 percent body fat, natural midsection, regular physique, natural lighting'
+    prompt: 'raw ultra-realistic photograph of the same person, average healthy build, 20 percent body fat, natural midsection, regular physique, natural lighting, 8k uhd'
   },
   {
     bodyFatPercent: 26.0,
     label: '26% Moderate',
     category: 'MODERATE ADIPOSE',
     anatomicalDescription: 'Increased subcutaneous fat around lower abdomen and love handles, softer chest contour.',
-    prompt: 'raw ultra-realistic photo of the same person, moderate body fat, 26 percent body fat, softer midsection, slight love handles, natural lighting'
+    prompt: 'raw ultra-realistic photograph of the same person, moderate body fat, 26 percent body fat, softer midsection, slight love handles, natural lighting, 8k uhd'
   },
   {
     bodyFatPercent: 34.0,
     label: '34% High Adipose',
     category: 'HIGH ADIPOSITY',
     anatomicalDescription: 'Prominent visceral abdominal curvature, expanded waistline, subcutaneous padding over chest and hips.',
-    prompt: 'raw ultra-realistic photo of the same person, overweight, 34 percent body fat, rounded belly, softer jawline, natural lighting'
+    prompt: 'raw ultra-realistic photograph of the same person, overweight, 34 percent body fat, rounded belly, softer jawline, natural lighting, 8k uhd'
   },
   {
     bodyFatPercent: 44.0,
     label: '44% Severe Adipose',
     category: 'CLASS II ADIPOSITY',
     anatomicalDescription: 'Pronounced abdominal protrusion extending past chest line, deep subcutaneous deposits, and heavier facial profile.',
-    prompt: 'raw ultra-realistic photo of the same person, obese, 44 percent body fat, large protruding stomach, heavy midsection, double chin, natural lighting'
+    prompt: 'raw ultra-realistic photograph of the same person, obese, 44 percent body fat, large protruding stomach, heavy midsection, double chin, natural lighting, 8k uhd'
   },
   {
     bodyFatPercent: 58.0,
     label: '58% Class III',
     category: 'SEVERE ADIPOSITY',
     anatomicalDescription: 'Heavy adipose accumulation, spherical visceral overhang (panniculus), thick neck and widened stance.',
-    prompt: 'raw ultra-realistic photo of the same person, morbidly obese, 58 percent body fat, massive spherical stomach, heavy adipose folds, natural lighting'
+    prompt: 'raw ultra-realistic photograph of the same person, morbidly obese, 58 percent body fat, massive spherical stomach, heavy adipose folds, natural lighting, 8k uhd'
   }
 ];
 
@@ -143,7 +143,7 @@ export class GenerativeBodyFatService {
   }
 
   /**
-   * fal.ai InstantID / ControlNet Inpainting API Call
+   * fal.ai IP-Adapter FaceID / ControlNet Inpainting API Call
    */
   private async callFalAi(
     sourceImg: string,
@@ -151,10 +151,10 @@ export class GenerativeBodyFatService {
     apiKey: string,
     onProgress?: (msg: string) => void
   ): Promise<string> {
-    onProgress?.('Extracting facial identity embedding with InsightFace...');
+    onProgress?.('Extracting facial identity embedding with IP-Adapter FaceID...');
     
-    // fal.ai instant-id endpoint
-    const endpoint = 'https://fal.run/fal-ai/instant-id';
+    // fal.ai official ip-adapter-face-id endpoint
+    const endpoint = 'https://fal.run/fal-ai/ip-adapter-face-id';
     
     try {
       const response = await fetch(endpoint, {
@@ -164,19 +164,18 @@ export class GenerativeBodyFatService {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          image_url: sourceImg,
+          face_image_url: sourceImg,
           prompt: step.prompt,
           negative_prompt: 'cartoon, drawing, blurry, distorted face, low quality, deformed, extra limbs',
-          identity_strength: 0.82,
           num_inference_steps: 30,
-          guidance_scale: 7.0
+          guidance_scale: 7.5
         })
       });
 
       if (!response.ok) {
         const errText = await response.text();
         if (errText.includes('TOP_UP') || response.status === 403) {
-          throw new Error('fal.ai account is pending credit top-up. Please add credits on fal.ai/dashboard/billing to activate cloud GPU inference.');
+          throw new Error('Your fal.ai account requires adding credits. Go to fal.ai/dashboard/billing to top up $5 and activate real-time GPU diffusion.');
         }
         throw new Error(`fal.ai GPU error: ${errText}`);
       }
