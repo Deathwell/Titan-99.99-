@@ -469,6 +469,135 @@ class TacticalSoundEngine {
     }
   }
 
+  /**
+   * ASMR Tuned Glass Marimba Slider Tick (Pitch scales with leanness)
+   */
+  public playSliderTick(pitchFactor: number = 0.5) {
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    try {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      // Pentatonic tuned scale from 440Hz to 1760Hz
+      const baseFreq = 440 + Math.max(0, Math.min(1, pitchFactor)) * 880;
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(baseFreq, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.5, ctx.currentTime + 0.05);
+
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.05);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.05);
+    } catch {
+      // Ignore
+    }
+  }
+
+  /**
+   * Mystery Loot Capsule Rising Tension Drone
+   */
+  public playLootTension() {
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    try {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(110, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 1.2);
+
+      gain.gain.setValueAtTime(0.01, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.09, ctx.currentTime + 1.1);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.2);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 1.2);
+    } catch {
+      // Ignore
+    }
+  }
+
+  /**
+   * Mystery Loot Capsule Radiant Explosion & Sparkle Chime
+   */
+  public playLootExplosion() {
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    try {
+      // Sub-bass thud
+      const bassOsc = ctx.createOscillator();
+      const bassGain = ctx.createGain();
+      bassOsc.type = 'sine';
+      bassOsc.frequency.setValueAtTime(140, ctx.currentTime);
+      bassOsc.frequency.exponentialRampToValueAtTime(35, ctx.currentTime + 0.4);
+      bassGain.gain.setValueAtTime(0.35, ctx.currentTime);
+      bassGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+      bassOsc.connect(bassGain);
+      bassGain.connect(ctx.destination);
+      bassOsc.start(ctx.currentTime);
+      bassOsc.stop(ctx.currentTime + 0.4);
+
+      // Celestial Arpeggio Chord
+      const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+      notes.forEach((freq, i) => {
+        const chordOsc = ctx.createOscillator();
+        const chordGain = ctx.createGain();
+        chordOsc.type = 'sine';
+        chordOsc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.06);
+
+        chordGain.gain.setValueAtTime(0.09, ctx.currentTime + i * 0.06);
+        chordGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + i * 0.06 + 0.6);
+
+        chordOsc.connect(chordGain);
+        chordGain.connect(ctx.destination);
+
+        chordOsc.start(ctx.currentTime + i * 0.06);
+        chordOsc.stop(ctx.currentTime + i * 0.06 + 0.6);
+      });
+    } catch {
+      // Ignore
+    }
+  }
+
+  /**
+   * Story Slide Transition Swoosh
+   */
+  public playStorySlideTransition() {
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    try {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(600, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.08);
+
+      gain.gain.setValueAtTime(0.05, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.08);
+    } catch {
+      // Ignore
+    }
+  }
+
   public stopAlarm() {
     this.stopAlarmSoundOnly();
     this.stopSpeaking();
@@ -476,3 +605,4 @@ class TacticalSoundEngine {
 }
 
 export const soundEngine = new TacticalSoundEngine();
+

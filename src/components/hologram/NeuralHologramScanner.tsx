@@ -194,10 +194,11 @@ export const NeuralHologramScanner: React.FC = () => {
     };
   }, []);
 
-  // Handle step selection with sound & instant canvas refresh
+  // Handle step selection with ASMR tuned marimba tick & instant canvas refresh
   const handleSelectStep = (index: number) => {
     setActiveStepIndex(index);
-    soundEngine.playClick(850 + index * 20);
+    const pitchFactor = (filmstripSteps.length - 1 - index) / (filmstripSteps.length - 1);
+    soundEngine.playSliderTick(pitchFactor);
   };
 
   // Trigger optional Cloud GPU generation

@@ -19,6 +19,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { useTitan } from '../../context/TitanContext';
+import { LivingFlameAvatar } from '../effects/LivingFlameAvatar';
 
 interface NavItem {
   id: 'overview' | 'charts' | 'physique' | 'hologram' | 'finance' | 'alarms' | 'quests' | 'curriculum';
@@ -119,8 +120,11 @@ export const NavigationSidebar: React.FC = () => {
         </nav>
       </div>
 
-      {/* Bottom Profile & System Tray */}
+      {/* Living Streak Flame & Bottom Profile Tray */}
       <div className="pt-4 border-t border-white/[0.08] space-y-3">
+        {/* Living Fire Avatar Widget */}
+        <LivingFlameAvatar />
+
         {/* Sync Status Banner */}
         <button
           onClick={() => setIsSyncModalOpen(true)}
