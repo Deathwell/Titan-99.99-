@@ -20,7 +20,10 @@ import {
   Lock,
   Upload,
   Activity,
-  AlertCircle
+  AlertCircle,
+  Edit3,
+  Save,
+  Tablet
 } from 'lucide-react';
 import { useTitan } from '../../context/TitanContext';
 import { soundEngine } from '../../lib/audio';
@@ -35,12 +38,18 @@ export const DeviceSyncModal: React.FC<DeviceSyncModalProps> = ({ isOpen, onClos
     syncCode,
     syncStatus,
     lastSyncedAt,
+    pairedDevices,
+    currentDevice,
+    setCustomDeviceName,
     generateNewSyncKey,
     connectSyncCode,
     disconnectSync,
     forcePushCloud,
     forcePullCloud
   } = useTitan();
+
+  const [editingDeviceName, setEditingDeviceName] = useState(false);
+  const [customNameInput, setCustomNameInput] = useState('');
 
   const [inputCode, setInputCode] = useState('');
   const [copied, setCopied] = useState(false);
@@ -398,6 +407,118 @@ export const DeviceSyncModal: React.FC<DeviceSyncModalProps> = ({ isOpen, onClos
             <span className="text-[10px] text-slate-500">Scan QR to pair</span>
           </div>
         )}
+
+        {/* Paired Hardware Devices Registry */}
+        <div className="mt-4 p-4 rounded-2xl border border-white/[0.08] bg-black/40 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold uppercase tracking-wider font-mono text-zinc-400 flex items-center gap-1.5">
+              <Radio className="h-3.5 w-3.5 text-cyan-400 animate-pulse" />
+              <span>LINKED HARDWARE NODES ({pairedDevices.length})</span>
+            </span>
+            <span className="text-[10px] font-mono text-emerald-400 font-bold">
+              {isAlreadySynced ? 'REAL-TIME MESH ACTIVE' : 'LOCAL NODE READY'}
+            </span>
+          </div>
+
+          <div className="space-y-2">
+            {pairedDevices.map((dev) => {
+              const isCurrent = dev.deviceId === currentDevice.deviceId;
+
+              return (
+                <div
+                  key={dev.deviceId}
+                  className={`p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all ${
+                    isCurrent
+                      ? 'bg-cyan-950/30 border-cyan-500/40 text-cyan-200 shadow-sm'
+                      : 'bg-white/[0.02] border-white/[0.06] text-zinc-300'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-lg border shrink-0 ${
+                      dev.deviceType === 'MOBILE'
+                        ? 'bg-rose-500/15 border-rose-500/30 text-rose-400'
+                        : dev.deviceType === 'TABLET'
+                        ? 'bg-purple-500/15 border-purple-500/30 text-purple-400'
+                        : 'bg-cyan-500/15 border-cyan-500/30 text-cyan-400'
+                    }`}>
+                      {dev.deviceType === 'MOBILE' ? (
+                        <Smartphone className="h-4 w-4" />
+                      ) : dev.deviceType === 'TABLET' ? (
+                        <Tablet className="h-4 w-4" />
+                      ) : (
+                        <Monitor className="h-4 w-4" />
+                      )}
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {isCurrent && editingDeviceName ? (
+                          <div className="flex items-center gap-1.5">
+                            <input
+                              type="text"
+                              value={customNameInput}
+                              onChange={(e) => setCustomNameInput(e.target.value)}
+                              placeholder={dev.deviceName}
+                              className="px-2 py-0.5 rounded bg-black border border-cyan-400 text-xs text-white font-bold font-mono"
+                              autoFocus
+                            />
+                            <button
+                              onClick={() => {
+                                setCustomDeviceName(customNameInput);
+                                setEditingDeviceName(false);
+                                soundEngine.playClick(850);
+                              }}
+                              className="p-1 rounded bg-cyan-600 text-black hover:bg-cyan-500"
+                            >
+                              <Save className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs font-bold text-white">
+                              {dev.deviceName}
+                            </span>
+                            {isCurrent && (
+                              <button
+                                onClick={() => {
+                                  setCustomNameInput(dev.deviceName);
+                                  setEditingDeviceName(true);
+                                }}
+                                className="p-0.5 text-zinc-500 hover:text-cyan-400 transition-colors"
+                                title="Rename this device"
+                              >
+                                <Edit3 className="h-3 w-3" />
+                              </button>
+                            )}
+                          </div>
+                        )}
+
+                        <span className={`text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border ${
+                          isCurrent
+                            ? 'bg-cyan-500/20 border-cyan-400/40 text-cyan-300'
+                            : 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300'
+                        }`}>
+                          {isCurrent ? 'THIS DEVICE (CURRENT)' : 'PAIRED NODE'}
+                        </span>
+                      </div>
+
+                      <div className="text-[10px] font-mono text-zinc-400 mt-0.5">
+                        {dev.os} • {dev.browser} • {dev.screenResolution}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-[10px] font-mono shrink-0">
+                    <span className="flex items-center gap-1 text-emerald-400 font-bold">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <span>{isCurrent ? 'Online Now' : 'Synced'}</span>
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
 
         {/* In-App Live Camera Viewfinder */}
         {isCameraScanning ? (

@@ -1,17 +1,18 @@
 /**
  * Real-Time Cross-Device Cloud Sync Engine (Desktop ⇄ Mobile Phone)
  * Enterprise-Grade WebSocket State Relay powered by Public MQTT Broker with Retained Cloud State.
- * Zero-latency (<30ms), Zero Rate-Limits, No Authentication Required.
+ * Includes Automatic Device Detection & Hardware Metadata Registry.
  */
 
 import mqtt, { MqttClient } from 'mqtt';
 import { FullBackupPayload } from './storage';
+import { deviceDetector, DeviceMetadata } from './deviceDetector';
 
 export interface CloudSyncState {
   syncCode: string | null;
   status: 'DISCONNECTED' | 'CONNECTING' | 'SYNCED' | 'SYNCING' | 'ERROR';
   lastSyncedAt: string | null;
-  pairedDeviceCount: number;
+  pairedDevices: DeviceMetadata[];
 }
 
 const PRIMARY_BROKER = 'wss://broker.hivemq.com:8884/mqtt';
@@ -20,7 +21,7 @@ const BACKUP_BROKER = 'wss://broker.emqx.io:8084/mqtt';
 class CloudSyncEngine {
   private syncCode: string | null = null;
   private client: MqttClient | null = null;
-  private onRemoteUpdateCallback: ((payload: FullBackupPayload) => void) | null = null;
+  private onRemoteUpdateCallback: ((payload: FullBackupPayload & { deviceInfo?: DeviceMetadata }) => void) | null = null;
   private localBroadcastChannel: BroadcastChannel | null = null;
   private isBroadcasting = false;
   private lastKnownRemoteTimestamp: number = 0;
@@ -35,6 +36,9 @@ class CloudSyncEngine {
         this.localBroadcastChannel.onmessage = (event) => {
           if (this.isBroadcasting) return;
           if (event.data && event.data.version && this.onRemoteUpdateCallback) {
+            if (event.data.deviceInfo) {
+              deviceDetector.savePairedDevice(event.data.deviceInfo);
+            }
             this.onRemoteUpdateCallback(event.data);
           }
         };
@@ -59,10 +63,23 @@ class CloudSyncEngine {
         localStorage.setItem('titan_sync_code', code.trim());
       } else {
         localStorage.removeItem('titan_sync_code');
+        deviceDetector.clearPairedDevices();
       }
     } catch {
       // Ignore
     }
+  }
+
+  public getPairedDevices(): DeviceMetadata[] {
+    return deviceDetector.getKnownPairedDevices();
+  }
+
+  public getCurrentDevice(): DeviceMetadata {
+    return deviceDetector.getCurrentDevice();
+  }
+
+  public setCustomDeviceName(name: string) {
+    deviceDetector.setCustomDeviceName(name);
   }
 
   /**
@@ -93,10 +110,12 @@ class CloudSyncEngine {
     const now = Date.now();
     this.lastKnownRemoteTimestamp = now;
 
+    const currentDevice = deviceDetector.getCurrentDevice();
     const fullData = {
       ...payload,
       cloudSenderId: this.clientId,
-      cloudUpdatedAt: now
+      cloudUpdatedAt: now,
+      deviceInfo: currentDevice
     };
 
     const messageStr = JSON.stringify(fullData);
@@ -161,7 +180,7 @@ class CloudSyncEngine {
    */
   public startRealTimeListener(
     code: string,
-    onUpdate: (payload: FullBackupPayload) => void
+    onUpdate: (payload: FullBackupPayload & { deviceInfo?: DeviceMetadata }) => void
   ) {
     this.stopListener();
     const cleanCode = code.trim().toUpperCase();
@@ -182,21 +201,36 @@ class CloudSyncEngine {
       this.client.on('connect', () => {
         console.log(`⚡ Connected to Titan Cloud Relay for channel [${cleanCode}]`);
         this.client?.subscribe(topic, { qos: 1 });
+
+        // Announce presence with current device info
+        const currentDev = deviceDetector.getCurrentDevice();
+        const pingPayload = {
+          version: '2.6.0',
+          pingOnly: true,
+          cloudSenderId: this.clientId,
+          cloudUpdatedAt: Date.now(),
+          deviceInfo: currentDev
+        };
+        this.client?.publish(`${topic}/presence`, JSON.stringify(pingPayload), { qos: 0 });
       });
 
       this.client.on('message', (t, msgBuffer) => {
         try {
           if (t !== topic) return;
           const jsonStr = msgBuffer.toString();
-          const data = JSON.parse(jsonStr) as FullBackupPayload & { cloudSenderId?: string; cloudUpdatedAt?: number };
+          const data = JSON.parse(jsonStr) as FullBackupPayload & { cloudSenderId?: string; cloudUpdatedAt?: number; deviceInfo?: DeviceMetadata };
 
           // Ignore own echoes
           if (data.cloudSenderId === this.clientId) {
             return;
           }
 
+          if (data.deviceInfo) {
+            deviceDetector.savePairedDevice(data.deviceInfo);
+          }
+
           if (data && data.version && this.onRemoteUpdateCallback) {
-            console.log('⚡ Received live sync state update from paired device!');
+            console.log('⚡ Received live sync state update from paired device:', data.deviceInfo?.deviceName);
             this.onRemoteUpdateCallback(data);
           }
         } catch (err) {
@@ -229,7 +263,7 @@ class CloudSyncEngine {
   /**
    * Pull the single latest state on demand
    */
-  public async pullStateFromCloud(code: string): Promise<FullBackupPayload | null> {
+  public async pullStateFromCloud(code: string): Promise<(FullBackupPayload & { deviceInfo?: DeviceMetadata }) | null> {
     const cleanCode = code.trim().toUpperCase();
     const topic = this.getTopic(cleanCode);
 
@@ -243,21 +277,26 @@ class CloudSyncEngine {
       const timer = setTimeout(() => {
         try { tempClient.end(); } catch {}
         resolve(null);
-      }, 4000);
+      }, 5000);
 
       tempClient.on('connect', () => {
         tempClient.subscribe(topic, { qos: 1 });
       });
 
-      tempClient.on('message', (t, msg) => {
-        clearTimeout(timer);
-        try {
-          const parsed = JSON.parse(msg.toString());
-          try { tempClient.end(); } catch {}
-          resolve(parsed);
-        } catch {
-          try { tempClient.end(); } catch {}
-          resolve(null);
+      tempClient.on('message', (t, msgBuffer) => {
+        if (t === topic) {
+          clearTimeout(timer);
+          try {
+            const data = JSON.parse(msgBuffer.toString());
+            if (data.deviceInfo) {
+              deviceDetector.savePairedDevice(data.deviceInfo);
+            }
+            try { tempClient.end(); } catch {}
+            resolve(data);
+          } catch {
+            try { tempClient.end(); } catch {}
+            resolve(null);
+          }
         }
       });
 

@@ -21,15 +21,15 @@ import { MysteryLootModal, isMysteryDropClaimedToday } from '../modals/MysteryLo
 
 export const HeaderHUD: React.FC = () => {
   const {
-    profile,
-    composite,
-    syncStatus,
-    alarms,
     activeTab,
-    setActiveTab,
+    profile,
+    syncStatus,
+    syncCode,
+    pairedDevices,
+    alarms,
     openAlarmsTab,
-    setIsSettingsOpen,
-    setIsSyncModalOpen
+    setIsSyncModalOpen,
+    setIsSettingsOpen
   } = useTitan();
 
   const activeAlarmsCount = alarms.filter(a => a.isEnabled).length;
@@ -114,13 +114,19 @@ export const HeaderHUD: React.FC = () => {
               onClick={() => setIsSyncModalOpen(true)}
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-medium transition-all ${
                 isSynced
-                  ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                  ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400 shadow-sm'
                   : 'bg-amber-500/10 border-amber-500/20 text-amber-300'
               }`}
-              title="Cloud Sync"
+              title="Cloud Sync & Paired Devices"
             >
               <span className={`h-1.5 w-1.5 rounded-full ${isSynced ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
-              <span className="hidden sm:inline text-[11px] font-mono">{isSynced ? 'Synced' : 'Offline'}</span>
+              <span className="hidden sm:inline text-[11px] font-mono">
+                {isSynced
+                  ? pairedDevices.length > 1
+                    ? `LINKED (${pairedDevices.length} DEVS)`
+                    : 'SYNCED'
+                  : 'OFFLINE'}
+              </span>
             </button>
 
             {/* Settings Cog */}

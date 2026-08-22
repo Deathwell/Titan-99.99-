@@ -21,6 +21,7 @@ import { calculateCompositeState, DEFAULT_WEIGHTS } from '../lib/statsEngine';
 import { soundEngine } from '../lib/audio';
 import { neuralVoiceService } from '../lib/neuralVoiceService';
 import { cloudSyncEngine } from '../lib/syncEngine';
+import { DeviceMetadata } from '../lib/deviceDetector';
 import { tacticalPushService } from '../lib/pushNotifications';
 import {
   exportBackupJSON,
@@ -105,6 +106,9 @@ interface TitanContextType {
   syncCode: string | null;
   syncStatus: 'DISCONNECTED' | 'CONNECTING' | 'SYNCED' | 'SYNCING' | 'ERROR';
   lastSyncedAt: string | null;
+  pairedDevices: DeviceMetadata[];
+  currentDevice: DeviceMetadata;
+  setCustomDeviceName: (name: string) => void;
   generateNewSyncKey: () => Promise<string | null>;
   connectSyncCode: (code: string) => Promise<boolean>;
   disconnectSync: () => void;
@@ -207,6 +211,14 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     cloudSyncEngine.getStoredSyncCode() ? 'SYNCED' : 'DISCONNECTED'
   );
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
+  const [pairedDevices, setPairedDevices] = useState<DeviceMetadata[]>(() => cloudSyncEngine.getPairedDevices());
+
+  const currentDevice = useMemo(() => cloudSyncEngine.getCurrentDevice(), [pairedDevices]);
+
+  const setCustomDeviceName = (name: string) => {
+    cloudSyncEngine.setCustomDeviceName(name);
+    setPairedDevices(cloudSyncEngine.getPairedDevices());
+  };
 
   const [lastTriggeredMinute, setLastTriggeredMinute] = useState<string>('');
   const isRemoteApplyingRef = useRef(false);
@@ -305,6 +317,9 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
       setSyncStatus('SYNCED');
       setLastSyncedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+      setPairedDevices(cloudSyncEngine.getPairedDevices());
+    } catch (err) {
+      console.warn('Error applying remote cloud update:', err);
     } finally {
       setTimeout(() => {
         isRemoteApplyingRef.current = false;
@@ -1400,6 +1415,9 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         syncCode,
         syncStatus,
         lastSyncedAt,
+        pairedDevices,
+        currentDevice,
+        setCustomDeviceName,
         generateNewSyncKey,
         connectSyncCode,
         disconnectSync,
