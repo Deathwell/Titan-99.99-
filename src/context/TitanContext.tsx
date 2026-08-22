@@ -110,6 +110,7 @@ interface TitanContextType {
   addWorkoutLog: (entry: Omit<WorkoutLogEntry, 'id' | 'timestamp' | 'dateDisplay'>) => void;
   addFinanceLog: (entry: Omit<FinanceStudyLogEntry, 'id' | 'timestamp' | 'dateDisplay'>) => void;
   toggleDailyAccomplishment: (type: DailyAccomplishmentType) => boolean;
+  setDailyTaskDuration: (type: DailyAccomplishmentType, durationMinutes: number) => void;
   claimNightlyReward: (key: NightlyRewardKey, customNote?: string) => void;
   toggleQuest: (id: string) => void;
   submitQuizScore: (topic: SyllabusTopic, scorePercentage: number) => void;
@@ -888,6 +889,138 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return isRecordedNow;
   };
 
+  const setDailyTaskDuration = (type: DailyAccomplishmentType, durationMinutes: number) => {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const roundedMin = Math.max(0, Math.round(durationMinutes / 15) * 15);
+
+    if (type === 'STRENGTH') {
+      const existingIdx = workoutLogs.findIndex(w => w.pillar === 'STRENGTH' && w.timestamp.startsWith(todayStr));
+      const previousDuration = existingIdx >= 0 ? workoutLogs[existingIdx].durationMinutes : 0;
+      const deltaDuration = roundedMin - previousDuration;
+      const deltaXP = Math.floor(deltaDuration * 1.5);
+
+      if (roundedMin <= 0) {
+        if (existingIdx >= 0) {
+          const updated = workoutLogs.filter((_, idx) => idx !== existingIdx);
+          setWorkoutLogs(updated);
+          saveWorkoutLogs(updated);
+        }
+        updateMetrics({ benchPressKg: Math.max(40, Number((metrics.benchPressKg - 1.5).toFixed(1))), deadliftKg: Math.max(60, Number((metrics.deadliftKg - 2.5).toFixed(1))) });
+        if (previousDuration > 0) gainXP(-Math.floor(previousDuration * 1.5));
+      } else {
+        const entry: WorkoutLogEntry = {
+          id: existingIdx >= 0 ? workoutLogs[existingIdx].id : `w-${Date.now()}`,
+          timestamp: existingIdx >= 0 ? workoutLogs[existingIdx].timestamp : new Date().toISOString(),
+          dateDisplay: 'Today',
+          pillar: 'STRENGTH',
+          title: `${roundedMin}m Heavy Compound Strength Protocol`,
+          durationMinutes: roundedMin,
+          intensity: 'HEAVY_RESISTANCE',
+          peakHeartRateBpm: 160,
+          caloricBurn: Math.round(roundedMin * 8.5),
+          notes: `Logged ${roundedMin} min compound strength session.`
+        };
+
+        let updatedLogs: WorkoutLogEntry[];
+        if (existingIdx >= 0) {
+          updatedLogs = workoutLogs.map((w, idx) => idx === existingIdx ? entry : w);
+        } else {
+          updatedLogs = [entry, ...workoutLogs];
+        }
+        setWorkoutLogs(updatedLogs);
+        saveWorkoutLogs(updatedLogs);
+
+        updateMetrics({
+          benchPressKg: Math.min(220, Number((metrics.benchPressKg + (deltaDuration / 60) * 1.5).toFixed(1))),
+          deadliftKg: Math.min(350, Number((metrics.deadliftKg + (deltaDuration / 60) * 2.5).toFixed(1)))
+        });
+        if (deltaXP !== 0) gainXP(deltaXP);
+      }
+    } else if (type === 'MODELING') {
+      const existingIdx = financeLogs.findIndex(f => (f.discipline === 'PRIVATE_EQUITY' || f.discipline === 'INVESTMENT_BANKING') && f.timestamp.startsWith(todayStr));
+      const previousDuration = existingIdx >= 0 ? financeLogs[existingIdx].durationMinutes : 0;
+      const deltaDuration = roundedMin - previousDuration;
+      const deltaXP = Math.floor(deltaDuration * 1.5);
+
+      if (roundedMin <= 0) {
+        if (existingIdx >= 0) {
+          const updated = financeLogs.filter((_, idx) => idx !== existingIdx);
+          setFinanceLogs(updated);
+          saveFinanceLogs(updated);
+        }
+        updateMetrics({ transactionStructuring: Math.max(0, Number((metrics.transactionStructuring - 2).toFixed(1))) });
+        if (previousDuration > 0) gainXP(-Math.floor(previousDuration * 1.5));
+      } else {
+        const entry: FinanceStudyLogEntry = {
+          id: existingIdx >= 0 ? financeLogs[existingIdx].id : `f-${Date.now()}`,
+          timestamp: existingIdx >= 0 ? financeLogs[existingIdx].timestamp : new Date().toISOString(),
+          dateDisplay: 'Today',
+          discipline: 'PRIVATE_EQUITY',
+          topicId: 'syl-01',
+          topicName: 'LBO Debt Structuring & Cash Sweeps',
+          durationMinutes: roundedMin,
+          scoreAchieved: Math.min(100, 80 + Math.round(roundedMin / 10)),
+          notes: `${roundedMin}m institutional modeling drill.`
+        };
+
+        let updatedLogs: FinanceStudyLogEntry[];
+        if (existingIdx >= 0) {
+          updatedLogs = financeLogs.map((f, idx) => idx === existingIdx ? entry : f);
+        } else {
+          updatedLogs = [entry, ...financeLogs];
+        }
+        setFinanceLogs(updatedLogs);
+        saveFinanceLogs(updatedLogs);
+
+        updateMetrics({
+          transactionStructuring: Math.min(100, Number((metrics.transactionStructuring + (deltaDuration / 60) * 2).toFixed(1)))
+        });
+        if (deltaXP !== 0) gainXP(deltaXP);
+      }
+    } else if (type === 'QUANT') {
+      const existingIdx = financeLogs.findIndex(f => (f.discipline === 'QUANT_DERIVATIVES' || f.discipline === 'FACTOR_RISK') && f.timestamp.startsWith(todayStr));
+      const previousDuration = existingIdx >= 0 ? financeLogs[existingIdx].durationMinutes : 0;
+      const deltaDuration = roundedMin - previousDuration;
+      const deltaXP = Math.floor(deltaDuration * 1.5);
+
+      if (roundedMin <= 0) {
+        if (existingIdx >= 0) {
+          const updated = financeLogs.filter((_, idx) => idx !== existingIdx);
+          setFinanceLogs(updated);
+          saveFinanceLogs(updated);
+        }
+        updateMetrics({ quantitativeDerivatives: Math.max(0, Number((metrics.quantitativeDerivatives - 2).toFixed(1))) });
+        if (previousDuration > 0) gainXP(-Math.floor(previousDuration * 1.5));
+      } else {
+        const entry: FinanceStudyLogEntry = {
+          id: existingIdx >= 0 ? financeLogs[existingIdx].id : `f-q-${Date.now()}`,
+          timestamp: existingIdx >= 0 ? financeLogs[existingIdx].timestamp : new Date().toISOString(),
+          dateDisplay: 'Today',
+          discipline: 'QUANT_DERIVATIVES',
+          topicId: 'syl-02',
+          topicName: 'Option Greeks & Vol Surface Fitting',
+          durationMinutes: roundedMin,
+          scoreAchieved: Math.min(100, 80 + Math.round(roundedMin / 10)),
+          notes: `${roundedMin}m tactical discipline & quant drill.`
+        };
+
+        let updatedLogs: FinanceStudyLogEntry[];
+        if (existingIdx >= 0) {
+          updatedLogs = financeLogs.map((f, idx) => idx === existingIdx ? entry : f);
+        } else {
+          updatedLogs = [entry, ...financeLogs];
+        }
+        setFinanceLogs(updatedLogs);
+        saveFinanceLogs(updatedLogs);
+
+        updateMetrics({
+          quantitativeDerivatives: Math.min(100, Number((metrics.quantitativeDerivatives + (deltaDuration / 60) * 2).toFixed(1)))
+        });
+        if (deltaXP !== 0) gainXP(deltaXP);
+      }
+    }
+  };
+
   /**
    * TACTICAL ALARM MANAGEMENT & TRIGGER ACTIONS
    */
@@ -1196,6 +1329,7 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         addWorkoutLog,
         addFinanceLog,
         toggleDailyAccomplishment,
+        setDailyTaskDuration,
         claimNightlyReward,
         toggleQuest,
         submitQuizScore,
