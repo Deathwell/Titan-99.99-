@@ -52,31 +52,81 @@ function formatDurationLabel(minutes: number): { time: string; xp: number; isMax
   return { time, xp, isMax };
 }
 
-interface SleekSliderProps {
+interface DynamicColorProps {
   value: number; // 0 to 240
   onChange: (val: number, clientX?: number, clientY?: number) => void;
   accentColor: 'emerald' | 'gold';
   title: string;
 }
 
-const SleekProgressiveSlider: React.FC<SleekSliderProps> = ({ value, onChange, accentColor, title }) => {
+// Compute continuous HSL brightness & luminosity ramp based on exact value
+function getDynamicLuminescence(value: number, accentColor: 'emerald' | 'gold') {
+  const ratio = Math.max(0, Math.min(1, value / 240)); // 0.0 to 1.0
+  const isEmerald = accentColor === 'emerald';
+  const hue = isEmerald ? 158 : 42; // 158 = Cyber Emerald, 42 = Porsche Gold
+
+  if (value === 0) {
+    return {
+      ratio: 0,
+      lightness: 30,
+      saturation: 40,
+      glowRadius: 0,
+      glowColor: 'transparent',
+      primaryColor: '#64748b',
+      fillGradient: 'rgba(255,255,255,0.06)',
+      thumbGlow: 'none',
+      badgeBg: 'rgba(255,255,255,0.03)',
+      badgeBorder: 'rgba(255,255,255,0.08)',
+      badgeText: '#64748b',
+      conduitGlow: 'none',
+      cardBgOpacity: 0.8
+    };
+  }
+
+  // Smooth continuous scaling:
+  // Lightness: 35% (dark deep green/gold at 15m) -> 92% (blinding white-hot core at 240m)
+  const lightness = Math.round(35 + ratio * 57);
+  // Saturation: 65% -> 100%
+  const saturation = Math.round(65 + ratio * 35);
+  // Glow radius: 2px -> 28px
+  const glowRadius = Math.round(2 + ratio * 26);
+
+  const primaryColor = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+  const glowColor = `hsla(${hue}, 100%, ${Math.min(75, lightness)}%, ${0.3 + ratio * 0.7})`;
+  const fillGradient = `linear-gradient(90deg, hsl(${hue}, ${saturation}%, ${Math.max(25, lightness - 20)}%) 0%, hsl(${hue}, ${saturation}%, ${lightness}%) 70%, hsl(${hue}, 100%, ${Math.min(98, lightness + 15)}%) 100%)`;
+
+  return {
+    ratio,
+    lightness,
+    saturation,
+    glowRadius,
+    glowColor,
+    primaryColor,
+    fillGradient,
+    thumbGlow: `0 0 ${glowRadius + 6}px ${glowColor}, 0 2px 8px rgba(0,0,0,0.8)`,
+    badgeBg: `hsla(${hue}, 90%, 30%, ${0.15 + ratio * 0.25})`,
+    badgeBorder: `hsla(${hue}, 100%, ${lightness}%, ${0.3 + ratio * 0.5})`,
+    badgeText: `hsl(${hue}, 100%, ${Math.min(95, lightness + 10)}%)`,
+    conduitGlow: `0 0 ${glowRadius + 4}px ${glowColor}`,
+    cardBgOpacity: 0.8 + ratio * 0.15
+  };
+}
+
+const SleekProgressiveSlider: React.FC<DynamicColorProps> = ({ value, onChange, accentColor, title }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const lastTickRef = useRef<number>(Math.floor(value / 15));
   const trackRef = useRef<HTMLDivElement>(null);
 
   const percentage = Math.min(100, Math.max(0, (value / 240) * 100));
-  const ratio = value / 240; // 0.0 to 1.0 for dynamic intensity
   const { time, xp, isMax } = formatDurationLabel(value);
-
-  const isEmerald = accentColor === 'emerald';
+  const lum = getDynamicLuminescence(value, accentColor);
 
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawVal = parseInt(e.target.value, 10);
-    // Snap to 5-minute increments for buttery feel
     const snappedVal = Math.min(240, Math.max(0, rawVal));
     
-    // Play acoustic tick on 15-minute boundary crossing
+    // Acoustic tick on 15-minute boundary crossing
     const current15mStep = Math.floor(snappedVal / 15);
     if (current15mStep !== lastTickRef.current) {
       lastTickRef.current = current15mStep;
@@ -92,15 +142,6 @@ const SleekProgressiveSlider: React.FC<SleekSliderProps> = ({ value, onChange, a
     onChange(snappedVal, x, y);
   };
 
-  // Dynamic Intensity Calculations
-  // Low time: subtle luminescence (opacity ~0.35, bloom 4px)
-  // High time: blinding incandescent laser core (opacity 1.0, bloom 24px)
-  const glowOpacity = Math.max(0.2, Math.min(1, 0.25 + ratio * 0.75));
-  const glowBlur = Math.round(4 + ratio * 20);
-  const shadowColor = isEmerald
-    ? `rgba(0, 230, 153, ${glowOpacity})`
-    : `rgba(229, 185, 92, ${glowOpacity})`;
-
   return (
     <div
       className="space-y-2 mt-3 pt-2.5 border-t border-white/[0.06] relative select-none"
@@ -114,12 +155,14 @@ const SleekProgressiveSlider: React.FC<SleekSliderProps> = ({ value, onChange, a
       {/* Sleek Minimalist Readout Bar */}
       <div className="flex items-center justify-between text-[11px]">
         <div className="flex items-center gap-1.5">
-          <Clock className={`h-3 w-3 ${isEmerald ? 'text-emerald-400' : 'text-amber-400'}`} />
+          <Clock
+            className="h-3 w-3 transition-colors duration-150"
+            style={{ color: lum.primaryColor }}
+          />
           <span className="text-slate-400 font-medium">Duration:</span>
           <span
-            className={`font-mono font-bold tracking-tight transition-colors duration-200 ${
-              value > 0 ? (isEmerald ? 'text-emerald-300' : 'text-amber-300') : 'text-slate-500'
-            }`}
+            className="font-mono font-bold tracking-tight transition-colors duration-150"
+            style={{ color: lum.primaryColor, textShadow: value > 0 ? `0 0 ${lum.glowRadius / 2}px ${lum.glowColor}` : 'none' }}
           >
             {time}
           </span>
@@ -132,12 +175,12 @@ const SleekProgressiveSlider: React.FC<SleekSliderProps> = ({ value, onChange, a
 
         <div className="flex items-center gap-1 font-mono">
           <span
-            className="px-2 py-0.5 rounded-lg border font-bold text-[10px] transition-all duration-200"
+            className="px-2 py-0.5 rounded-lg border font-bold text-[10px] transition-all duration-150"
             style={{
-              backgroundColor: value > 0 ? (isEmerald ? 'rgba(0,230,153,0.15)' : 'rgba(229,185,92,0.15)') : 'rgba(255,255,255,0.03)',
-              borderColor: value > 0 ? (isEmerald ? 'rgba(0,230,153,0.3)' : 'rgba(229,185,92,0.3)') : 'rgba(255,255,255,0.06)',
-              color: value > 0 ? (isEmerald ? '#6ee7b7' : '#fde68a') : '#64748b',
-              boxShadow: value > 0 ? `0 0 ${glowBlur / 2}px ${shadowColor}` : 'none'
+              backgroundColor: lum.badgeBg,
+              borderColor: lum.badgeBorder,
+              color: lum.badgeText,
+              boxShadow: value > 0 ? `0 0 ${lum.glowRadius / 2}px ${lum.glowColor}` : 'none'
             }}
           >
             +{xp} XP
@@ -145,18 +188,19 @@ const SleekProgressiveSlider: React.FC<SleekSliderProps> = ({ value, onChange, a
         </div>
       </div>
 
-      {/* Ultra-Slim Precision Track & Micro Jewel Dial */}
+      {/* Ultra-Slim Precision Track & Dynamic Luminescence Dial */}
       <div className="relative py-2.5 flex items-center group">
         {/* Floating Minimalist Telemetry Pill */}
         {(isHovered || isDragging) && (
           <div
-            className="absolute bottom-full mb-2 -translate-x-1/2 px-2.5 py-0.5 rounded-md bg-[#070b14]/95 border border-white/20 backdrop-blur-md shadow-xl pointer-events-none text-[10px] font-mono font-bold whitespace-nowrap z-30 transition-opacity duration-150"
+            className="absolute bottom-full mb-2 -translate-x-1/2 px-2.5 py-0.5 rounded-md bg-[#070b14]/95 border backdrop-blur-md shadow-xl pointer-events-none text-[10px] font-mono font-bold whitespace-nowrap z-30 transition-opacity duration-150"
             style={{
               left: `${Math.max(10, Math.min(90, percentage))}%`,
-              borderColor: isEmerald ? 'rgba(0,230,153,0.4)' : 'rgba(229,185,92,0.4)'
+              borderColor: lum.badgeBorder,
+              boxShadow: `0 4px 14px rgba(0,0,0,0.8), 0 0 ${lum.glowRadius}px ${lum.glowColor}`
             }}
           >
-            <span className={isEmerald ? 'text-emerald-300' : 'text-amber-300'}>{time}</span>
+            <span style={{ color: lum.primaryColor }}>{time}</span>
             <span className="text-slate-500 mx-1">•</span>
             <span className="text-white">+{xp} XP</span>
           </div>
@@ -164,15 +208,13 @@ const SleekProgressiveSlider: React.FC<SleekSliderProps> = ({ value, onChange, a
 
         {/* 4px Razor-Slim Titanium Track */}
         <div className="relative w-full h-1.5 rounded-full bg-white/[0.08] border border-white/[0.08] overflow-hidden shadow-inner">
-          {/* Progressive Luminescence Liquid Fill */}
+          {/* Progressive Dynamic Luminescence Fill */}
           <div
-            className="absolute top-0 bottom-0 left-0 rounded-full"
+            className="absolute top-0 bottom-0 left-0 rounded-full transition-all duration-75"
             style={{
               width: `${percentage}%`,
-              background: isEmerald
-                ? `linear-gradient(90deg, rgba(16,185,129,${0.4 + ratio * 0.4}) 0%, rgba(52,211,153,${0.7 + ratio * 0.3}) 60%, rgba(255,255,255,${ratio > 0.8 ? 0.9 : 0.4}) 100%)`
-                : `linear-gradient(90deg, rgba(217,119,6,${0.4 + ratio * 0.4}) 0%, rgba(251,191,36,${0.7 + ratio * 0.3}) 60%, rgba(255,255,255,${ratio > 0.8 ? 0.9 : 0.4}) 100%)`,
-              boxShadow: `0 0 ${glowBlur}px ${shadowColor}, inset 0 1px 0 rgba(255,255,255,0.4)`
+              background: lum.fillGradient,
+              boxShadow: value > 0 ? `0 0 ${lum.glowRadius}px ${lum.glowColor}, inset 0 1px 0 rgba(255,255,255,0.6)` : 'none'
             }}
           />
         </div>
@@ -193,24 +235,22 @@ const SleekProgressiveSlider: React.FC<SleekSliderProps> = ({ value, onChange, a
           title={`Set ${title} duration`}
         />
 
-        {/* Micro Precision Jewel-Cut Dial */}
+        {/* Dynamic Glowing Jewel Dial */}
         <div
           className="absolute top-1/2 -translate-y-1/2 -ml-2 h-4 w-4 rounded-full pointer-events-none transition-transform duration-75 flex items-center justify-center z-10"
           style={{
             left: `${percentage}%`,
             background: 'radial-gradient(circle at 35% 30%, #ffffff 0%, #cbd5e1 45%, #475569 100%)',
-            border: `1.5px solid ${value > 0 ? (isEmerald ? '#34d399' : '#fbbf24') : 'rgba(255,255,255,0.3)'}`,
-            boxShadow: value > 0
-              ? `0 0 ${glowBlur + 4}px ${shadowColor}, 0 2px 6px rgba(0,0,0,0.8)`
-              : '0 2px 6px rgba(0,0,0,0.6)'
+            border: `1.5px solid ${value > 0 ? lum.primaryColor : 'rgba(255,255,255,0.3)'}`,
+            boxShadow: lum.thumbGlow
           }}
         >
-          {/* Inner Core Light */}
+          {/* Center Gemstone Core Light */}
           <div
-            className="h-1.5 w-1.5 rounded-full"
+            className="h-1.5 w-1.5 rounded-full transition-colors duration-150"
             style={{
-              backgroundColor: value > 0 ? (isEmerald ? '#00e699' : '#e5b95c') : '#94a3b8',
-              boxShadow: value > 0 ? `0 0 6px ${shadowColor}` : 'none'
+              backgroundColor: lum.primaryColor,
+              boxShadow: value > 0 ? `0 0 ${lum.glowRadius / 2}px ${lum.glowColor}` : 'none'
             }}
           />
         </div>
@@ -219,10 +259,12 @@ const SleekProgressiveSlider: React.FC<SleekSliderProps> = ({ value, onChange, a
       {/* Slim Hour Ticks */}
       <div className="flex items-center justify-between text-[9px] font-mono text-slate-500 px-0.5">
         <span className={value === 0 ? 'text-white font-bold' : ''}>0h</span>
-        <span className={value >= 60 && value < 120 ? (isEmerald ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold') : ''}>1h</span>
-        <span className={value >= 120 && value < 180 ? (isEmerald ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold') : ''}>2h</span>
-        <span className={value >= 180 && value < 240 ? (isEmerald ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold') : ''}>3h</span>
-        <span className={isMax ? (isEmerald ? 'text-emerald-300 font-black' : 'text-amber-300 font-black') : ''}>4h MAX</span>
+        <span style={{ color: value >= 60 && value < 120 ? lum.primaryColor : undefined, fontWeight: value >= 60 && value < 120 ? 'bold' : 'normal' }}>1h</span>
+        <span style={{ color: value >= 120 && value < 180 ? lum.primaryColor : undefined, fontWeight: value >= 120 && value < 180 ? 'bold' : 'normal' }}>2h</span>
+        <span style={{ color: value >= 180 && value < 240 ? lum.primaryColor : undefined, fontWeight: value >= 180 && value < 240 ? 'bold' : 'normal' }}>3h</span>
+        <span style={{ color: isMax ? lum.primaryColor : undefined, fontWeight: isMax ? '900' : 'normal', textShadow: isMax ? `0 0 8px ${lum.glowColor}` : 'none' }}>
+          4h MAX
+        </span>
       </div>
     </div>
   );
@@ -260,7 +302,11 @@ export const OverviewDashboard: React.FC = () => {
 
   const completedCount = (workoutMinutes > 0 ? 1 : 0) + (financeMinutes > 0 ? 1 : 0) + (hasDisciplineToday ? 1 : 0);
 
-  // Chain Slider Drag Handler
+  // Luminescence profiles for the cards themselves
+  const workoutLum = getDynamicLuminescence(workoutMinutes, 'emerald');
+  const financeLum = getDynamicLuminescence(financeMinutes, 'gold');
+
+  // Slider Drag Handler
   const handleDurationChange = (
     type: 'STRENGTH' | 'MODELING',
     newMinutes: number,
@@ -366,29 +412,46 @@ export const OverviewDashboard: React.FC = () => {
             </h3>
           </div>
           <span className="text-[10px] text-cyan-400 font-mono font-bold">
-            SLIDE TO BOOST XP & PERCENTILE
+            SLIDE TO BOOST INTENSITY & XP
           </span>
         </div>
 
-        {/* Task 1: Workout Protocol (Cyber Emerald Progressive Luminescence) */}
-        <div className={`p-4 rounded-2xl border transition-all duration-200 ${
-          workoutMinutes > 0
-            ? 'laser-conduit-emerald bg-emerald-950/25 border-emerald-500/40 pl-5'
-            : 'bg-[#0f1424]/80 border-white/10 hover:border-emerald-500/30'
-        }`}>
+        {/* Task 1: Workout Protocol (Dynamic Luminescence Scaling) */}
+        <div
+          className={`p-4 rounded-2xl border transition-all duration-200 ${
+            workoutMinutes > 0
+              ? 'laser-conduit-emerald pl-5'
+              : 'bg-[#0f1424]/80 border-white/10 hover:border-emerald-500/30'
+          }`}
+          style={{
+            backgroundColor: workoutMinutes > 0 ? `rgba(6, 78, 59, ${0.15 + workoutLum.ratio * 0.25})` : undefined,
+            borderColor: workoutMinutes > 0 ? workoutLum.badgeBorder : undefined,
+            boxShadow: workoutMinutes > 0 ? `0 0 ${workoutLum.glowRadius * 1.2}px ${workoutLum.glowColor}` : undefined
+          }}
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-xl transition-all ${
-                workoutMinutes > 0
-                  ? 'bg-emerald-400 text-black shadow-cyber-emerald'
-                  : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-              }`}>
+              <div
+                className="p-2 rounded-xl transition-all duration-150"
+                style={{
+                  backgroundColor: workoutMinutes > 0 ? workoutLum.primaryColor : 'rgba(16, 185, 129, 0.15)',
+                  color: workoutMinutes > 0 ? '#000000' : '#34d399',
+                  boxShadow: workoutMinutes > 0 ? `0 0 ${workoutLum.glowRadius}px ${workoutLum.glowColor}` : 'none'
+                }}
+              >
                 <Dumbbell className="h-4 w-4" />
               </div>
 
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[9px] font-mono font-extrabold text-emerald-400 bg-emerald-950/60 px-1.5 py-0.2 rounded border border-emerald-500/30">
+                  <span
+                    className="text-[9px] font-mono font-extrabold px-1.5 py-0.2 rounded border transition-colors duration-150"
+                    style={{
+                      color: workoutLum.primaryColor,
+                      backgroundColor: workoutMinutes > 0 ? workoutLum.badgeBg : 'rgba(6, 78, 59, 0.6)',
+                      borderColor: workoutMinutes > 0 ? workoutLum.badgeBorder : 'rgba(16, 185, 129, 0.3)'
+                    }}
+                  >
                     PHYSIQUE
                   </span>
                   <h4 className="text-xs sm:text-sm font-extrabold text-white tracking-tight">
@@ -402,7 +465,10 @@ export const OverviewDashboard: React.FC = () => {
             </div>
 
             {workoutMinutes > 0 ? (
-              <CheckCircle2 className="h-5 w-5 text-emerald-400 drop-shadow-[0_0_8px_rgba(0,230,153,0.8)]" />
+              <CheckCircle2
+                className="h-5 w-5 transition-colors duration-150"
+                style={{ color: workoutLum.primaryColor, filter: `drop-shadow(0 0 ${workoutLum.glowRadius / 2}px ${workoutLum.glowColor})` }}
+              />
             ) : (
               <Circle className="h-5 w-5 text-slate-600" />
             )}
@@ -417,25 +483,42 @@ export const OverviewDashboard: React.FC = () => {
           />
         </div>
 
-        {/* Task 2: Financial Mastery (Porsche Gold Progressive Luminescence) */}
-        <div className={`p-4 rounded-2xl border transition-all duration-200 ${
-          financeMinutes > 0
-            ? 'laser-conduit-gold bg-amber-950/25 border-amber-500/40 pl-5'
-            : 'bg-[#0f1424]/80 border-white/10 hover:border-amber-500/30'
-        }`}>
+        {/* Task 2: Financial Mastery (Dynamic Luminescence Scaling) */}
+        <div
+          className={`p-4 rounded-2xl border transition-all duration-200 ${
+            financeMinutes > 0
+              ? 'laser-conduit-gold pl-5'
+              : 'bg-[#0f1424]/80 border-white/10 hover:border-amber-500/30'
+          }`}
+          style={{
+            backgroundColor: financeMinutes > 0 ? `rgba(120, 53, 15, ${0.15 + financeLum.ratio * 0.25})` : undefined,
+            borderColor: financeMinutes > 0 ? financeLum.badgeBorder : undefined,
+            boxShadow: financeMinutes > 0 ? `0 0 ${financeLum.glowRadius * 1.2}px ${financeLum.glowColor}` : undefined
+          }}
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-xl transition-all ${
-                financeMinutes > 0
-                  ? 'bg-amber-400 text-black shadow-porsche-gold'
-                  : 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
-              }`}>
+              <div
+                className="p-2 rounded-xl transition-all duration-150"
+                style={{
+                  backgroundColor: financeMinutes > 0 ? financeLum.primaryColor : 'rgba(245, 158, 11, 0.15)',
+                  color: financeMinutes > 0 ? '#000000' : '#fbbf24',
+                  boxShadow: financeMinutes > 0 ? `0 0 ${financeLum.glowRadius}px ${financeLum.glowColor}` : 'none'
+                }}
+              >
                 <LineChart className="h-4 w-4" />
               </div>
 
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[9px] font-mono font-extrabold text-amber-400 bg-amber-950/60 px-1.5 py-0.2 rounded border border-amber-500/30">
+                  <span
+                    className="text-[9px] font-mono font-extrabold px-1.5 py-0.2 rounded border transition-colors duration-150"
+                    style={{
+                      color: financeLum.primaryColor,
+                      backgroundColor: financeMinutes > 0 ? financeLum.badgeBg : 'rgba(120, 53, 15, 0.6)',
+                      borderColor: financeMinutes > 0 ? financeLum.badgeBorder : 'rgba(245, 158, 11, 0.3)'
+                    }}
+                  >
                     WEALTH
                   </span>
                   <h4 className="text-xs sm:text-sm font-extrabold text-white tracking-tight">
@@ -449,7 +532,10 @@ export const OverviewDashboard: React.FC = () => {
             </div>
 
             {financeMinutes > 0 ? (
-              <CheckCircle2 className="h-5 w-5 text-amber-400 drop-shadow-[0_0_8px_rgba(229,185,92,0.8)]" />
+              <CheckCircle2
+                className="h-5 w-5 transition-colors duration-150"
+                style={{ color: financeLum.primaryColor, filter: `drop-shadow(0 0 ${financeLum.glowRadius / 2}px ${financeLum.glowColor})` }}
+              />
             ) : (
               <Circle className="h-5 w-5 text-slate-600" />
             )}
