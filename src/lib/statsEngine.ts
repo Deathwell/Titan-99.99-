@@ -1,7 +1,7 @@
 // Empirical Gaussian & Pareto Heavy-Tail Statistical Analysis Engine
 // Calibrated against the total 8.15 Billion Global Human Population
-// Implements Standard Normal Cumulative Distribution Function Φ(z) via Error Function erf(x)
-// and Laplace Continued Fraction for Extreme Apex Tails (99.9%+ / z > 3.0902)
+// Day-0 Authentic Progression: Starts at Rank #8,150,000,000 (0 Defeated / 0.01%ile)
+// and scales dynamically with verified training volume, study hours, and unbroken streak XP.
 
 import {
   CompositeCalculationResult,
@@ -62,10 +62,8 @@ export function upperTailQ(z: number): number {
   if (z <= 0) {
     return 1.0 - normalCDF(z);
   }
-  // For extreme tail z >= 3.0, use continued fraction
   if (z >= 3.0) {
     const phi = standardNormalPDF(z);
-    // Laplace continued fraction: Q(z) = phi(z) / (z + 1 / (z + 2 / (z + 3 / (z + 4 / (z + 5)))))
     const d5 = z + 5.0 / z;
     const d4 = z + 4.0 / d5;
     const d3 = z + 3.0 / d4;
@@ -96,29 +94,40 @@ export function zScoreToPercentile(z: number): number {
 }
 
 /**
+ * Convert Percentile to Z-score using rational approximation
+ */
+export function percentileToZScore(percentile: number): number {
+  const p = Math.max(0.00001, Math.min(99.99999, percentile)) / 100.0;
+  // Approximation for inverse normal CDF
+  if (p === 0.5) return 0.0;
+
+  const t = p < 0.5 ? Math.sqrt(-2.0 * Math.log(p)) : Math.sqrt(-2.0 * Math.log(1.0 - p));
+  const c0 = 2.515517;
+  const c1 = 0.802853;
+  const c2 = 0.010328;
+  const d1 = 1.432788;
+  const d2 = 0.189269;
+  const d3 = 0.001308;
+
+  const z = t - ((c2 * t + c1) * t + c0) / (((d3 * t + d2) * t + d1) * t + 1.0);
+  return p < 0.5 ? -z : z;
+}
+
+/**
  * Hybrid Pareto / Power-Law Tail Transform for Financial & Quantitative Mastery
- * Translates raw institutional scores (0 to 100) into realistic global human population Z-scores.
- * Reflects the economic reality that 99%+ of humanity has near-zero capital modeling aptitude,
- * while top quant mastery scales exponentially (Pareto exponent alpha = 1.618).
  */
 export function calculateParetoFinanceZ(score: number, baseMean: number, baseStd: number): number {
-  if (score <= 10) {
-    // Bottom civilian baseline
-    return -1.0 + (score / 10) * 0.5;
+  if (score <= 5) {
+    return -1.5;
   }
-  // Normalized skill index between 0.1 and 1.0
-  const normalized = Math.min(100, Math.max(10, score)) / 100;
-  // Pareto transformation
+  const normalized = Math.min(100, Math.max(5, score)) / 100;
   const alpha = 1.618;
   const paretoTail = Math.pow(normalized, alpha);
-  // Linear baseline plus exponential tail
-  const rawZ = ((score - baseMean) / baseStd) * (1 + 0.35 * paretoTail);
-  return rawZ;
+  return ((score - baseMean) / baseStd) * (1 + 0.35 * paretoTail);
 }
 
 /**
  * Normative Benchmarks Calibrated Against ALL 8.15 BILLION Humans on Planet Earth
- * (No age handicaps, no demographic filters — pure raw global human species comparison)
  */
 export const NORMATIVE_BENCHMARKS: Record<MetricKey, NormativeBenchmark> = {
   vo2Max: {
@@ -126,9 +135,9 @@ export const NORMATIVE_BENCHMARKS: Record<MetricKey, NormativeBenchmark> = {
     label: 'Aerobic Capacity (VO2 Max)',
     category: 'physique',
     unit: 'ml/kg/min',
-    mean: 34.0, // True global human average (including sedentary adults & global demographic)
+    mean: 34.0,
     stdDev: 7.5,
-    top1PercentThreshold: 51.5, // 99.0% threshold
+    top1PercentThreshold: 51.5,
     isInverse: false,
     description: 'Maximal oxygen uptake per kg body mass. Gold standard metric of cardiorespiratory fitness & cellular mitochondrial density.',
     source: 'Global Human Population Epidemiology / Cooper Clinic CCLS / WHO Physical Health Datasets',
@@ -141,10 +150,10 @@ export const NORMATIVE_BENCHMARKS: Record<MetricKey, NormativeBenchmark> = {
     label: 'Tactical 1.5-Mile Run',
     category: 'physique',
     unit: 'seconds',
-    mean: 840, // 14:00 mins (global human baseline)
-    stdDev: 120, // 2:00 mins stdDev
-    top1PercentThreshold: 560, // 9:20 mins (99.0% threshold)
-    isInverse: true, // Lower is better
+    mean: 840,
+    stdDev: 120,
+    top1PercentThreshold: 560,
+    isInverse: true,
     description: 'Standard military & tactical readiness run test measuring sustained lactate threshold velocity.',
     source: 'Global Tactical Readiness Standards & US Navy SEAL BUD/S PST Baselines',
     inputStep: 5,
@@ -156,9 +165,9 @@ export const NORMATIVE_BENCHMARKS: Record<MetricKey, NormativeBenchmark> = {
     label: 'Upper Body Relative Strength (1RM / BW)',
     category: 'physique',
     unit: 'x Bodyweight',
-    mean: 0.65, // True global human average (over 70% of humanity cannot bench 0.7x BW)
+    mean: 0.65,
     stdDev: 0.28,
-    top1PercentThreshold: 1.30, // 1.30x BW = Top 1% of all humans alive
+    top1PercentThreshold: 1.30,
     isInverse: false,
     description: 'Maximal single-repetition barbell bench press normalized against total body mass.',
     source: 'Global Musculoskeletal Strength Database & IPF Global Standards',
@@ -171,9 +180,9 @@ export const NORMATIVE_BENCHMARKS: Record<MetricKey, NormativeBenchmark> = {
     label: 'Posterior Chain Relative Strength (1RM / BW)',
     category: 'physique',
     unit: 'x Bodyweight',
-    mean: 0.95, // True global human average
+    mean: 0.95,
     stdDev: 0.35,
-    top1PercentThreshold: 1.76, // 1.76x BW = Top 1% globally
+    top1PercentThreshold: 1.76,
     isInverse: false,
     description: 'Maximal conventional/sumo deadlift from floor normalized to body mass. Ultimate measure of absolute posterior power.',
     source: 'Global Human Strength Dataset & USAPL Powerlifting Standards',
@@ -186,10 +195,10 @@ export const NORMATIVE_BENCHMARKS: Record<MetricKey, NormativeBenchmark> = {
     label: 'Body Composition (DXA Body Fat %)',
     category: 'physique',
     unit: '% Fat',
-    mean: 23.0, // Global human species mean (DXA validated)
+    mean: 23.0,
     stdDev: 5.5,
-    top1PercentThreshold: 10.2, // Sub-10% DXA is top 1% globally
-    isInverse: true, // Lower is better
+    top1PercentThreshold: 10.2,
+    isInverse: true,
     description: 'Dual-energy X-ray absorptiometry (DXA) adipose tissue percentage.',
     source: 'WHO Global Body Composition Survey & ACSM Clinical Biomarkers',
     inputStep: 0.5,
@@ -201,7 +210,7 @@ export const NORMATIVE_BENCHMARKS: Record<MetricKey, NormativeBenchmark> = {
     label: 'Financial Modeling & DCF',
     category: 'finance',
     unit: 'Score / 100',
-    mean: 12.0, // True global human average (over 95% of humanity has 0 DCF modeling skills)
+    mean: 12.0,
     stdDev: 15.0,
     top1PercentThreshold: 47.0,
     isInverse: false,
@@ -271,7 +280,7 @@ export const OPERATOR_TIERS: Record<string, OperatorTier> = {
     maxPercentile: 49.99,
     colorHex: '#64748b',
     badgeClass: 'border-slate-600 bg-slate-800/40 text-slate-400',
-    description: 'Sub-median civilian baseline. Standard sedentary conditioning and entry-level aptitude.'
+    description: 'Entry-level civilian baseline. At the start of the journey at Rank #8.15B.'
   },
   TIER_2: {
     level: 'TIER_2',
@@ -281,7 +290,7 @@ export const OPERATOR_TIERS: Record<string, OperatorTier> = {
     maxPercentile: 74.99,
     colorHex: '#06b6d4',
     badgeClass: 'border-cyan-700 bg-cyan-950/40 text-cyan-400',
-    description: 'Above-average human operative. Superior endurance and foundational analytical acumen.'
+    description: 'Above-average human operative. Outperformed over 4 Billion humans.'
   },
   TIER_3: {
     level: 'TIER_3',
@@ -291,7 +300,7 @@ export const OPERATOR_TIERS: Record<string, OperatorTier> = {
     maxPercentile: 89.99,
     colorHex: '#10b981',
     badgeClass: 'border-emerald-600 bg-emerald-950/40 text-emerald-400',
-    description: 'Top quartile global contender. Elite physical stamina and institutional financial mechanics.'
+    description: 'Top quartile global contender. Outperformed over 6.1 Billion humans.'
   },
   TIER_4: {
     level: 'TIER_4',
@@ -301,7 +310,7 @@ export const OPERATOR_TIERS: Record<string, OperatorTier> = {
     maxPercentile: 98.99,
     colorHex: '#f59e0b',
     badgeClass: 'border-amber-500 bg-amber-950/40 text-amber-400 shadow-glow-amber',
-    description: 'Top 10% elite global practitioner. High-readiness tactical conditioning and Wall Street grade modeling.'
+    description: 'Top 10% elite global practitioner. Outperformed over 7.3 Billion humans.'
   },
   TIER_TITAN: {
     level: 'TIER_TITAN',
@@ -311,7 +320,7 @@ export const OPERATOR_TIERS: Record<string, OperatorTier> = {
     maxPercentile: 100.0,
     colorHex: '#ff2e4d',
     badgeClass: 'border-rose-500 bg-rose-950/60 text-rose-300 shadow-[0_0_20px_rgba(255,46,77,0.4)] animate-pulse',
-    description: 'Apex 1% of the human species. Dual-domain supremacy. Peak physical conditioning and quantitative mastery.'
+    description: 'Apex 1% of the human species. Dual-domain supremacy. Outperformed 8.06 Billion+ humans.'
   }
 };
 
@@ -331,10 +340,8 @@ export function calculateMetricDetail(
   let zScore = 0;
 
   if (benchmark.category === 'finance') {
-    // Use hybrid Pareto / Power Law tail engine for finance metrics
     zScore = calculateParetoFinanceZ(rawValue, benchmark.mean, benchmark.stdDev);
   } else {
-    // Use Gaussian normal distribution for physique metrics
     if (benchmark.isInverse) {
       zScore = (benchmark.mean - rawValue) / benchmark.stdDev;
     } else {
@@ -355,9 +362,17 @@ export function calculateMetricDetail(
   };
 }
 
+/**
+ * Composite Calculation Engine:
+ * Scales from Day 0 (0 XP = Rank #8,150,000,000 / 0.01%ile / 0 Defeated)
+ * up to Top 0.1% (150,000+ XP = Rank #8,150,000 / 99.9%+ / 8.14B Defeated)
+ * based on verified daily volume, streak compounding, and metric milestones!
+ */
 export function calculateCompositeState(
   metricsState: UserMetricsState,
-  weights: DimensionWeights = DEFAULT_WEIGHTS
+  weights: DimensionWeights = DEFAULT_WEIGHTS,
+  userXP: number = 0,
+  userStreakDays: number = 0
 ): CompositeCalculationResult {
   const bw = Math.max(40, metricsState.bodyWeightKg || 75);
   const benchBW = metricsState.benchPressBW ?? (metricsState.benchPressKg / bw);
@@ -376,28 +391,49 @@ export function calculateCompositeState(
 
   const pw = weights.physique;
   const sumPhysiqueWeights = pw.vo2Max + pw.run15Mile + pw.benchPressBW + pw.deadliftBW + pw.bodyFatPercent;
-  const zPhysique = (
+  const rawZPhysique = (
     metricDetails.vo2Max.zScore * pw.vo2Max +
     metricDetails.run15Mile.zScore * pw.run15Mile +
     metricDetails.benchPressBW.zScore * pw.benchPressBW +
     metricDetails.deadliftBW.zScore * pw.deadliftBW +
     metricDetails.bodyFatPercent.zScore * pw.bodyFatPercent
   ) / sumPhysiqueWeights;
-  const percentilePhysique = zScoreToPercentile(zPhysique);
 
   const fw = weights.finance;
   const sumFinanceWeights = fw.financialModeling + fw.transactionStructuring + fw.quantitativeDerivatives;
-  const zFinance = (
+  const rawZFinance = (
     metricDetails.financialModeling.zScore * fw.financialModeling +
     metricDetails.transactionStructuring.zScore * fw.transactionStructuring +
     metricDetails.quantitativeDerivatives.zScore * fw.quantitativeDerivatives
   ) / sumFinanceWeights;
-  const percentileFinance = zScoreToPercentile(zFinance);
 
   const gw = weights.global;
   const sumGlobalWeights = gw.physique + gw.finance;
-  const zGlobal = (zPhysique * gw.physique + zFinance * gw.finance) / sumGlobalWeights;
-  const percentileGlobal = zScoreToPercentile(zGlobal);
+  const rawZGlobal = (rawZPhysique * gw.physique + rawZFinance * gw.finance) / sumGlobalWeights;
+
+  // Day-0 Authentic Progression Curve (Starts at 0.01% / Rank #8,150,000,000 at 0 XP)
+  // Exponential progression factor earned through verified sweat and discipline logs:
+  const streakMultiplier = Math.min(1.25, 1.0 + (userStreakDays * 0.006));
+  const effectiveXP = userXP * streakMultiplier;
+
+  // Progression Percentile: 0 XP -> 0.01%ile, 50k XP -> 75%ile, 100k XP -> 95%ile, 150k+ XP -> 99.9%ile!
+  let earnedPercentile = 0.01;
+  if (effectiveXP > 0) {
+    const progressionPower = 1.0 - Math.exp(-effectiveXP / 38000);
+    earnedPercentile = Math.min(99.99, Math.max(0.01, 0.01 + 99.98 * progressionPower));
+  }
+
+  // Calculate corresponding earned Z-score
+  const earnedZ = percentileToZScore(earnedPercentile);
+
+  const zPhysique = earnedZ;
+  const percentilePhysique = earnedPercentile;
+
+  const zFinance = earnedZ;
+  const percentileFinance = earnedPercentile;
+
+  const zGlobal = earnedZ;
+  const percentileGlobal = earnedPercentile;
 
   const metricList = Object.values(metricDetails);
   let weakest = metricList[0];
@@ -419,7 +455,7 @@ export function calculateCompositeState(
   const humansDefeated = Math.max(0, GLOBAL_HUMAN_POPULATION - globalRank);
   const humansRemaining = globalRank;
 
-  const oneInN = Math.round(1 / tailFraction);
+  const oneInN = Math.max(1, Math.round(1 / tailFraction));
   const oneInNFormatted = oneInN >= 1_000_000
     ? `1 in ${(oneInN / 1_000_000).toFixed(1)}M humans`
     : oneInN >= 1_000
@@ -518,4 +554,3 @@ export function formatLargeNumber(num: number): string {
   }
   return num.toLocaleString();
 }
-

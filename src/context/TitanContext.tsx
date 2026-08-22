@@ -207,8 +207,8 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   }, [profile.soundEnabled]);
 
   const composite = useMemo(() => {
-    return calculateCompositeState(metrics, weights);
-  }, [metrics, weights]);
+    return calculateCompositeState(metrics, weights, profile.xp, profile.streakDays);
+  }, [metrics, weights, profile.xp, profile.streakDays]);
 
   // Today's active reward claim
   const todayDateStr = new Date().toISOString().split('T')[0];
