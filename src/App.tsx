@@ -15,13 +15,14 @@ import { VictoryRewardModal } from './components/modals/VictoryRewardModal';
 import { ActiveAlarmModal } from './components/modals/ActiveAlarmModal';
 import { ConfettiCanvas } from './components/effects/ConfettiCanvas';
 import { WelcomeOnboardingModal } from './components/onboarding/WelcomeOnboardingModal';
+import { DecayPenaltyBanner } from './components/layout/DecayPenaltyBanner';
 import { Shield } from 'lucide-react';
 
 const DashboardContent: React.FC = () => {
   const { activeTab, isSyncModalOpen, setIsSyncModalOpen } = useTitan();
 
   return (
-    <div className="min-h-screen flex bg-[#04060a] text-slate-100 selection:bg-cyan-500 selection:text-black">
+    <div className="min-h-screen flex bg-[#04060a] text-slate-100 selection:bg-rose-500 selection:text-white">
       {/* 30-Second First-Time Onboarding for New Users */}
       <WelcomeOnboardingModal />
 
@@ -35,6 +36,9 @@ const DashboardContent: React.FC = () => {
       <div className="flex-1 flex flex-col min-w-0 min-h-screen">
         {/* Sleek Top Navigation Bar */}
         <HeaderHUD />
+
+        {/* Dynamic Inactivity Punishment Banner (If Triggered) */}
+        <DecayPenaltyBanner />
 
         {/* 4 Clean Primary Tab Canvases */}
         <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-12 w-full">
