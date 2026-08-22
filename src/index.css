@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+@theme {
+  --color-titan-bg: #070a12;
+  --color-titan-surface: #0d1322;
+  --color-titan-card: #111827;
+  --color-titan-cardBorder: #1f293d;
+  --color-titan-cardHover: #162238;
+  --color-titan-cyan: #06b6d4;
+  --color-titan-cyanLight: #22d3ee;
+  --color-titan-emerald: #10b981;
+  --color-titan-emeraldLight: #34d399;
+  --color-titan-amber: #f59e0b;
+  --color-titan-amberLight: #fbbf24;
+  --color-titan-crimson: #ef4444;
+  --color-titan-purple: #a855f7;
+  --color-titan-slate: #64748b;
+  --color-titan-slateLight: #94a3b8;
+  --color-titan-textMuted: #94a3b8;
+  --color-titan-textDim: #475569;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background-color: #070a12;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(6, 182, 212, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 100% 100%, rgba(168, 85, 247, 0.05) 0%, transparent 40%),
+    linear-gradient(to bottom, rgba(7, 10, 18, 0.95), #070a12);
+  background-attachment: fixed;
+  color: #e2e8f0;
+  overflow-x: hidden;
+  font-family: 'JetBrains Mono', monospace, ui-monospace, sans-serif;
+}
+
+/* Tactical HUD Grid Overlay */
+.cockpit-grid {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+}
+
+/* Glassmorphism Tactical Card */
+.tactical-card {
+  background: rgba(13, 19, 34, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(30, 41, 59, 0.8);
+  box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.tactical-card:hover {
+  border-color: rgba(6, 182, 212, 0.4);
+}
+
+/* Shadows */
+.shadow-glow-cyan {
+  box-shadow: 0 0 20px -3px rgba(6, 182, 212, 0.35);
+}
+
+.shadow-glow-emerald {
+  box-shadow: 0 0 20px -3px rgba(16, 185, 129, 0.35);
+}
+
+.shadow-glow-amber {
+  box-shadow: 0 0 20px -3px rgba(245, 158, 11, 0.35);
+}
+
+.shadow-glow-purple {
+  box-shadow: 0 0 25px -3px rgba(168, 85, 247, 0.45);
+}
+
+/* Glowing Text */
+.text-glow-cyan {
+  text-shadow: 0 0 12px rgba(6, 182, 212, 0.6), 0 0 24px rgba(6, 182, 212, 0.2);
+}
+
+.text-glow-emerald {
+  text-shadow: 0 0 12px rgba(16, 185, 129, 0.6), 0 0 24px rgba(16, 185, 129, 0.2);
+}
+
+.text-glow-purple {
+  text-shadow: 0 0 15px rgba(168, 85, 247, 0.8), 0 0 30px rgba(168, 85, 247, 0.4);
+}
+
+.text-glow-amber {
+  text-shadow: 0 0 12px rgba(245, 158, 11, 0.6), 0 0 24px rgba(245, 158, 11, 0.2);
+}
+
+/* Custom Tactical Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #070a12;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #06b6d4;
+}
+
+input[type="range"] {
+  accent-color: #06b6d4;
+}

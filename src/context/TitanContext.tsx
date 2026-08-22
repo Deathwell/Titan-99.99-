@@ -1,0 +1,900 @@
+import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode } from 'react';
+import confetti from 'canvas-confetti';
+import {
+  CompositeCalculationResult,
+  DailyQuest,
+  DecayPenaltyEvent,
+  DimensionWeights,
+  FinanceStudyLogEntry,
+  HistoricalSnapshot,
+  NeuralVoiceSettings,
+  NightlyRewardClaim,
+  NightlyRewardKey,
+  SyllabusTopic,
+  TacticalAlarm,
+  UserMetricsState,
+  UserProfile,
+  WorkoutLogEntry
+} from '../types/titan';
+import { calculateCompositeState, DEFAULT_WEIGHTS } from '../lib/statsEngine';
+import { soundEngine } from '../lib/audio';
+import { neuralVoiceService } from '../lib/neuralVoiceService';
+import {
+  exportBackupJSON,
+  importBackupJSON,
+  loadAlarms,
+  loadDecayLogs,
+  loadFinanceLogs,
+  loadHistory,
+  loadMetrics,
+  loadNightlyRewards,
+  loadProfile,
+  loadQuests,
+  loadWeights,
+  loadWorkoutLogs,
+  resetToCleanSlate,
+  saveAlarms,
+  saveDecayLogs,
+  saveFinanceLogs,
+  saveHistory,
+  saveMetrics,
+  saveNightlyRewards,
+  saveProfile,
+  saveQuests,
+  saveWeights,
+  saveWorkoutLogs,
+  loadDemoDataset
+} from '../lib/storage';
+import {
+  CLEAN_START_METRICS,
+  CLEAN_START_PROFILE,
+  DEFAULT_DAILY_QUESTS,
+  DEMO_METRICS,
+  DEMO_USER_PROFILE,
+  generateCleanStartHistory,
+  generateDemoHistory,
+  SYLLABUS_TOPICS
+} from '../lib/defaultData';
+
+export type DailyAccomplishmentType = 'ENDURANCE' | 'STRENGTH' | 'MODELING' | 'QUANT';
+
+interface TitanContextType {
+  profile: UserProfile;
+  metrics: UserMetricsState;
+  weights: DimensionWeights;
+  workoutLogs: WorkoutLogEntry[];
+  financeLogs: FinanceStudyLogEntry[];
+  history: HistoricalSnapshot[];
+  quests: DailyQuest[];
+  decayLogs: DecayPenaltyEvent[];
+  nightlyRewards: NightlyRewardClaim[];
+  todayRewardClaim: NightlyRewardClaim | null;
+  alarms: TacticalAlarm[];
+  activeAlarmRinging: TacticalAlarm | null;
+  composite: CompositeCalculationResult;
+  activeTab: 'overview' | 'charts' | 'physique' | 'finance' | 'alarms' | 'quests' | 'curriculum';
+  setActiveTab: (tab: 'overview' | 'charts' | 'physique' | 'finance' | 'alarms' | 'quests' | 'curriculum') => void;
+  
+  // Modals & Banners
+  isSettingsOpen: boolean;
+  setIsSettingsOpen: (open: boolean) => void;
+  isBackupOpen: boolean;
+  setIsBackupOpen: (open: boolean) => void;
+  isVictoryModalOpen: boolean;
+  openVictoryModal: () => void;
+  closeVictoryModal: () => void;
+  activeQuizTopic: SyllabusTopic | null;
+  setActiveQuizTopic: (topic: SyllabusTopic | null) => void;
+  activeDecayAlert: DecayPenaltyEvent | null;
+  dismissDecayAlert: () => void;
+
+  // Actions
+  updateMetrics: (partial: Partial<UserMetricsState>) => void;
+  updateProfile: (partial: Partial<UserProfile>) => void;
+  updateWeights: (weights: DimensionWeights) => void;
+  updateNeuralVoiceSettings: (settings: Partial<NeuralVoiceSettings>) => void;
+  addWorkoutLog: (entry: Omit<WorkoutLogEntry, 'id' | 'timestamp' | 'dateDisplay'>) => void;
+  addFinanceLog: (entry: Omit<FinanceStudyLogEntry, 'id' | 'timestamp' | 'dateDisplay'>) => void;
+  toggleDailyAccomplishment: (type: DailyAccomplishmentType) => boolean;
+  claimNightlyReward: (key: NightlyRewardKey, customNote?: string) => void;
+  toggleQuest: (id: string) => void;
+  submitQuizScore: (topic: SyllabusTopic, scorePercentage: number) => void;
+  toggleSound: () => void;
+  exportData: () => void;
+  importData: (jsonStr: string) => boolean;
+  resetAllData: () => void;
+  loadDemoMode: () => void;
+  gainXP: (amount: number) => void;
+
+  // Tactical Alarm Actions
+  addAlarm: (alarm: Omit<TacticalAlarm, 'id' | 'createdAt'>) => void;
+  updateAlarm: (id: string, partial: Partial<TacticalAlarm>) => void;
+  deleteAlarm: (id: string) => void;
+  triggerAlarmDirectly: (alarm: TacticalAlarm) => void;
+  dismissAlarm: () => void;
+  snoozeAlarm: (minutes?: number) => void;
+
+  // Real-Time Decay & Punishment Controls
+  simulateMissedDays: (missedCount: number) => void;
+  clearDecayPenalty: () => void;
+}
+
+const TitanContext = createContext<TitanContextType | undefined>(undefined);
+
+function getDaysBetween(dateStr1: string, dateStr2: string): number {
+  try {
+    const d1 = new Date(dateStr1);
+    const d2 = new Date(dateStr2);
+    const diffTime = d2.getTime() - d1.getTime();
+    return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  } catch {
+    return 0;
+  }
+}
+
+export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [profile, setProfile] = useState<UserProfile>(loadProfile);
+  const [metrics, setMetrics] = useState<UserMetricsState>(loadMetrics);
+  const [weights, setWeights] = useState<DimensionWeights>(loadWeights);
+  const [workoutLogs, setWorkoutLogs] = useState<WorkoutLogEntry[]>(loadWorkoutLogs);
+  const [financeLogs, setFinanceLogs] = useState<FinanceStudyLogEntry[]>(loadFinanceLogs);
+  const [history, setHistory] = useState<HistoricalSnapshot[]>(loadHistory);
+  const [quests, setQuests] = useState<DailyQuest[]>(loadQuests);
+  const [decayLogs, setDecayLogs] = useState<DecayPenaltyEvent[]>(loadDecayLogs);
+  const [nightlyRewards, setNightlyRewards] = useState<NightlyRewardClaim[]>(loadNightlyRewards);
+  const [alarms, setAlarms] = useState<TacticalAlarm[]>(loadAlarms);
+  const [activeAlarmRinging, setActiveAlarmRinging] = useState<TacticalAlarm | null>(null);
+  
+  const [activeTab, setActiveTab] = useState<'overview' | 'charts' | 'physique' | 'finance' | 'alarms' | 'quests' | 'curriculum'>('overview');
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isBackupOpen, setIsBackupOpen] = useState(false);
+  const [isVictoryModalOpen, setIsVictoryModalOpen] = useState(false);
+  const [activeQuizTopic, setActiveQuizTopic] = useState<SyllabusTopic | null>(null);
+  const [activeDecayAlert, setActiveDecayAlert] = useState<DecayPenaltyEvent | null>(null);
+
+  const [lastTriggeredMinute, setLastTriggeredMinute] = useState<string>('');
+
+  useEffect(() => {
+    soundEngine.setEnabled(profile.soundEnabled);
+  }, [profile.soundEnabled]);
+
+  const composite = useMemo(() => {
+    return calculateCompositeState(metrics, weights);
+  }, [metrics, weights]);
+
+  // Today's active reward claim
+  const todayDateStr = new Date().toISOString().split('T')[0];
+  const todayRewardClaim = useMemo(() => {
+    return nightlyRewards.find(r => r.date === todayDateStr) || null;
+  }, [nightlyRewards, todayDateStr]);
+
+  // Background Clock Ticker checking for alarms every second
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      const currentHours = now.getHours().toString().padStart(2, '0');
+      const currentMinutes = now.getMinutes().toString().padStart(2, '0');
+      const currentTime24 = `${currentHours}:${currentMinutes}`;
+      const currentFullMinute = `${now.toISOString().split('T')[0]}_${currentTime24}`;
+
+      if (currentFullMinute === lastTriggeredMinute) {
+        return; // Already triggered this minute
+      }
+
+      // Check armed alarms
+      const matchingAlarm = alarms.find(a => a.isEnabled && a.time24h === currentTime24);
+      if (matchingAlarm && !activeAlarmRinging) {
+        setLastTriggeredMinute(currentFullMinute);
+        triggerAlarmDirectly(matchingAlarm);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [alarms, activeAlarmRinging, lastTriggeredMinute]);
+
+  useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
+    const lastActive = profile.lastActiveDate || today;
+    const diffDays = getDaysBetween(lastActive, today);
+
+    if (diffDays > 1) {
+      const missedCount = diffDays - 1;
+      executeDecayPenalty(missedCount, `Inactivity Check: ${missedCount} calendar day(s) missed since ${lastActive}`);
+    }
+  }, []);
+
+  useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
+    setHistory(prev => {
+      const existingIdx = prev.findIndex(h => h.date === today);
+      const newSnapshot: HistoricalSnapshot = {
+        date: today,
+        percentileGlobal: Number(composite.percentileGlobal.toFixed(2)),
+        percentilePhysique: Number(composite.percentilePhysique.toFixed(2)),
+        percentileFinance: Number(composite.percentileFinance.toFixed(2)),
+        zGlobal: Number(composite.zGlobal.toFixed(3)),
+        gainsRecorded: prev[existingIdx]?.gainsRecorded || workoutLogs.length > 0 || financeLogs.length > 0,
+        dayIndex: prev.length
+      };
+
+      let nextHistory: HistoricalSnapshot[];
+      if (existingIdx >= 0) {
+        nextHistory = [...prev];
+        nextHistory[existingIdx] = { ...nextHistory[existingIdx], ...newSnapshot };
+      } else {
+        nextHistory = [...prev, newSnapshot];
+      }
+      saveHistory(nextHistory);
+      return nextHistory;
+    });
+  }, [composite.percentileGlobal, composite.percentilePhysique, composite.percentileFinance, composite.zGlobal]);
+
+  const executeDecayPenalty = (missedDaysCount: number, reason: string) => {
+    if (missedDaysCount <= 0) return;
+
+    let erasedDates: string[] = [];
+    const penaltyXP = missedDaysCount * 250;
+
+    setHistory(prev => {
+      const activeGainSnapshots = prev.filter(h => h.gainsRecorded && !h.isDecayErased);
+      const toEraseCount = Math.min(missedDaysCount, activeGainSnapshots.length);
+
+      if (toEraseCount === 0) return prev;
+
+      const targets = activeGainSnapshots.slice(-toEraseCount);
+      erasedDates = targets.map(t => t.date);
+
+      const updated = prev.map(snap => {
+        if (erasedDates.includes(snap.date)) {
+          const baselinePct = prev[0]?.percentileGlobal || 35.0;
+          return {
+            ...snap,
+            isDecayErased: true,
+            percentileGlobal: baselinePct,
+            percentilePhysique: baselinePct,
+            percentileFinance: baselinePct
+          };
+        }
+        return snap;
+      });
+
+      saveHistory(updated);
+      return updated;
+    });
+
+    setProfile(prev => {
+      const nextXP = Math.max(0, prev.xp - penaltyXP);
+      const nextLevel = Math.floor(Math.sqrt(nextXP / 12)) + 1;
+      const updated: UserProfile = {
+        ...prev,
+        streakDays: 0,
+        xp: nextXP,
+        level: Math.max(1, nextLevel),
+        decayPenaltyActive: true,
+        lastActiveDate: new Date().toISOString().split('T')[0]
+      };
+      saveProfile(updated);
+      return updated;
+    });
+
+    const event: DecayPenaltyEvent = {
+      id: `decay-${Date.now()}`,
+      dateTriggered: new Date().toISOString().split('T')[0],
+      missedDaysCount,
+      erasedDaysCount: Math.max(1, erasedDates.length || missedDaysCount),
+      erasedDates,
+      xpDeducted: penaltyXP,
+      reason
+    };
+
+    setDecayLogs(prev => {
+      const next = [event, ...prev];
+      saveDecayLogs(next);
+      return next;
+    });
+
+    setActiveDecayAlert(event);
+    soundEngine.playAlert();
+  };
+
+  const simulateMissedDays = (missedCount: number) => {
+    executeDecayPenalty(missedCount, `Manual Decay Simulation: ${missedCount} Missed Day(s)`);
+  };
+
+  const clearDecayPenalty = () => {
+    setProfile(prev => {
+      const updated = { ...prev, decayPenaltyActive: false };
+      saveProfile(updated);
+      return updated;
+    });
+    setActiveDecayAlert(null);
+    soundEngine.playClick(800);
+  };
+
+  const dismissDecayAlert = () => {
+    setActiveDecayAlert(null);
+  };
+
+  const triggerConfetti = () => {
+    try {
+      confetti({
+        particleCount: 100,
+        spread: 80,
+        origin: { y: 0.5 },
+        colors: ['#06b6d4', '#10b981', '#a855f7', '#fbbf24', '#f43f5e']
+      });
+    } catch {
+      // Ignore
+    }
+  };
+
+  const openVictoryModal = () => {
+    setIsVictoryModalOpen(true);
+    soundEngine.playMilestoneFanfare();
+    triggerConfetti();
+  };
+
+  const closeVictoryModal = () => {
+    setIsVictoryModalOpen(false);
+  };
+
+  const claimNightlyReward = (key: NightlyRewardKey, customNote?: string) => {
+    const today = new Date().toISOString().split('T')[0];
+    const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const titles: Record<NightlyRewardKey, string> = {
+      GAMING: 'Unrestricted Gaming Night',
+      MEDIA: 'Cinema & Media Immersion',
+      SOCIAL_HANGOUT: 'Night Out with Friends',
+      OUTSIDE_FOOD: 'Guilt-Free Outside Feast',
+      PLEASURE_RELEASE: 'Sensory Pleasure & Release',
+      DEEP_REST: 'Unapologetic Deep Sleep',
+      CUSTOM: customNote || 'Custom Nightly Indulgence'
+    };
+
+    const icons: Record<NightlyRewardKey, string> = {
+      GAMING: '🎮',
+      MEDIA: '🎬',
+      SOCIAL_HANGOUT: '🍻',
+      OUTSIDE_FOOD: '🍕',
+      PLEASURE_RELEASE: '🔞',
+      DEEP_REST: '🛌',
+      CUSTOM: '✍️'
+    };
+
+    const newClaim: NightlyRewardClaim = {
+      id: `reward-${Date.now()}`,
+      date: today,
+      rewardKey: key,
+      title: titles[key],
+      icon: icons[key],
+      customNote,
+      claimedAt: nowTime
+    };
+
+    setNightlyRewards(prev => {
+      const filtered = prev.filter(r => r.date !== today);
+      const updated = [newClaim, ...filtered];
+      saveNightlyRewards(updated);
+      return updated;
+    });
+
+    gainXP(150);
+    soundEngine.playMilestoneFanfare();
+    triggerConfetti();
+  };
+
+  const gainXP = (amount: number) => {
+    setProfile(prev => {
+      const newXP = Math.max(0, prev.xp + amount);
+      const newLevel = Math.floor(Math.sqrt(newXP / 12)) + 1;
+      const leveledUp = newLevel > prev.level;
+
+      if (leveledUp) {
+        soundEngine.playLevelUp();
+        triggerConfetti();
+      }
+
+      const today = new Date().toISOString().split('T')[0];
+      const streakIncrement = (amount > 0 && prev.lastActiveDate !== today) ? 1 : 0;
+
+      const updated = {
+        ...prev,
+        xp: newXP,
+        level: Math.max(1, newLevel),
+        streakDays: Math.max(0, prev.streakDays + streakIncrement),
+        lastActiveDate: today,
+        decayPenaltyActive: false
+      };
+      saveProfile(updated);
+      return updated;
+    });
+  };
+
+  const updateMetrics = (partial: Partial<UserMetricsState>) => {
+    setMetrics(prev => {
+      const next = { ...prev, ...partial };
+      const bw = next.bodyWeightKg || 75;
+      next.benchPressBW = Number((next.benchPressKg / bw).toFixed(3));
+      next.deadliftBW = Number((next.deadliftKg / bw).toFixed(3));
+
+      saveMetrics(next);
+      soundEngine.playClick(920);
+
+      const testComp = calculateCompositeState(next, weights);
+      if (testComp.percentileGlobal >= 99.0 && composite.percentileGlobal < 99.0) {
+        soundEngine.playMilestoneFanfare();
+        triggerConfetti();
+      }
+
+      return next;
+    });
+  };
+
+  const updateProfile = (partial: Partial<UserProfile>) => {
+    setProfile(prev => {
+      const next = { ...prev, ...partial };
+      saveProfile(next);
+      return next;
+    });
+  };
+
+  const updateWeights = (newWeights: DimensionWeights) => {
+    setWeights(newWeights);
+    saveWeights(newWeights);
+    soundEngine.playClick(750);
+  };
+
+  const updateNeuralVoiceSettings = (newSettings: Partial<NeuralVoiceSettings>) => {
+    setProfile(prev => {
+      const current = prev.neuralVoice || {
+        provider: 'OPENAI_GPT4O',
+        openaiVoice: 'nova',
+        studioMasteringEnabled: true
+      };
+      const updatedVoice = { ...current, ...newSettings };
+      const updated = { ...prev, neuralVoice: updatedVoice };
+      saveProfile(updated);
+      return updated;
+    });
+  };
+
+  const addWorkoutLog = (entry: Omit<WorkoutLogEntry, 'id' | 'timestamp' | 'dateDisplay'>) => {
+    const now = new Date();
+    const id = `w-${Date.now()}`;
+    const newLog: WorkoutLogEntry = {
+      ...entry,
+      id,
+      timestamp: now.toISOString(),
+      dateDisplay: 'Today'
+    };
+
+    const updatedLogs = [newLog, ...workoutLogs];
+    setWorkoutLogs(updatedLogs);
+    saveWorkoutLogs(updatedLogs);
+
+    soundEngine.playQuestComplete();
+
+    const today = now.toISOString().split('T')[0];
+    setHistory(prev => {
+      const next = prev.map(h => h.date === today ? { ...h, gainsRecorded: true, isDecayErased: false } : h);
+      saveHistory(next);
+      return next;
+    });
+
+    gainXP(250 + Math.floor(entry.durationMinutes * 3));
+  };
+
+  const addFinanceLog = (entry: Omit<FinanceStudyLogEntry, 'id' | 'timestamp' | 'dateDisplay'>) => {
+    const now = new Date();
+    const id = `f-${Date.now()}`;
+    const newLog: FinanceStudyLogEntry = {
+      ...entry,
+      id,
+      timestamp: now.toISOString(),
+      dateDisplay: 'Today'
+    };
+
+    const updatedLogs = [newLog, ...financeLogs];
+    setFinanceLogs(updatedLogs);
+    saveFinanceLogs(updatedLogs);
+
+    const topic = SYLLABUS_TOPICS.find(s => s.id === entry.topicId);
+    if (topic) {
+      const dim = topic.targetDimension;
+      if (entry.scoreAchieved > metrics[dim]) {
+        updateMetrics({ [dim]: entry.scoreAchieved });
+      }
+    }
+
+    soundEngine.playQuestComplete();
+
+    const today = now.toISOString().split('T')[0];
+    setHistory(prev => {
+      const next = prev.map(h => h.date === today ? { ...h, gainsRecorded: true, isDecayErased: false } : h);
+      saveHistory(next);
+      return next;
+    });
+
+    gainXP(200 + entry.scoreAchieved * 2);
+  };
+
+  const toggleDailyAccomplishment = (type: DailyAccomplishmentType): boolean => {
+    const todayStr = new Date().toISOString().split('T')[0];
+    let isRecordedNow = false;
+
+    if (type === 'ENDURANCE') {
+      const existingIdx = workoutLogs.findIndex(w => w.pillar === 'ENDURANCE' && w.timestamp.startsWith(todayStr));
+      if (existingIdx >= 0) {
+        const updated = workoutLogs.filter((_, idx) => idx !== existingIdx);
+        setWorkoutLogs(updated);
+        saveWorkoutLogs(updated);
+        updateMetrics({ vo2Max: Math.max(25, Number((metrics.vo2Max - 0.4).toFixed(1))), run15Mile: metrics.run15Mile + 4 });
+        gainXP(-350);
+        soundEngine.playClick(600);
+        isRecordedNow = false;
+      } else {
+        addWorkoutLog({
+          pillar: 'ENDURANCE',
+          title: '1 Hour Endurance / Zone 2 Base',
+          durationMinutes: 60,
+          intensity: 'ZONE_2_STEADY',
+          peakHeartRateBpm: 152,
+          caloricBurn: 620,
+          notes: 'Logged 1-hour aerobic endurance mission.'
+        });
+        updateMetrics({ vo2Max: Math.min(75, Number((metrics.vo2Max + 0.4).toFixed(1))), run15Mile: Math.max(480, metrics.run15Mile - 4) });
+        isRecordedNow = true;
+      }
+    } else if (type === 'STRENGTH') {
+      const existingIdx = workoutLogs.findIndex(w => w.pillar === 'STRENGTH' && w.timestamp.startsWith(todayStr));
+      if (existingIdx >= 0) {
+        const updated = workoutLogs.filter((_, idx) => idx !== existingIdx);
+        setWorkoutLogs(updated);
+        saveWorkoutLogs(updated);
+        updateMetrics({ benchPressKg: Math.max(40, metrics.benchPressKg - 1.5), deadliftKg: Math.max(60, metrics.deadliftKg - 2.5) });
+        gainXP(-350);
+        soundEngine.playClick(600);
+        isRecordedNow = false;
+      } else {
+        addWorkoutLog({
+          pillar: 'STRENGTH',
+          title: '1 Hour Heavy Compound Strength',
+          durationMinutes: 60,
+          intensity: 'HEAVY_RESISTANCE',
+          peakHeartRateBpm: 160,
+          caloricBurn: 490,
+          notes: 'Logged 1-hour compound strength session.'
+        });
+        updateMetrics({ benchPressKg: Math.min(220, metrics.benchPressKg + 1.5), deadliftKg: Math.min(350, metrics.deadliftKg + 2.5) });
+        isRecordedNow = true;
+      }
+    } else if (type === 'MODELING') {
+      const existingIdx = financeLogs.findIndex(f => (f.discipline === 'PRIVATE_EQUITY' || f.discipline === 'INVESTMENT_BANKING') && f.timestamp.startsWith(todayStr));
+      if (existingIdx >= 0) {
+        const updated = financeLogs.filter((_, idx) => idx !== existingIdx);
+        setFinanceLogs(updated);
+        saveFinanceLogs(updated);
+        updateMetrics({ transactionStructuring: Math.max(0, metrics.transactionStructuring - 2) });
+        gainXP(-350);
+        soundEngine.playClick(600);
+        isRecordedNow = false;
+      } else {
+        addFinanceLog({
+          discipline: 'PRIVATE_EQUITY',
+          topicId: 'syl-01',
+          topicName: 'LBO Debt Structuring & Cash Sweeps',
+          durationMinutes: 60,
+          scoreAchieved: 94,
+          notes: '1-Hour institutional modeling drill completed.'
+        });
+        updateMetrics({ transactionStructuring: Math.min(100, metrics.transactionStructuring + 2) });
+        isRecordedNow = true;
+      }
+    } else if (type === 'QUANT') {
+      const existingIdx = financeLogs.findIndex(f => (f.discipline === 'QUANT_DERIVATIVES' || f.discipline === 'FACTOR_RISK') && f.timestamp.startsWith(todayStr));
+      if (existingIdx >= 0) {
+        const updated = financeLogs.filter((_, idx) => idx !== existingIdx);
+        setFinanceLogs(updated);
+        saveFinanceLogs(updated);
+        updateMetrics({ quantitativeDerivatives: Math.max(0, metrics.quantitativeDerivatives - 2) });
+        gainXP(-350);
+        soundEngine.playClick(600);
+        isRecordedNow = false;
+      } else {
+        addFinanceLog({
+          discipline: 'QUANT_DERIVATIVES',
+          topicId: 'syl-02',
+          topicName: 'Option Greeks & Vol Surface Fitting',
+          durationMinutes: 60,
+          scoreAchieved: 92,
+          notes: '1-Hour quantitative derivatives drill completed.'
+        });
+        updateMetrics({ quantitativeDerivatives: Math.min(100, metrics.quantitativeDerivatives + 2) });
+        isRecordedNow = true;
+      }
+    }
+
+    if (isRecordedNow) {
+      setTimeout(() => {
+        const currentWorkouts = loadWorkoutLogs().filter(w => w.timestamp.startsWith(todayStr));
+        const currentFinance = loadFinanceLogs().filter(f => f.timestamp.startsWith(todayStr));
+        const eDone = currentWorkouts.some(w => w.pillar === 'ENDURANCE');
+        const sDone = currentWorkouts.some(w => w.pillar === 'STRENGTH');
+        const mDone = currentFinance.some(f => f.discipline === 'PRIVATE_EQUITY' || f.discipline === 'INVESTMENT_BANKING');
+        const qDone = currentFinance.some(f => f.discipline === 'QUANT_DERIVATIVES' || f.discipline === 'FACTOR_RISK');
+
+        if (eDone && sDone && mDone && qDone) {
+          openVictoryModal();
+        }
+      }, 300);
+    }
+
+    return isRecordedNow;
+  };
+
+  /**
+   * TACTICAL ALARM MANAGEMENT & TRIGGER ACTIONS
+   */
+  const addAlarm = (alarmData: Omit<TacticalAlarm, 'id' | 'createdAt'>) => {
+    const newAlarm: TacticalAlarm = {
+      ...alarmData,
+      id: `alarm-${Date.now()}`,
+      createdAt: new Date().toISOString()
+    };
+    const updated = [...alarms, newAlarm];
+    setAlarms(updated);
+    saveAlarms(updated);
+  };
+
+  const updateAlarm = (id: string, partial: Partial<TacticalAlarm>) => {
+    const updated = alarms.map(a => a.id === id ? { ...a, ...partial } : a);
+    setAlarms(updated);
+    saveAlarms(updated);
+
+    // If disabled alarm was ringing, stop it immediately
+    if (partial.isEnabled === false && activeAlarmRinging?.id === id) {
+      neuralVoiceService.stop();
+      soundEngine.stopAlarm();
+      setActiveAlarmRinging(null);
+    }
+
+    soundEngine.playClick(750);
+  };
+
+  const deleteAlarm = (id: string) => {
+    const updated = alarms.filter(a => a.id !== id);
+    setAlarms(updated);
+    saveAlarms(updated);
+    soundEngine.playClick(600);
+  };
+
+  const snoozeTimeoutRef = React.useRef<number | null>(null);
+
+  const triggerAlarmDirectly = (alarm: TacticalAlarm) => {
+    // HARD GUARD: NEVER trigger if alarm is not enabled / is on standby
+    if (!alarm.isEnabled) {
+      return;
+    }
+
+    setActiveAlarmRinging(alarm);
+    soundEngine.playAlarmSound(alarm.soundStyle);
+    neuralVoiceService.speakSmartVoice(alarm.voiceMessage, profile.neuralVoice, {
+      pitch: alarm.voicePitch,
+      rate: alarm.voiceRate,
+      loop: true
+    });
+  };
+
+  const dismissAlarm = () => {
+    if (snoozeTimeoutRef.current) {
+      window.clearTimeout(snoozeTimeoutRef.current);
+      snoozeTimeoutRef.current = null;
+    }
+    neuralVoiceService.stop();
+    soundEngine.stopAlarm();
+    setActiveAlarmRinging(null);
+    gainXP(50);
+    soundEngine.playQuestComplete();
+    triggerConfetti();
+  };
+
+  const snoozeAlarm = (minutes = 5) => {
+    if (snoozeTimeoutRef.current) {
+      window.clearTimeout(snoozeTimeoutRef.current);
+      snoozeTimeoutRef.current = null;
+    }
+    neuralVoiceService.stop();
+    soundEngine.stopAlarm();
+    const ringing = activeAlarmRinging;
+    setActiveAlarmRinging(null);
+
+    if (ringing) {
+      snoozeTimeoutRef.current = window.setTimeout(() => {
+        const currentAlarms = loadAlarms();
+        const fresh = currentAlarms.find(a => a.id === ringing.id);
+        if (fresh && fresh.isEnabled) {
+          triggerAlarmDirectly(fresh);
+        }
+      }, minutes * 60 * 1000);
+    }
+  };
+
+  const toggleQuest = (id: string) => {
+    setQuests(prev => {
+      const next = prev.map(q => {
+        if (q.id === id) {
+          const willComplete = !q.completed;
+          if (willComplete) {
+            soundEngine.playQuestComplete();
+            gainXP(q.xpReward);
+          } else {
+            soundEngine.playClick(600);
+          }
+          return {
+            ...q,
+            completed: willComplete,
+            completedAt: willComplete ? 'Just now' : undefined
+          };
+        }
+        return q;
+      });
+      saveQuests(next);
+      return next;
+    });
+  };
+
+  const submitQuizScore = (topic: SyllabusTopic, scorePercentage: number) => {
+    addFinanceLog({
+      discipline: topic.discipline,
+      topicId: topic.id,
+      topicName: topic.title,
+      durationMinutes: 15,
+      scoreAchieved: scorePercentage,
+      notes: `Institutional Concept Drill Quiz scored ${scorePercentage}%.`
+    });
+
+    if (scorePercentage >= 90) {
+      soundEngine.playMilestoneFanfare();
+      triggerConfetti();
+    } else {
+      soundEngine.playQuestComplete();
+    }
+  };
+
+  const toggleSound = () => {
+    const nextState = !profile.soundEnabled;
+    soundEngine.setEnabled(nextState);
+    updateProfile({ soundEnabled: nextState });
+    if (nextState) {
+      soundEngine.playClick(1050);
+    }
+  };
+
+  const exportData = () => {
+    soundEngine.playClick(990);
+    exportBackupJSON();
+  };
+
+  const importData = (jsonStr: string): boolean => {
+    try {
+      const restored = importBackupJSON(jsonStr);
+      setProfile(restored.profile);
+      setMetrics(restored.metrics);
+      setWeights(restored.weights);
+      setWorkoutLogs(restored.workoutLogs);
+      setFinanceLogs(restored.financeLogs);
+      setHistory(restored.history);
+      setQuests(restored.quests);
+      setDecayLogs(restored.decayLogs || []);
+      setNightlyRewards(restored.nightlyRewards || []);
+      setAlarms(restored.alarms || []);
+      soundEngine.playMilestoneFanfare();
+      triggerConfetti();
+      return true;
+    } catch (e) {
+      console.error(e);
+      soundEngine.playAlert();
+      return false;
+    }
+  };
+
+  const resetAllData = () => {
+    resetToCleanSlate();
+    setProfile(CLEAN_START_PROFILE);
+    setMetrics(CLEAN_START_METRICS);
+    setWeights(DEFAULT_WEIGHTS);
+    setWorkoutLogs([]);
+    setFinanceLogs([]);
+    setHistory(generateCleanStartHistory(CLEAN_START_METRICS));
+    setQuests(DEFAULT_DAILY_QUESTS);
+    setDecayLogs([]);
+    setNightlyRewards([]);
+    setAlarms(loadAlarms());
+    setActiveDecayAlert(null);
+    setIsVictoryModalOpen(false);
+    setActiveAlarmRinging(null);
+    neuralVoiceService.stop();
+    soundEngine.stopAlarm();
+    soundEngine.playAlert();
+  };
+
+  const loadDemoMode = () => {
+    loadDemoDataset();
+    setProfile(DEMO_USER_PROFILE);
+    setMetrics(DEMO_METRICS);
+    setWeights(DEFAULT_WEIGHTS);
+    setHistory(generateDemoHistory());
+    setQuests(DEFAULT_DAILY_QUESTS);
+    setAlarms(loadAlarms());
+    soundEngine.playMilestoneFanfare();
+    triggerConfetti();
+  };
+
+  return (
+    <TitanContext.Provider
+      value={{
+        profile,
+        metrics,
+        weights,
+        workoutLogs,
+        financeLogs,
+        history,
+        quests,
+        decayLogs,
+        nightlyRewards,
+        todayRewardClaim,
+        alarms,
+        activeAlarmRinging,
+        composite,
+        activeTab,
+        setActiveTab,
+        isSettingsOpen,
+        setIsSettingsOpen,
+        isBackupOpen,
+        setIsBackupOpen,
+        isVictoryModalOpen,
+        openVictoryModal,
+        closeVictoryModal,
+        activeQuizTopic,
+        setActiveQuizTopic,
+        activeDecayAlert,
+        dismissDecayAlert,
+        updateMetrics,
+        updateProfile,
+        updateWeights,
+        updateNeuralVoiceSettings,
+        addWorkoutLog,
+        addFinanceLog,
+        toggleDailyAccomplishment,
+        claimNightlyReward,
+        toggleQuest,
+        submitQuizScore,
+        toggleSound,
+        exportData,
+        importData,
+        resetAllData,
+        loadDemoMode,
+        gainXP,
+        addAlarm,
+        updateAlarm,
+        deleteAlarm,
+        triggerAlarmDirectly,
+        dismissAlarm,
+        snoozeAlarm,
+        simulateMissedDays,
+        clearDecayPenalty
+      }}
+    >
+      {children}
+    </TitanContext.Provider>
+  );
+};
+
+export const useTitan = () => {
+  const context = useContext(TitanContext);
+  if (!context) {
+    throw new Error('useTitan must be used within a TitanProvider');
+  }
+  return context;
+};
