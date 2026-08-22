@@ -96,7 +96,7 @@ interface TitanContextType {
   syncCode: string | null;
   syncStatus: 'DISCONNECTED' | 'CONNECTING' | 'SYNCED' | 'SYNCING' | 'ERROR';
   lastSyncedAt: string | null;
-  generateNewSyncKey: () => string;
+  generateNewSyncKey: () => Promise<string | null>;
   connectSyncCode: (code: string) => Promise<boolean>;
   disconnectSync: () => void;
   forcePushCloud: () => Promise<boolean>;
@@ -343,13 +343,7 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   }, [profile, metrics, workoutLogs, financeLogs, alarms, quests, nightlyRewards]);
 
   // Sync Management methods
-  const generateNewSyncKey = (): string => {
-    const newCode = cloudSyncEngine.generateNewSyncCode();
-    setSyncCode(newCode);
-    setSyncStatus('SYNCED');
-    cloudSyncEngine.startRealTimeListener(newCode, handleRemoteCloudUpdate);
-    
-    // Broadcast initial state
+  const generateNewSyncKey = async (): Promise<string | null> => {
     const payload: FullBackupPayload = {
       version: '2.6.0',
       exportedAt: new Date().toISOString(),
@@ -364,9 +358,16 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       nightlyRewards,
       alarms
     };
-    cloudSyncEngine.pushStateToCloud(payload, newCode);
-    setLastSyncedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
-    return newCode;
+
+    const newCode = await cloudSyncEngine.createNewSyncChannel(payload);
+    if (newCode) {
+      setSyncCode(newCode);
+      setSyncStatus('SYNCED');
+      cloudSyncEngine.startRealTimeListener(newCode, handleRemoteCloudUpdate);
+      setLastSyncedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+      return newCode;
+    }
+    return null;
   };
 
   const connectSyncCode = async (code: string): Promise<boolean> => {
@@ -912,12 +913,48 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const updated = [...alarms, newAlarm];
     setAlarms(updated);
     saveAlarms(updated);
+
+    // Immediate zero-latency cloud sync
+    if (syncCode) {
+      cloudSyncEngine.pushStateToCloud({
+        version: '2.6.0',
+        exportedAt: new Date().toISOString(),
+        profile,
+        metrics,
+        weights,
+        workoutLogs,
+        financeLogs,
+        history,
+        quests,
+        decayLogs,
+        nightlyRewards,
+        alarms: updated
+      }, syncCode);
+    }
   };
 
   const updateAlarm = (id: string, partial: Partial<TacticalAlarm>) => {
     const updated = alarms.map(a => a.id === id ? { ...a, ...partial } : a);
     setAlarms(updated);
     saveAlarms(updated);
+
+    // Immediate zero-latency cloud sync
+    if (syncCode) {
+      cloudSyncEngine.pushStateToCloud({
+        version: '2.6.0',
+        exportedAt: new Date().toISOString(),
+        profile,
+        metrics,
+        weights,
+        workoutLogs,
+        financeLogs,
+        history,
+        quests,
+        decayLogs,
+        nightlyRewards,
+        alarms: updated
+      }, syncCode);
+    }
 
     // If disabled alarm was ringing, stop it immediately
     if (partial.isEnabled === false && activeAlarmRinging?.id === id) {
@@ -933,6 +970,25 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const updated = alarms.filter(a => a.id !== id);
     setAlarms(updated);
     saveAlarms(updated);
+
+    // Immediate zero-latency cloud sync
+    if (syncCode) {
+      cloudSyncEngine.pushStateToCloud({
+        version: '2.6.0',
+        exportedAt: new Date().toISOString(),
+        profile,
+        metrics,
+        weights,
+        workoutLogs,
+        financeLogs,
+        history,
+        quests,
+        decayLogs,
+        nightlyRewards,
+        alarms: updated
+      }, syncCode);
+    }
+
     soundEngine.playClick(600);
   };
 
