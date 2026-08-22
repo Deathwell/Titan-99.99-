@@ -267,12 +267,12 @@ export const DeviceSyncModal: React.FC<DeviceSyncModalProps> = ({ isOpen, onClos
     }
   };
 
-  // Auto-generate Sync Key on first mount if not paired so QR is immediately visible
-  useEffect(() => {
-    if (isOpen && !syncCode) {
-      generateNewSyncKey();
-    }
-  }, [isOpen, syncCode]);
+  const handleUnlink = () => {
+    disconnectSync();
+    setInputCode('');
+    setScanError(null);
+    showToast('🔴 Device Unlinked. Standalone mode active.', 'info');
+  };
 
   const handleGenerateNew = async () => {
     setScanError(null);
@@ -378,13 +378,10 @@ export const DeviceSyncModal: React.FC<DeviceSyncModalProps> = ({ isOpen, onClos
                   Force Sync Now
                 </button>
                 <button
-                  onClick={() => {
-                    disconnectSync();
-                    showToast('Device unlinked from cloud channel.', 'info');
-                  }}
-                  className="px-2 py-1 rounded-lg bg-rose-950/40 border border-rose-800 text-rose-300 hover:bg-rose-900 text-[10px] font-bold transition-all flex items-center gap-1"
+                  onClick={handleUnlink}
+                  className="px-3 py-1 rounded-lg bg-rose-950/80 border border-rose-600 text-rose-200 hover:bg-rose-900 text-[11px] font-black transition-all flex items-center gap-1.5 shadow-glow-rose"
                 >
-                  <Unlink className="h-3 w-3" /> Unlink
+                  <Unlink className="h-3.5 w-3.5" /> Unlink Device
                 </button>
               </div>
             </div>
@@ -574,11 +571,11 @@ export const DeviceSyncModal: React.FC<DeviceSyncModalProps> = ({ isOpen, onClos
                   Pull State
                 </button>
                 <button
-                  onClick={disconnectSync}
-                  className="p-1 text-rose-400 hover:text-rose-300 text-[10px]"
-                  title="Disconnect Sync"
+                  onClick={handleUnlink}
+                  className="px-2 py-1 rounded bg-rose-950/60 border border-rose-800 text-rose-300 hover:bg-rose-900 text-[10px] font-bold flex items-center gap-1"
+                  title="Unlink Sync"
                 >
-                  <Unlink className="h-3.5 w-3.5" />
+                  <Unlink className="h-3 w-3" /> Unlink
                 </button>
               </div>
             )}
