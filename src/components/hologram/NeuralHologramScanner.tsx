@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
-  Sparkles,
   Camera,
   Upload,
   Zap,
@@ -19,7 +18,10 @@ import {
   Flame,
   ArrowRight,
   RefreshCw,
-  Maximize2
+  Maximize2,
+  Compass,
+  Play,
+  Pause
 } from 'lucide-react';
 import { useTitan } from '../../context/TitanContext';
 import {
@@ -27,9 +29,9 @@ import {
   BiometricAnalysisResult
 } from '../../lib/biometricVisionEngine';
 import {
-  hologramMorphEngine,
-  HologramRenderMode
-} from '../../lib/hologramMorphEngine';
+  ThreeHologramScene,
+  HologramColorTheme
+} from '../../lib/threeHologramScene';
 import { soundEngine } from '../../lib/audio';
 
 export const NeuralHologramScanner: React.FC = () => {
@@ -41,18 +43,13 @@ export const NeuralHologramScanner: React.FC = () => {
   const [scanStepText, setScanStepText] = useState<string>('');
   const [scanResult, setScanResult] = useState<BiometricAnalysisResult | null>(null);
 
-  // Hologram Morph Controls
+  // 3D Hologram Morph Controls
   const [targetBodyFat, setTargetBodyFat] = useState<number>(20.0);
-  const [renderMode, setRenderMode] = useState<HologramRenderMode>('CYBER_HOLO');
+  const [colorTheme, setColorTheme] = useState<HologramColorTheme>('CYBER_CYAN');
+  const [wireframe, setWireframe] = useState<boolean>(false);
   const [showScanlines, setShowScanlines] = useState<boolean>(true);
-  const [showWireframe, setShowWireframe] = useState<boolean>(false);
-  const [showMuscleOverlay, setShowMuscleOverlay] = useState<boolean>(true);
-  const [showHudRings, setShowHudRings] = useState<boolean>(true);
-
-  // Viewport interaction
-  const [zoomLevel, setZoomLevel] = useState<number>(1.0);
-  const [panX, setPanX] = useState<number>(0);
-  const [panY, setPanY] = useState<number>(0);
+  const [autoRotate, setAutoRotate] = useState<boolean>(true);
+  const [userWeightKg, setUserWeightKg] = useState<number>(profile.bodyWeightKg || metrics.bodyWeightKg || 80);
   const [isAdopted, setIsAdopted] = useState<boolean>(false);
 
   // Camera capture modal state
@@ -60,53 +57,84 @@ export const NeuralHologramScanner: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
 
-  // Canvas ref
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const isolatedImgElementRef = useRef<HTMLImageElement | null>(null);
-  const animationFrameRef = useRef<number | null>(null);
-  const scanlineOffsetRef = useRef<number>(0);
-  const rotationAngleRef = useRef<number>(0);
+  // 3D Three.js Container Ref
+  const threeContainerRef = useRef<HTMLDivElement | null>(null);
+  const threeSceneRef = useRef<ThreeHologramScene | null>(null);
 
-  // Execute AI biometric scan on image
+  // Initialize Three.js 3D Scene
+  useEffect(() => {
+    if (!threeContainerRef.current) return;
+
+    const scene = new ThreeHologramScene(threeContainerRef.current, {
+      colorTheme,
+      wireframe,
+      showScanlines,
+      showParticles: true,
+      autoRotate,
+      targetBodyFat,
+      baselineBodyFat: scanResult?.estimatedBodyFatPercent || 20.0
+    });
+    threeSceneRef.current = scene;
+
+    return () => {
+      scene.destroy();
+      threeSceneRef.current = null;
+    };
+  }, []);
+
+  // Update Three.js Scene Configuration
+  useEffect(() => {
+    if (threeSceneRef.current) {
+      threeSceneRef.current.updateConfig({
+        colorTheme,
+        wireframe,
+        showScanlines,
+        autoRotate,
+        targetBodyFat,
+        baselineBodyFat: scanResult?.estimatedBodyFatPercent || 20.0
+      });
+    }
+  }, [colorTheme, wireframe, showScanlines, autoRotate, targetBodyFat, scanResult]);
+
+  // Execute AI biometric scan on photo
   const processImage = useCallback(async (src: string) => {
     setIsScanning(true);
     setIsAdopted(false);
-    setScanStepText('INITIATING NEURAL VISION SCANNER...');
+    setScanStepText('INITIATING ANTHROPOMETRIC VISION SCANNER...');
     soundEngine.playJarvisHudPing();
 
     try {
-      await new Promise(r => setTimeout(r, 400));
-      setScanStepText('SEGMENTING SILHOUETTE & REMOVING BACKGROUND...');
+      await new Promise(r => setTimeout(r, 350));
+      setScanStepText('EXTRACTING ANTI-ALIASED SILHOUETTE...');
 
-      await new Promise(r => setTimeout(r, 450));
-      setScanStepText('CALCULATING FACIAL ADIPOSITY & WAIST-TO-SHOULDER RATIOS...');
+      await new Promise(r => setTimeout(r, 400));
+      setScanStepText('ANALYZING WAIST-TO-SHOULDER RATIO & ADIPOSITY INDICES...');
 
       const result = await biometricVisionEngine.analyzeBiometricPhoto(
         src,
-        profile.bodyWeightKg || metrics.bodyWeightKg || 80,
+        userWeightKg,
         profile.heightCm || 180
       );
 
-      await new Promise(r => setTimeout(r, 350));
-      setScanStepText('SYNTHESIZING 3D CYBERNETIC HOLOGRAM...');
+      await new Promise(r => setTimeout(r, 300));
+      setScanStepText('SYNTHESIZING 3D VOLUMETRIC HOLOGRAPHIC AVATAR...');
 
       setScanResult(result);
+      setUserWeightKg(result.estimatedUserWeightKg);
       setTargetBodyFat(result.estimatedBodyFatPercent);
 
-      // Preload isolated cutout image element
-      const isoImg = new Image();
-      isoImg.onload = () => {
-        isolatedImgElementRef.current = isoImg;
-        setIsScanning(false);
-        soundEngine.playMilestoneFanfare();
-      };
-      isoImg.src = result.isolatedSubjectDataUrl;
+      if (threeSceneRef.current) {
+        threeSceneRef.current.updateMorph(result.estimatedBodyFatPercent);
+      }
+
+      setIsScanning(false);
+      soundEngine.playMilestoneFanfare();
     } catch (err) {
       console.error('Scan error:', err);
       setIsScanning(false);
       soundEngine.playAlert();
     }
-  }, [profile.bodyWeightKg, profile.heightCm, metrics.bodyWeightKg]);
+  }, [userWeightKg, profile.heightCm]);
 
   // Initial scan on mount
   useEffect(() => {
@@ -116,57 +144,27 @@ export const NeuralHologramScanner: React.FC = () => {
     };
   }, []);
 
-  // Animation render loop
-  useEffect(() => {
-    let active = true;
+  // Recalculate when user updates weight manually
+  const handleWeightChange = (newWeight: number) => {
+    setUserWeightKg(newWeight);
+    if (scanResult) {
+      const fatMassKg = Number(((newWeight * scanResult.estimatedBodyFatPercent) / 100).toFixed(1));
+      const leanMassKg = Number((newWeight - fatMassKg).toFixed(1));
+      const targetWeightAt10 = Number((leanMassKg / 0.90).toFixed(1));
+      const fatLossRequired = Math.max(0, Number((newWeight - targetWeightAt10).toFixed(1)));
+      const estimatedWeeks = Math.max(1, Math.round(fatLossRequired / 0.85));
 
-    const renderLoop = () => {
-      if (!active) return;
-      const canvas = canvasRef.current;
-      const isolatedImg = isolatedImgElementRef.current;
-
-      if (canvas && isolatedImg && scanResult) {
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          scanlineOffsetRef.current = (scanlineOffsetRef.current + 1.2) % 100;
-          rotationAngleRef.current += 0.008;
-
-          hologramMorphEngine.renderMorphedHologram(
-            ctx,
-            canvas.width,
-            canvas.height,
-            isolatedImg,
-            scanResult.landmarks,
-            {
-              baselineBodyFat: scanResult.estimatedBodyFatPercent,
-              targetBodyFat,
-              mode: renderMode,
-              showScanlines,
-              showHudRings,
-              showWireframe,
-              showMuscleOverlay,
-              scanlineOffset: scanlineOffsetRef.current,
-              rotationAngle: rotationAngleRef.current,
-              zoomLevel,
-              panX,
-              panY
-            }
-          );
-        }
-      }
-
-      animationFrameRef.current = requestAnimationFrame(renderLoop);
-    };
-
-    animationFrameRef.current = requestAnimationFrame(renderLoop);
-
-    return () => {
-      active = false;
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  }, [scanResult, targetBodyFat, renderMode, showScanlines, showHudRings, showWireframe, showMuscleOverlay, zoomLevel, panX, panY]);
+      setScanResult({
+        ...scanResult,
+        estimatedUserWeightKg: newWeight,
+        estimatedFatMassKg: fatMassKg,
+        estimatedLeanMassKg: leanMassKg,
+        targetWeightAt10PercentKg: targetWeightAt10,
+        fatLossRequiredKg: fatLossRequired,
+        estimatedWeeksTo10Percent: estimatedWeeks
+      });
+    }
+  };
 
   // Handle File Upload
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -230,14 +228,16 @@ export const NeuralHologramScanner: React.FC = () => {
   // Adopt Scanned Body Fat into Titan Protocol
   const handleAdoptBodyFat = () => {
     if (!scanResult) return;
-    updateMetrics({ bodyFatPercent: scanResult.estimatedBodyFatPercent });
+    updateMetrics({
+      bodyFatPercent: scanResult.estimatedBodyFatPercent,
+      bodyWeightKg: userWeightKg
+    });
     setIsAdopted(true);
     soundEngine.playQuestComplete();
   };
 
   // Projected body composition at current slider position
-  const currentWeight = profile.bodyWeightKg || metrics.bodyWeightKg || 80;
-  const currentLeanMass = scanResult ? scanResult.estimatedLeanMassKg : (currentWeight * (1 - targetBodyFat / 100));
+  const currentLeanMass = scanResult ? scanResult.estimatedLeanMassKg : (userWeightKg * (1 - targetBodyFat / 100));
   const projectedTotalWeight = Number((currentLeanMass / (1 - targetBodyFat / 100)).toFixed(1));
   const projectedFatMass = Number((projectedTotalWeight * (targetBodyFat / 100)).toFixed(1));
 
@@ -255,14 +255,14 @@ export const NeuralHologramScanner: React.FC = () => {
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-base font-bold text-white tracking-wider flex items-center gap-2">
-                  NEURAL BIOMETRIC HOLOGRAM SCANNER
+                  NEURAL 3D BIOMETRIC HOLOGRAM
                 </h2>
                 <span className="px-2 py-0.5 rounded-full bg-cyan-950 border border-cyan-500/60 text-[10px] text-titan-cyan font-bold animate-pulse">
-                  AI VISION v2.6
+                  3D WEBGL ENGINE
                 </span>
               </div>
               <p className="text-xs text-slate-400 font-sans mt-0.5">
-                AI Visual Adiposity Estimation • Subject Background Isolation • 60FPS Real-Time Morph Simulation
+                Volumetric 3D Avatar • 360° Interactive Orbit • True 3D Parametric Body Fat Morphing (5% - 75%)
               </p>
             </div>
           </div>
@@ -303,7 +303,7 @@ export const NeuralHologramScanner: React.FC = () => {
                 <span className="h-2 w-2 rounded-full bg-titan-cyan animate-ping inline-block" />
                 {scanStepText}
               </span>
-              <span className="font-bold">PROCESSING NEURAL MESH...</span>
+              <span className="font-bold">SYNTHESIZING 3D HOLOGRAPHIC MESH...</span>
             </div>
             <div className="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden border border-cyan-900/50">
               <div className="h-full bg-gradient-to-r from-cyan-500 via-emerald-400 to-cyan-400 animate-pulse w-full" />
@@ -314,115 +314,116 @@ export const NeuralHologramScanner: React.FC = () => {
 
       {/* Main Workspace Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Central Hologram Viewport (7 Cols) */}
+        {/* Central 3D Hologram Viewport (7 Cols) */}
         <div className="lg:col-span-7 space-y-4">
-          <div className="rounded-xl border border-titan-cardBorder bg-black/80 shadow-2xl overflow-hidden relative backdrop-blur-xl flex flex-col items-center justify-center min-h-[520px]">
+          <div className="rounded-xl border border-titan-cardBorder bg-black/90 shadow-2xl overflow-hidden relative backdrop-blur-xl flex flex-col items-center justify-center min-h-[540px]">
             {/* Viewport Header Controls */}
             <div className="absolute top-3 left-3 right-3 z-10 flex items-center justify-between pointer-events-none">
-              <div className="flex items-center gap-2 pointer-events-auto bg-slate-900/90 border border-slate-800 rounded-lg p-1">
-                {(['CYBER_HOLO', 'NEURAL_GREEN', 'ANATOMICAL_XRAY', 'PHOTOREALISTIC'] as HologramRenderMode[]).map(m => (
+              {/* Color Theme Selector */}
+              <div className="flex items-center gap-1.5 pointer-events-auto bg-slate-900/90 border border-slate-800 rounded-lg p-1">
+                {(['CYBER_CYAN', 'MATRIX_GREEN', 'ANATOMICAL_XRAY', 'TITAN_GOLD'] as HologramColorTheme[]).map(t => (
                   <button
-                    key={m}
+                    key={t}
                     onClick={() => {
-                      setRenderMode(m);
+                      setColorTheme(t);
                       soundEngine.playClick(850);
                     }}
                     className={`px-2.5 py-1 rounded text-[10px] font-bold transition-all ${
-                      renderMode === m
+                      colorTheme === t
                         ? 'bg-titan-cyan text-black shadow-glow-cyan'
                         : 'text-slate-400 hover:text-slate-200'
                     }`}
                   >
-                    {m === 'CYBER_HOLO' && 'CYBER CYAN'}
-                    {m === 'NEURAL_GREEN' && 'MATRIX GREEN'}
-                    {m === 'ANATOMICAL_XRAY' && 'BIO X-RAY'}
-                    {m === 'PHOTOREALISTIC' && 'REALISTIC'}
+                    {t === 'CYBER_CYAN' && 'CYBER CYAN'}
+                    {t === 'MATRIX_GREEN' && 'MATRIX GREEN'}
+                    {t === 'ANATOMICAL_XRAY' && 'BIO X-RAY'}
+                    {t === 'TITAN_GOLD' && 'TITAN GOLD'}
                   </button>
                 ))}
               </div>
 
+              {/* 3D Viewport Controls */}
               <div className="flex items-center gap-1 pointer-events-auto bg-slate-900/90 border border-slate-800 rounded-lg p-1 text-slate-300 text-xs">
                 <button
-                  onClick={() => setZoomLevel(z => Math.min(2.0, z + 0.15))}
+                  onClick={() => setAutoRotate(!autoRotate)}
+                  className={`p-1 rounded ${autoRotate ? 'text-titan-cyan bg-cyan-950/60' : 'hover:text-white'}`}
+                  title={autoRotate ? 'Pause 360° Rotation' : 'Start 360° Rotation'}
+                >
+                  {autoRotate ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                </button>
+                <button
+                  onClick={() => threeSceneRef.current?.setZoom(1.2)}
                   className="p-1 hover:text-white"
                   title="Zoom In"
                 >
                   <ZoomIn className="h-4 w-4" />
                 </button>
                 <button
-                  onClick={() => setZoomLevel(z => Math.max(0.6, z - 0.15))}
+                  onClick={() => threeSceneRef.current?.setZoom(0.85)}
                   className="p-1 hover:text-white"
                   title="Zoom Out"
                 >
                   <ZoomOut className="h-4 w-4" />
                 </button>
                 <button
-                  onClick={() => {
-                    setZoomLevel(1.0);
-                    setPanX(0);
-                    setPanY(0);
-                  }}
+                  onClick={() => threeSceneRef.current?.resetOrientation()}
                   className="p-1 hover:text-white"
-                  title="Reset View"
+                  title="Reset 3D Orientation"
                 >
                   <RotateCcw className="h-3.5 w-3.5" />
                 </button>
               </div>
             </div>
 
-            {/* Central Hologram Canvas */}
-            <canvas
-              ref={canvasRef}
-              width={700}
-              height={560}
-              className="w-full h-auto max-h-[560px] object-contain rounded-lg"
+            {/* 3D WebGL Canvas Container */}
+            <div
+              ref={threeContainerRef}
+              className="w-full h-[540px] cursor-grab active:cursor-grabbing flex items-center justify-center"
             />
 
+            {/* 3D Drag Hint */}
+            <div className="absolute top-14 left-4 z-10 text-[10px] text-slate-500 flex items-center gap-1 pointer-events-none">
+              <Compass className="h-3.5 w-3.5 text-cyan-400" />
+              <span>Drag to orbit 360° in 3D</span>
+            </div>
+
             {/* Floating Telemetry Tag */}
-            <div className="absolute bottom-3 left-3 z-10 bg-slate-950/80 border border-cyan-500/40 rounded-lg px-3 py-1.5 text-xs text-slate-300 backdrop-blur-md">
-              <span className="text-slate-400">SIMULATED ADIPOSITY: </span>
+            <div className="absolute bottom-3 left-3 z-10 bg-slate-950/85 border border-cyan-500/40 rounded-lg px-3 py-1.5 text-xs text-slate-300 backdrop-blur-md">
+              <span className="text-slate-400">3D SIMULATED ADIPOSITY: </span>
               <strong className="text-titan-cyan text-sm">{targetBodyFat.toFixed(1)}%</strong>
               <span className="ml-2 text-[10px] text-slate-500">
-                ({targetBodyFat < (scanResult?.estimatedBodyFatPercent || 20) ? 'DEFICIT / CUT' : 'SURPLUS / BULK'})
+                ({targetBodyFat < (scanResult?.estimatedBodyFatPercent || 20) ? 'DEFICIT / V-TAPER' : 'MASS EXPANSION'})
               </span>
             </div>
 
-            {/* Toggles Strip */}
-            <div className="absolute bottom-3 right-3 z-10 flex items-center gap-1.5 bg-slate-950/80 border border-slate-800 rounded-lg p-1.5 text-[10px]">
+            {/* 3D Hologram Feature Toggles */}
+            <div className="absolute bottom-3 right-3 z-10 flex items-center gap-1.5 bg-slate-950/85 border border-slate-800 rounded-lg p-1.5 text-[10px]">
               <button
                 onClick={() => setShowScanlines(!showScanlines)}
                 className={`px-2 py-0.5 rounded border transition-all ${
                   showScanlines ? 'bg-cyan-950 border-cyan-500 text-cyan-300' : 'border-slate-800 text-slate-500'
                 }`}
               >
-                Scanlines
+                Laser Scan
               </button>
               <button
-                onClick={() => setShowWireframe(!showWireframe)}
+                onClick={() => setWireframe(!wireframe)}
                 className={`px-2 py-0.5 rounded border transition-all ${
-                  showWireframe ? 'bg-cyan-950 border-cyan-500 text-cyan-300' : 'border-slate-800 text-slate-500'
+                  wireframe ? 'bg-cyan-950 border-cyan-500 text-cyan-300' : 'border-slate-800 text-slate-500'
                 }`}
               >
-                Wireframe
-              </button>
-              <button
-                onClick={() => setShowMuscleOverlay(!showMuscleOverlay)}
-                className={`px-2 py-0.5 rounded border transition-all ${
-                  showMuscleOverlay ? 'bg-emerald-950 border-emerald-500 text-emerald-300' : 'border-slate-800 text-slate-500'
-                }`}
-              >
-                Ab Cuts
+                3D Wireframe
               </button>
             </div>
           </div>
 
-          {/* Real-Time Body Fat Morph Slider Control */}
+          {/* Real-Time 3D Body Fat Morph Slider Control */}
           <div className="rounded-xl border border-titan-cardBorder bg-titan-card/80 p-5 shadow-xl backdrop-blur-md space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Sliders className="h-4 w-4 text-titan-cyan" />
                 <span className="text-xs font-bold text-white tracking-wider">
-                  BODY FAT PROJECTION SLIDER (5.0% - 60.0%)
+                  3D VOLUMETRIC MORPH SLIDER (5.0% - 75.0%)
                 </span>
               </div>
               <div className="flex items-baseline gap-2">
@@ -430,7 +431,7 @@ export const NeuralHologramScanner: React.FC = () => {
                   {targetBodyFat.toFixed(1)}%
                 </span>
                 <span className="text-xs text-slate-400">
-                  {targetBodyFat <= 9.0 ? 'STAGE SHREDDED' : targetBodyFat <= 13.0 ? 'ATHLETIC ELITE' : targetBodyFat <= 17.0 ? 'LEAN OPTIMAL' : targetBodyFat <= 25.0 ? 'AVERAGE' : 'ADIPOSE'}
+                  {targetBodyFat <= 9.0 ? 'STAGE SHREDDED' : targetBodyFat <= 13.5 ? 'ATHLETIC ELITE' : targetBodyFat <= 18.0 ? 'LEAN OPTIMAL' : targetBodyFat <= 25.0 ? 'AVERAGE' : targetBodyFat <= 50.0 ? 'HIGH ADIPOSE' : 'SEVERE ADIPOSITY'}
                 </span>
               </div>
             </div>
@@ -438,11 +439,13 @@ export const NeuralHologramScanner: React.FC = () => {
             <input
               type="range"
               min="5.0"
-              max="60.0"
-              step="0.1"
+              max="75.0"
+              step="0.5"
               value={targetBodyFat}
               onChange={(e) => {
-                setTargetBodyFat(parseFloat(e.target.value));
+                const val = parseFloat(e.target.value);
+                setTargetBodyFat(val);
+                threeSceneRef.current?.updateMorph(val);
               }}
               className="w-full accent-titan-cyan cursor-pointer h-2 bg-slate-800 rounded-lg appearance-none"
             />
@@ -450,21 +453,22 @@ export const NeuralHologramScanner: React.FC = () => {
             {/* Quick-Jump Presets */}
             <div className="flex flex-wrap items-center justify-between gap-1.5 pt-2 border-t border-slate-800/80">
               {[
-                { label: '8% Apex', val: 8.0, color: 'text-rose-300 bg-rose-950/40 border-rose-800/60' },
-                { label: '12% Athletic', val: 12.0, color: 'text-emerald-300 bg-emerald-950/40 border-emerald-800/60' },
-                { label: '15% Lean', val: 15.0, color: 'text-cyan-300 bg-cyan-950/40 border-cyan-800/60' },
-                { label: '20% Baseline', val: 20.0, color: 'text-slate-300 bg-slate-800 border-slate-700' },
-                { label: '30% Adipose', val: 30.0, color: 'text-amber-300 bg-amber-950/40 border-amber-800/60' },
-                { label: '50% Massive', val: 50.0, color: 'text-orange-300 bg-orange-950/40 border-orange-800/60' }
+                { label: '8% Apex Shredded', val: 8.0, color: 'text-rose-300 bg-rose-950/40 border-rose-800/60' },
+                { label: '12% Athletic Model', val: 12.0, color: 'text-emerald-300 bg-emerald-950/40 border-emerald-800/60' },
+                { label: '15% Lean Optimal', val: 15.0, color: 'text-cyan-300 bg-cyan-950/40 border-cyan-800/60' },
+                { label: '20% Baseline Fit', val: 20.0, color: 'text-slate-300 bg-slate-800 border-slate-700' },
+                { label: '35% High Adipose', val: 35.0, color: 'text-amber-300 bg-amber-950/40 border-amber-800/60' },
+                { label: '65% Severe Adiposity', val: 65.0, color: 'text-orange-300 bg-orange-950/40 border-orange-800/60' }
               ].map(p => (
                 <button
                   key={p.val}
                   onClick={() => {
                     setTargetBodyFat(p.val);
+                    threeSceneRef.current?.updateMorph(p.val);
                     soundEngine.playClick(900);
                   }}
                   className={`px-2.5 py-1 rounded-lg border text-[11px] font-bold hover:scale-105 transition-all ${p.color} ${
-                    Math.abs(targetBodyFat - p.val) < 0.5 ? 'ring-1 ring-white' : ''
+                    Math.abs(targetBodyFat - p.val) < 1.0 ? 'ring-1 ring-white' : ''
                   }`}
                 >
                   {p.label}
@@ -504,8 +508,27 @@ export const NeuralHologramScanner: React.FC = () => {
                   </p>
                 </div>
 
+                {/* Weight Input / Calibrator */}
+                <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-between text-xs">
+                  <div>
+                    <label className="text-[10px] text-slate-400 block">CURRENT BODY WEIGHT</label>
+                    <span className="text-slate-500 text-[10px]">Auto-estimated or enter exact:</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="number"
+                      min="40"
+                      max="350"
+                      value={userWeightKg}
+                      onChange={(e) => handleWeightChange(parseFloat(e.target.value) || 75)}
+                      className="w-20 px-2 py-1 rounded bg-slate-800 border border-slate-700 text-white font-bold text-sm text-right focus:border-titan-cyan focus:outline-none"
+                    />
+                    <span className="text-slate-400 font-bold">kg</span>
+                  </div>
+                </div>
+
                 {/* Anthropometric Metrics */}
-                <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-800/80 text-xs">
+                <div className="grid grid-cols-2 gap-3 pt-2 text-xs">
                   <div className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800">
                     <div className="text-[10px] text-slate-400">WAIST-TO-SHOULDER</div>
                     <div className="text-sm font-bold text-white mt-0.5">
@@ -557,7 +580,7 @@ export const NeuralHologramScanner: React.FC = () => {
           <div className="rounded-xl border border-titan-cardBorder bg-titan-card/80 p-5 shadow-xl backdrop-blur-md space-y-4">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-                <Flame className="h-4 w-4 text-amber-400" /> SIMULATION PROJECTION METRICS
+                <Flame className="h-4 w-4 text-amber-400" /> 3D SIMULATION TARGET PROJECTIONS
               </span>
               <span className="text-[10px] text-slate-400 font-bold">TARGET: {targetBodyFat.toFixed(1)}%</span>
             </div>
@@ -612,7 +635,6 @@ export const NeuralHologramScanner: React.FC = () => {
 
             <div className="mt-4 rounded-xl overflow-hidden bg-black aspect-video relative flex items-center justify-center">
               <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
-              {/* Center Alignment Guide */}
               <div className="absolute inset-8 border border-cyan-500/40 rounded-xl pointer-events-none flex items-center justify-center">
                 <span className="text-[10px] text-cyan-400 font-bold bg-black/60 px-2 py-0.5 rounded">
                   ALIGN TORSO & HEAD HERE

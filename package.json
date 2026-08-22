@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@types/three": "^0.185.4",
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
     "jsqr": "^1.4.0",
@@ -17,7 +18,8 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "recharts": "^2.15.1",
-    "tailwind-merge": "^3.0.2"
+    "tailwind-merge": "^3.0.2",
+    "three": "^0.185.1"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
