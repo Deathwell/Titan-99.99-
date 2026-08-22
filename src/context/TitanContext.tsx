@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import {
   CompositeCalculationResult,
@@ -19,6 +19,7 @@ import {
 import { calculateCompositeState, DEFAULT_WEIGHTS } from '../lib/statsEngine';
 import { soundEngine } from '../lib/audio';
 import { neuralVoiceService } from '../lib/neuralVoiceService';
+import { cloudSyncEngine } from '../lib/syncEngine';
 import {
   exportBackupJSON,
   importBackupJSON,
@@ -43,7 +44,8 @@ import {
   saveQuests,
   saveWeights,
   saveWorkoutLogs,
-  loadDemoDataset
+  loadDemoDataset,
+  FullBackupPayload
 } from '../lib/storage';
 import {
   CLEAN_START_METRICS,
@@ -80,6 +82,8 @@ interface TitanContextType {
   setIsSettingsOpen: (open: boolean) => void;
   isBackupOpen: boolean;
   setIsBackupOpen: (open: boolean) => void;
+  isSyncModalOpen: boolean;
+  setIsSyncModalOpen: (open: boolean) => void;
   isVictoryModalOpen: boolean;
   openVictoryModal: () => void;
   closeVictoryModal: () => void;
@@ -87,6 +91,16 @@ interface TitanContextType {
   setActiveQuizTopic: (topic: SyllabusTopic | null) => void;
   activeDecayAlert: DecayPenaltyEvent | null;
   dismissDecayAlert: () => void;
+
+  // Real-Time Cross Device Cloud Sync
+  syncCode: string | null;
+  syncStatus: 'DISCONNECTED' | 'CONNECTING' | 'SYNCED' | 'SYNCING' | 'ERROR';
+  lastSyncedAt: string | null;
+  generateNewSyncKey: () => string;
+  connectSyncCode: (code: string) => Promise<boolean>;
+  disconnectSync: () => void;
+  forcePushCloud: () => Promise<boolean>;
+  forcePullCloud: () => Promise<boolean>;
 
   // Actions
   updateMetrics: (partial: Partial<UserMetricsState>) => void;
@@ -148,11 +162,19 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [activeTab, setActiveTab] = useState<'overview' | 'charts' | 'physique' | 'finance' | 'alarms' | 'quests' | 'curriculum'>('overview');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isBackupOpen, setIsBackupOpen] = useState(false);
+  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const [isVictoryModalOpen, setIsVictoryModalOpen] = useState(false);
   const [activeQuizTopic, setActiveQuizTopic] = useState<SyllabusTopic | null>(null);
   const [activeDecayAlert, setActiveDecayAlert] = useState<DecayPenaltyEvent | null>(null);
 
+  const [syncCode, setSyncCode] = useState<string | null>(cloudSyncEngine.getStoredSyncCode);
+  const [syncStatus, setSyncStatus] = useState<'DISCONNECTED' | 'CONNECTING' | 'SYNCED' | 'SYNCING' | 'ERROR'>(
+    cloudSyncEngine.getStoredSyncCode() ? 'SYNCED' : 'DISCONNECTED'
+  );
+  const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
+
   const [lastTriggeredMinute, setLastTriggeredMinute] = useState<string>('');
+  const isRemoteApplyingRef = useRef(false);
 
   useEffect(() => {
     soundEngine.setEnabled(profile.soundEnabled);
@@ -167,6 +189,212 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const todayRewardClaim = useMemo(() => {
     return nightlyRewards.find(r => r.date === todayDateStr) || null;
   }, [nightlyRewards, todayDateStr]);
+
+  // Handle incoming remote sync updates from paired device
+  const handleRemoteCloudUpdate = (payload: FullBackupPayload) => {
+    if (!payload || !payload.version) return;
+
+    isRemoteApplyingRef.current = true;
+    try {
+      if (payload.profile) {
+        setProfile(payload.profile);
+        saveProfile(payload.profile);
+      }
+      if (payload.metrics) {
+        setMetrics(payload.metrics);
+        saveMetrics(payload.metrics);
+      }
+      if (payload.weights) {
+        setWeights(payload.weights);
+        saveWeights(payload.weights);
+      }
+      if (payload.workoutLogs) {
+        setWorkoutLogs(payload.workoutLogs);
+        saveWorkoutLogs(payload.workoutLogs);
+      }
+      if (payload.financeLogs) {
+        setFinanceLogs(payload.financeLogs);
+        saveFinanceLogs(payload.financeLogs);
+      }
+      if (payload.history) {
+        setHistory(payload.history);
+        saveHistory(payload.history);
+      }
+      if (payload.quests) {
+        setQuests(payload.quests);
+        saveQuests(payload.quests);
+      }
+      if (payload.decayLogs) {
+        setDecayLogs(payload.decayLogs);
+        saveDecayLogs(payload.decayLogs);
+      }
+      if (payload.nightlyRewards) {
+        setNightlyRewards(payload.nightlyRewards);
+        saveNightlyRewards(payload.nightlyRewards);
+      }
+      if (payload.alarms) {
+        setAlarms(payload.alarms);
+        saveAlarms(payload.alarms);
+      }
+
+      setSyncStatus('SYNCED');
+      setLastSyncedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+    } finally {
+      setTimeout(() => {
+        isRemoteApplyingRef.current = false;
+      }, 500);
+    }
+  };
+
+  // Check URL query parameters for auto-pairing (?sync=TITAN-XXXX)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlSyncCode = urlParams.get('sync');
+      if (urlSyncCode && urlSyncCode.trim()) {
+        const cleanCode = urlSyncCode.trim().toUpperCase();
+        connectSyncCode(cleanCode);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+  }, []);
+
+  // Initialize Real-Time Cloud Sync Listener if sync code exists
+  useEffect(() => {
+    if (syncCode) {
+      setSyncStatus('SYNCED');
+      cloudSyncEngine.startRealTimeListener(syncCode, handleRemoteCloudUpdate);
+    }
+    return () => {
+      cloudSyncEngine.stopListener();
+    };
+  }, [syncCode]);
+
+  // Auto-broadcast local state changes to Cloud Relay if paired
+  const broadcastCurrentState = () => {
+    if (!syncCode || isRemoteApplyingRef.current) return;
+
+    const payload: FullBackupPayload = {
+      version: '2.6.0',
+      exportedAt: new Date().toISOString(),
+      profile,
+      metrics,
+      weights,
+      workoutLogs,
+      financeLogs,
+      history,
+      quests,
+      decayLogs,
+      nightlyRewards,
+      alarms
+    };
+
+    cloudSyncEngine.pushStateToCloud(payload, syncCode);
+    setLastSyncedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+  };
+
+  // Broadcast whenever key states mutate
+  useEffect(() => {
+    if (!isRemoteApplyingRef.current && syncCode) {
+      const debounceTimer = setTimeout(() => {
+        broadcastCurrentState();
+      }, 350);
+      return () => clearTimeout(debounceTimer);
+    }
+  }, [profile, metrics, workoutLogs, financeLogs, alarms, quests, nightlyRewards]);
+
+  // Sync Management methods
+  const generateNewSyncKey = (): string => {
+    const newCode = cloudSyncEngine.generateNewSyncCode();
+    setSyncCode(newCode);
+    setSyncStatus('SYNCED');
+    cloudSyncEngine.startRealTimeListener(newCode, handleRemoteCloudUpdate);
+    
+    // Broadcast initial state
+    const payload: FullBackupPayload = {
+      version: '2.6.0',
+      exportedAt: new Date().toISOString(),
+      profile,
+      metrics,
+      weights,
+      workoutLogs,
+      financeLogs,
+      history,
+      quests,
+      decayLogs,
+      nightlyRewards,
+      alarms
+    };
+    cloudSyncEngine.pushStateToCloud(payload, newCode);
+    setLastSyncedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+    return newCode;
+  };
+
+  const connectSyncCode = async (code: string): Promise<boolean> => {
+    setSyncStatus('CONNECTING');
+    const freshPayload = await cloudSyncEngine.pullStateFromCloud(code);
+
+    if (freshPayload) {
+      handleRemoteCloudUpdate(freshPayload);
+      setSyncCode(code);
+      cloudSyncEngine.setStoredSyncCode(code);
+      cloudSyncEngine.startRealTimeListener(code, handleRemoteCloudUpdate);
+      setSyncStatus('SYNCED');
+      return true;
+    } else {
+      // If code is fresh, push current local state to start channel
+      setSyncCode(code);
+      cloudSyncEngine.setStoredSyncCode(code);
+      cloudSyncEngine.startRealTimeListener(code, handleRemoteCloudUpdate);
+      broadcastCurrentState();
+      setSyncStatus('SYNCED');
+      return true;
+    }
+  };
+
+  const disconnectSync = () => {
+    cloudSyncEngine.stopListener();
+    cloudSyncEngine.setStoredSyncCode(null);
+    setSyncCode(null);
+    setSyncStatus('DISCONNECTED');
+    setLastSyncedAt(null);
+    soundEngine.playClick(600);
+  };
+
+  const forcePushCloud = async (): Promise<boolean> => {
+    if (!syncCode) return false;
+    const payload: FullBackupPayload = {
+      version: '2.6.0',
+      exportedAt: new Date().toISOString(),
+      profile,
+      metrics,
+      weights,
+      workoutLogs,
+      financeLogs,
+      history,
+      quests,
+      decayLogs,
+      nightlyRewards,
+      alarms
+    };
+    const success = await cloudSyncEngine.pushStateToCloud(payload, syncCode);
+    if (success) {
+      setLastSyncedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+      soundEngine.playQuestComplete();
+    }
+    return success;
+  };
+
+  const forcePullCloud = async (): Promise<boolean> => {
+    if (!syncCode) return false;
+    const fresh = await cloudSyncEngine.pullStateFromCloud(syncCode);
+    if (fresh) {
+      handleRemoteCloudUpdate(fresh);
+      soundEngine.playMilestoneFanfare();
+      return true;
+    }
+    return false;
+  };
 
   // Background Clock Ticker checking for alarms every second
   useEffect(() => {
@@ -669,7 +897,7 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     soundEngine.playClick(600);
   };
 
-  const snoozeTimeoutRef = React.useRef<number | null>(null);
+  const snoozeTimeoutRef = useRef<number | null>(null);
 
   const triggerAlarmDirectly = (alarm: TacticalAlarm) => {
     // HARD GUARD: NEVER trigger if alarm is not enabled / is on standby
@@ -853,6 +1081,8 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setIsSettingsOpen,
         isBackupOpen,
         setIsBackupOpen,
+        isSyncModalOpen,
+        setIsSyncModalOpen,
         isVictoryModalOpen,
         openVictoryModal,
         closeVictoryModal,
@@ -860,6 +1090,14 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setActiveQuizTopic,
         activeDecayAlert,
         dismissDecayAlert,
+        syncCode,
+        syncStatus,
+        lastSyncedAt,
+        generateNewSyncKey,
+        connectSyncCode,
+        disconnectSync,
+        forcePushCloud,
+        forcePullCloud,
         updateMetrics,
         updateProfile,
         updateWeights,

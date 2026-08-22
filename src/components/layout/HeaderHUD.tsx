@@ -20,7 +20,8 @@ import {
   Calendar,
   Clock,
   AlarmClock,
-  BellRing
+  BellRing,
+  ArrowRightLeft
 } from 'lucide-react';
 import { useTitan } from '../../context/TitanContext';
 
@@ -38,6 +39,9 @@ export const HeaderHUD: React.FC = () => {
     setActiveTab,
     setIsSettingsOpen,
     setIsBackupOpen,
+    isSyncModalOpen,
+    setIsSyncModalOpen,
+    syncStatus,
     toggleSound,
     composite,
     alarms,
@@ -255,6 +259,21 @@ export const HeaderHUD: React.FC = () => {
             }`}
           >
             {profile.soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+          </button>
+
+          {/* Real-Time Cloud Sync */}
+          <button
+            onClick={() => setIsSyncModalOpen(true)}
+            title="Real-Time Cross-Device Cloud Sync (PC ⇄ Phone)"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all text-xs font-semibold ${
+              syncStatus === 'SYNCED'
+                ? 'border-emerald-500/60 bg-emerald-950/40 text-emerald-300 shadow-glow-emerald'
+                : 'border-cyan-500/40 bg-cyan-950/20 text-cyan-300 hover:border-cyan-400'
+            }`}
+          >
+            <ArrowRightLeft className="h-3.5 w-3.5 animate-pulse" />
+            <span className="hidden sm:inline">SYNC</span>
+            {syncStatus === 'SYNCED' && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 -ml-0.5" />}
           </button>
 
           {/* Data Backup */}

@@ -13,13 +13,14 @@ import { DailyQuests } from './components/quests/DailyQuests';
 import { CurriculumEngine } from './components/recommendations/CurriculumEngine';
 import { SettingsModal } from './components/modals/SettingsModal';
 import { BackupModal } from './components/modals/BackupModal';
+import { DeviceSyncModal } from './components/modals/DeviceSyncModal';
 import { QuizModal } from './components/modals/QuizModal';
 import { VictoryRewardModal } from './components/modals/VictoryRewardModal';
 import { ActiveAlarmModal } from './components/modals/ActiveAlarmModal';
 import { Terminal } from 'lucide-react';
 
 const DashboardContent: React.FC = () => {
-  const { activeTab } = useTitan();
+  const { activeTab, isSyncModalOpen, setIsSyncModalOpen } = useTitan();
 
   return (
     <div className="min-h-screen flex flex-col justify-between cockpit-grid">
@@ -69,11 +70,11 @@ const DashboardContent: React.FC = () => {
             <span>•</span>
             <span>Decay Punishment Code: 1 Missed Day = 1 Day Gain Erased</span>
             <span>•</span>
-            <span>Tactical Voice Annunciator & Custom Alarms Active</span>
+            <span>Real-Time Cross-Device Cloud Sync Active</span>
           </div>
 
           <div className="text-[11px] text-slate-400">
-            PERSISTENCE: <span className="text-emerald-400">LOCALSTORAGE ACTIVE</span>
+            PERSISTENCE: <span className="text-emerald-400">LOCAL + CLOUD SYNC ACTIVE</span>
           </div>
         </div>
       </footer>
@@ -81,6 +82,7 @@ const DashboardContent: React.FC = () => {
       {/* Global Modals */}
       <SettingsModal />
       <BackupModal />
+      <DeviceSyncModal isOpen={isSyncModalOpen} onClose={() => setIsSyncModalOpen(false)} />
       <QuizModal />
       <VictoryRewardModal />
       <ActiveAlarmModal />
