@@ -21,12 +21,13 @@ import {
   Clock,
   AlarmClock,
   BellRing,
-  ArrowRightLeft
+  ArrowRightLeft,
+  Eye
 } from 'lucide-react';
 import { useTitan } from '../../context/TitanContext';
 
 interface NavItem {
-  id: 'overview' | 'charts' | 'physique' | 'finance' | 'alarms' | 'quests' | 'curriculum';
+  id: 'overview' | 'charts' | 'physique' | 'finance' | 'alarms' | 'quests' | 'curriculum' | 'hologram';
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   badge?: string;
@@ -77,6 +78,7 @@ export const HeaderHUD: React.FC = () => {
     { id: 'overview', label: 'OVERVIEW', icon: Activity },
     { id: 'charts', label: 'ANALYTICS & BELL CURVE', icon: TrendingUp },
     { id: 'physique', label: 'PHYSIQUE HUB', icon: Dumbbell },
+    { id: 'hologram', label: 'NEURAL HOLOGRAM', icon: Eye, badge: 'AI' },
     { id: 'finance', label: 'FINANCE HUB', icon: LineChart },
     { id: 'alarms', label: 'TACTICAL ALARMS', icon: AlarmClock, badge: activeAlarmsCount > 0 ? `${activeAlarmsCount}` : undefined },
     { id: 'quests', label: 'QUEST PROTOCOL', icon: CheckSquare },

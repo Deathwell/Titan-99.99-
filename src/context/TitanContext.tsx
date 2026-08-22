@@ -74,8 +74,8 @@ interface TitanContextType {
   alarms: TacticalAlarm[];
   activeAlarmRinging: TacticalAlarm | null;
   composite: CompositeCalculationResult;
-  activeTab: 'overview' | 'charts' | 'physique' | 'finance' | 'alarms' | 'quests' | 'curriculum';
-  setActiveTab: (tab: 'overview' | 'charts' | 'physique' | 'finance' | 'alarms' | 'quests' | 'curriculum') => void;
+  activeTab: 'overview' | 'charts' | 'physique' | 'finance' | 'alarms' | 'quests' | 'curriculum' | 'hologram';
+  setActiveTab: (tab: 'overview' | 'charts' | 'physique' | 'finance' | 'alarms' | 'quests' | 'curriculum' | 'hologram') => void;
   
   // Modals & Banners
   isSettingsOpen: boolean;
@@ -159,7 +159,7 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [alarms, setAlarms] = useState<TacticalAlarm[]>(loadAlarms);
   const [activeAlarmRinging, setActiveAlarmRinging] = useState<TacticalAlarm | null>(null);
   
-  const [activeTab, setActiveTab] = useState<'overview' | 'charts' | 'physique' | 'finance' | 'alarms' | 'quests' | 'curriculum'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'charts' | 'physique' | 'finance' | 'alarms' | 'quests' | 'curriculum' | 'hologram'>('overview');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isBackupOpen, setIsBackupOpen] = useState(false);
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);

@@ -12,7 +12,8 @@ import {
   Calendar,
   Activity,
   ShieldCheck,
-  Sparkles
+  Sparkles,
+  Eye
 } from 'lucide-react';
 import { useTitan } from '../../context/TitanContext';
 import { formatSecondsToTime, parseTimeToSeconds } from '../../lib/statsEngine';
@@ -25,7 +26,8 @@ export const PhysiqueHub: React.FC = () => {
     updateMetrics,
     workoutLogs,
     addWorkoutLog,
-    composite
+    composite,
+    setActiveTab
   } = useTitan();
 
   // Simple high-level workout form
@@ -464,6 +466,13 @@ export const PhysiqueHub: React.FC = () => {
               onChange={e => updateMetrics({ bodyFatPercent: parseFloat(e.target.value) })}
               className="w-full mt-3"
             />
+            <button
+              onClick={() => setActiveTab('hologram')}
+              className="w-full mt-3 py-1.5 px-3 rounded-lg bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-500/80 text-cyan-300 text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-glow-cyan"
+            >
+              <Eye className="h-3.5 w-3.5 text-titan-cyan" />
+              Scan Photo & Launch Neural Hologram
+            </button>
           </div>
 
           <div className="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-slate-400">

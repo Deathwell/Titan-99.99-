@@ -11,6 +11,7 @@ import { FinanceHub } from './components/hubs/FinanceHub';
 import { AlarmHub } from './components/hubs/AlarmHub';
 import { DailyQuests } from './components/quests/DailyQuests';
 import { CurriculumEngine } from './components/recommendations/CurriculumEngine';
+import { NeuralHologramScanner } from './components/hologram/NeuralHologramScanner';
 import { SettingsModal } from './components/modals/SettingsModal';
 import { BackupModal } from './components/modals/BackupModal';
 import { DeviceSyncModal } from './components/modals/DeviceSyncModal';
@@ -50,6 +51,7 @@ const DashboardContent: React.FC = () => {
           )}
 
           {activeTab === 'physique' && <PhysiqueHub />}
+          {activeTab === 'hologram' && <NeuralHologramScanner />}
           {activeTab === 'finance' && <FinanceHub />}
           {activeTab === 'alarms' && <AlarmHub />}
           {activeTab === 'quests' && <DailyQuests />}
