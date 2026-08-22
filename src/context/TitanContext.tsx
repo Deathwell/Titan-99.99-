@@ -197,28 +197,59 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     isRemoteApplyingRef.current = true;
     try {
       if (payload.profile) {
-        setProfile(payload.profile);
-        saveProfile(payload.profile);
+        setProfile(prev => {
+          // Keep highest XP/level
+          const updated = {
+            ...prev,
+            ...payload.profile,
+            xp: Math.max(prev.xp, payload.profile.xp || 0),
+            level: Math.max(prev.level, payload.profile.level || 1),
+            streakDays: Math.max(prev.streakDays, payload.profile.streakDays || 0)
+          };
+          saveProfile(updated);
+          return updated;
+        });
       }
       if (payload.metrics) {
-        setMetrics(payload.metrics);
-        saveMetrics(payload.metrics);
+        setMetrics(prev => {
+          const updated = { ...prev, ...payload.metrics };
+          saveMetrics(updated);
+          return updated;
+        });
       }
       if (payload.weights) {
         setWeights(payload.weights);
         saveWeights(payload.weights);
       }
-      if (payload.workoutLogs) {
-        setWorkoutLogs(payload.workoutLogs);
-        saveWorkoutLogs(payload.workoutLogs);
+      if (payload.workoutLogs && Array.isArray(payload.workoutLogs)) {
+        setWorkoutLogs(prev => {
+          const map = new Map<string, WorkoutLogEntry>();
+          prev.forEach(w => map.set(w.id, w));
+          payload.workoutLogs.forEach(w => map.set(w.id, w));
+          const merged = Array.from(map.values()).sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+          saveWorkoutLogs(merged);
+          return merged;
+        });
       }
-      if (payload.financeLogs) {
-        setFinanceLogs(payload.financeLogs);
-        saveFinanceLogs(payload.financeLogs);
+      if (payload.financeLogs && Array.isArray(payload.financeLogs)) {
+        setFinanceLogs(prev => {
+          const map = new Map<string, FinanceStudyLogEntry>();
+          prev.forEach(f => map.set(f.id, f));
+          payload.financeLogs.forEach(f => map.set(f.id, f));
+          const merged = Array.from(map.values()).sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+          saveFinanceLogs(merged);
+          return merged;
+        });
       }
-      if (payload.history) {
-        setHistory(payload.history);
-        saveHistory(payload.history);
+      if (payload.history && Array.isArray(payload.history)) {
+        setHistory(prev => {
+          const map = new Map<string, HistoricalSnapshot>();
+          prev.forEach(h => map.set(h.date, h));
+          payload.history.forEach(h => map.set(h.date, h));
+          const merged = Array.from(map.values()).sort((a, b) => a.date.localeCompare(b.date));
+          saveHistory(merged);
+          return merged;
+        });
       }
       if (payload.quests) {
         setQuests(payload.quests);
@@ -232,9 +263,17 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setNightlyRewards(payload.nightlyRewards);
         saveNightlyRewards(payload.nightlyRewards);
       }
-      if (payload.alarms) {
-        setAlarms(payload.alarms);
-        saveAlarms(payload.alarms);
+      if (payload.alarms && Array.isArray(payload.alarms)) {
+        const incomingAlarms = payload.alarms;
+        setAlarms(prev => {
+          // Merge alarms by id so no alarm created on desktop or mobile is ever lost
+          const map = new Map<string, TacticalAlarm>();
+          prev.forEach(a => map.set(a.id, a));
+          incomingAlarms.forEach(a => map.set(a.id, a));
+          const merged = Array.from(map.values());
+          saveAlarms(merged);
+          return merged;
+        });
       }
 
       setSyncStatus('SYNCED');
