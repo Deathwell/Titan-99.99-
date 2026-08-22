@@ -27,6 +27,7 @@ import { soundEngine } from '../../lib/audio';
 import { triggerGlobalConfetti } from '../effects/ConfettiCanvas';
 import { CountUpNumber } from '../effects/CountUpNumber';
 import { MysteryLootModal, isMysteryDropClaimedToday } from '../modals/MysteryLootModal';
+import { ThreatClockBanner } from './ThreatClockBanner';
 
 // Helper to format minutes into clean luxury readouts
 function formatDurationLabel(minutes: number): { time: string; xp: number; isMax: boolean } {
@@ -376,7 +377,10 @@ export const OverviewDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. Daily Excellence Tasks with Darkening Progressive Sliders */}
+      {/* 2. Inactivity Threat & Contender Overtake Radar */}
+      <ThreatClockBanner />
+
+      {/* 3. Daily Excellence Tasks with Darkening Progressive Sliders */}
       <div className="space-y-3.5">
         <div className="flex items-center justify-between px-0.5">
           <div className="flex items-center gap-2">
