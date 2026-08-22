@@ -53,29 +53,29 @@ function formatDurationLabel(minutes: number): { time: string; xp: number; isMax
 }
 
 // Compute dynamic DARKENING luminescence (gets darker & deeper as you slide forward)
-function getDarkeningLuminescence(value: number, accentColor: 'emerald' | 'gold') {
+function getDarkeningLuminescence(value: number, accentColor: 'crimson' | 'gold') {
   const ratio = Math.max(0, Math.min(1, value / 240));
-  const isEmerald = accentColor === 'emerald';
-  const hue = isEmerald ? 156 : 42; // 156 = Cyber Emerald, 42 = Porsche Gold
+  const isCrimson = accentColor === 'crimson';
+  const hue = isCrimson ? 348 : 42; // 348 = Velvet Crimson, 42 = Porsche Gold
 
   if (value === 0) {
     return {
       ratio: 0,
       lightness: 65,
       glowRadius: 0,
-      primaryColor: '#64748b',
+      primaryColor: '#71717a',
       fillGradient: 'rgba(255,255,255,0.06)',
       glowColor: 'transparent',
       thumbGlow: 'none',
       badgeBg: 'rgba(255,255,255,0.03)',
       badgeBorder: 'rgba(255,255,255,0.08)',
-      badgeText: '#64748b'
+      badgeText: '#71717a'
     };
   }
 
   // Lightness starts bright (75%) and gets progressively DARKER down to deep dark (28%) as you slide forward!
   const lightness = Math.round(75 - ratio * 47); // 75% -> 28% (Visibly darkens as dragged!)
-  const saturation = Math.round(80 + ratio * 20); // Saturation increases from 80% -> 100% (richer tone)
+  const saturation = Math.round(85 + ratio * 15); // Saturation increases from 85% -> 100%
   const primaryColor = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
   const glowColor = `hsla(${hue}, 100%, ${lightness}%, ${0.4 + ratio * 0.4})`;
   const glowRadius = Math.round(3 + ratio * 14);
@@ -100,7 +100,7 @@ function getDarkeningLuminescence(value: number, accentColor: 'emerald' | 'gold'
 interface PrecisionSliderProps {
   value: number; // 0 to 240
   onChange: (val: number, clientX?: number, clientY?: number) => void;
-  accentColor: 'emerald' | 'gold';
+  accentColor: 'crimson' | 'gold';
   title: string;
 }
 
@@ -151,7 +151,7 @@ const DarkeningPrecisionSlider: React.FC<PrecisionSliderProps> = ({ value, onCha
             className="h-3.5 w-3.5 transition-colors duration-150"
             style={{ color: lum.primaryColor, filter: value > 0 ? `drop-shadow(0 0 4px ${lum.glowColor})` : 'none' }}
           />
-          <span className="text-slate-400 font-medium text-[11px]">Duration:</span>
+          <span className="text-zinc-400 font-medium text-[11px]">Duration:</span>
           <span
             className="font-mono font-bold tracking-tight text-xs transition-colors duration-150"
             style={{
@@ -162,7 +162,7 @@ const DarkeningPrecisionSlider: React.FC<PrecisionSliderProps> = ({ value, onCha
             {time}
           </span>
           {isMax && (
-            <span className="px-1.5 py-0.2 rounded bg-red-500/20 border border-red-500/40 text-red-400 font-mono font-bold text-[8px] uppercase tracking-widest animate-pulse shadow-sm">
+            <span className="px-1.5 py-0.2 rounded bg-rose-500/20 border border-rose-500/40 text-rose-400 font-mono font-bold text-[8px] uppercase tracking-widest animate-pulse shadow-sm">
               4H MAX
             </span>
           )}
@@ -188,21 +188,20 @@ const DarkeningPrecisionSlider: React.FC<PrecisionSliderProps> = ({ value, onCha
         {/* Floating Minimalist Telemetry Pill */}
         {(isHovered || isDragging) && (
           <div
-            className="absolute bottom-full mb-1.5 -translate-x-1/2 px-2.5 py-0.5 rounded-md bg-[#080c18]/95 border backdrop-blur-md shadow-2xl pointer-events-none text-[10px] font-mono font-bold whitespace-nowrap z-30 transition-opacity duration-150"
+            className="absolute bottom-full mb-1.5 -translate-x-1/2 px-2.5 py-0.5 rounded-md bg-[#121218]/95 border backdrop-blur-md shadow-2xl pointer-events-none text-[10px] font-mono font-bold whitespace-nowrap z-30 transition-opacity duration-150"
             style={{
-              left: `${Math.max(10, Math.min(90, percentage))}%`,
               borderColor: lum.badgeBorder,
               boxShadow: `0 4px 14px rgba(0,0,0,0.8), 0 0 ${lum.glowRadius}px ${lum.glowColor}`
             }}
           >
             <span style={{ color: lum.primaryColor }}>{time}</span>
-            <span className="text-slate-500 mx-1">•</span>
+            <span className="text-zinc-500 mx-1">•</span>
             <span className="text-white">+{xp} XP</span>
           </div>
         )}
 
         {/* 5px Recessed Dark Track */}
-        <div className="relative w-full h-1.5 rounded-full bg-black/50 border border-white/[0.08] overflow-hidden shadow-inner">
+        <div className="relative w-full h-1.5 rounded-full bg-black/60 border border-white/[0.08] overflow-hidden shadow-inner">
           {/* Active Liquid Laser Fill with Darkening Gradient */}
           <div
             className="absolute top-0 bottom-0 left-0 rounded-full transition-all duration-75"
@@ -251,7 +250,7 @@ const DarkeningPrecisionSlider: React.FC<PrecisionSliderProps> = ({ value, onCha
       </div>
 
       {/* Crisp Linear Hour Ticks */}
-      <div className="flex items-center justify-between text-[9px] font-mono text-slate-500 px-0.5">
+      <div className="flex items-center justify-between text-[9px] font-mono text-zinc-500 px-0.5">
         <span className={value === 0 ? 'text-white font-medium' : ''}>0h</span>
         <span style={{ color: value >= 60 && value < 120 ? lum.primaryColor : undefined, fontWeight: value >= 60 && value < 120 ? 'bold' : 'normal' }}>1h</span>
         <span style={{ color: value >= 120 && value < 180 ? lum.primaryColor : undefined, fontWeight: value >= 120 && value < 180 ? 'bold' : 'normal' }}>2h</span>
@@ -327,12 +326,12 @@ export const OverviewDashboard: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto select-none font-sans py-2">
-      {/* 1. Ultra-Sleek Telemetry Header (Clean, Modern, with Total XP in Top Right) */}
+      {/* 1. Luxurious Charcoal & Crimson Telemetry Header */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-[#00f0ff] animate-pulse" />
-            <span className="text-[10px] font-bold tracking-widest text-[#00f0ff] uppercase font-mono">
+            <span className="h-2 w-2 rounded-full bg-[#ff2e4d] animate-pulse" />
+            <span className="text-[10px] font-bold tracking-widest text-[#ff2e4d] uppercase font-mono">
               OPERATOR ACTIVE
             </span>
           </div>
@@ -344,8 +343,8 @@ export const OverviewDashboard: React.FC = () => {
               <span className="font-mono font-bold"><CountUpNumber end={profile.xp} decimals={0} suffix=" Total XP" /></span>
             </div>
 
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/25 text-orange-300 font-semibold text-xs backdrop-blur-md">
-              <Flame className="h-3.5 w-3.5 text-orange-400 fill-orange-400" />
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/25 text-rose-300 font-semibold text-xs backdrop-blur-md">
+              <Flame className="h-3.5 w-3.5 text-rose-400 fill-rose-400" />
               <span className="font-mono">{profile.streakDays}d Streak</span>
             </div>
           </div>
@@ -354,12 +353,12 @@ export const OverviewDashboard: React.FC = () => {
         {/* Hero Rank Display */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-2 border-b border-white/[0.08]">
           <div>
-            <span className="text-xs text-slate-400 font-medium block">
+            <span className="text-xs text-zinc-400 font-medium block">
               {greeting}, <strong className="text-white font-semibold">{profile.callsign || 'Operator'}</strong>
             </span>
             <div className="text-3xl sm:text-5xl font-black text-white tracking-tight mt-1 flex items-baseline gap-3">
               <span>TOP</span>
-              <span className="text-metallic-cyan">
+              <span className="text-metallic-crimson">
                 <CountUpNumber end={topPercent} decimals={1} suffix="%" />
               </span>
             </div>
@@ -367,10 +366,10 @@ export const OverviewDashboard: React.FC = () => {
 
           {/* Key Metric Indicators */}
           <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span className="px-3 py-1 rounded-lg bg-white/[0.04] text-slate-300 border border-white/[0.08] font-mono">
+            <span className="px-3 py-1 rounded-lg bg-white/[0.04] text-zinc-300 border border-white/[0.08] font-mono">
               <strong className="text-white"><CountUpNumber end={composite.humansDefeated / 1000000} decimals={1} suffix="M" /></strong> Defeated
             </span>
-            <span className="px-3 py-1 rounded-lg bg-white/[0.04] text-slate-300 border border-white/[0.08] font-medium">
+            <span className="px-3 py-1 rounded-lg bg-white/[0.04] text-zinc-300 border border-white/[0.08] font-medium">
               Tier {profile.level} Operator
             </span>
           </div>
@@ -381,51 +380,51 @@ export const OverviewDashboard: React.FC = () => {
       <div className="space-y-3.5">
         <div className="flex items-center justify-between px-0.5">
           <div className="flex items-center gap-2">
-            <Radio className="h-3.5 w-3.5 text-cyan-400 animate-pulse" />
-            <h3 className="text-[11px] font-bold tracking-widest text-slate-300 uppercase font-mono">
+            <Radio className="h-3.5 w-3.5 text-[#ff2e4d] animate-pulse" />
+            <h3 className="text-[11px] font-bold tracking-widest text-zinc-300 uppercase font-mono">
               DAILY PROTOCOLS ({completedCount}/3)
             </h3>
           </div>
-          <span className="text-[10px] text-cyan-400 font-mono font-bold">
+          <span className="text-[10px] text-rose-400 font-mono font-bold">
             DRAG FORWARD TO DEEPEN INTENSITY
           </span>
         </div>
 
-        {/* Task 1: Workout Protocol */}
+        {/* Task 1: Workout Protocol (Velvet Crimson) */}
         <div className={`p-4 rounded-xl border transition-all duration-200 ${
           workoutMinutes > 0
-            ? 'laser-conduit-emerald bg-emerald-950/15 border-emerald-500/30 pl-4'
-            : 'bg-[#0a0e1a]/80 border-white/[0.07] hover:border-white/15'
+            ? 'laser-conduit-crimson bg-rose-950/15 border-rose-500/30 pl-4'
+            : 'bg-[#121217]/80 border-white/[0.07] hover:border-white/15'
         }`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className={`p-2 rounded-lg transition-all ${
                 workoutMinutes > 0
-                  ? 'bg-emerald-400 text-black shadow-sm'
-                  : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                  ? 'bg-rose-500 text-white shadow-sm'
+                  : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
               }`}>
                 <Dumbbell className="h-4 w-4" />
               </div>
 
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[9px] font-mono font-bold text-emerald-400 bg-emerald-950/50 px-1.5 py-0.2 rounded border border-emerald-500/25">
+                  <span className="text-[9px] font-mono font-bold text-rose-400 bg-rose-950/50 px-1.5 py-0.2 rounded border border-rose-500/25">
                     PHYSIQUE
                   </span>
                   <h4 className="text-xs sm:text-sm font-bold text-white tracking-tight">
                     Physical Workout Protocol
                   </h4>
                 </div>
-                <p className="text-[11px] text-slate-400 mt-0.5">
+                <p className="text-[11px] text-zinc-400 mt-0.5">
                   Compound strength or aerobic stamina (up to 4h)
                 </p>
               </div>
             </div>
 
             {workoutMinutes > 0 ? (
-              <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+              <CheckCircle2 className="h-5 w-5 text-rose-400" />
             ) : (
-              <Circle className="h-5 w-5 text-slate-600" />
+              <Circle className="h-5 w-5 text-zinc-600" />
             )}
           </div>
 
@@ -433,16 +432,16 @@ export const OverviewDashboard: React.FC = () => {
           <DarkeningPrecisionSlider
             value={workoutMinutes}
             onChange={(val, x, y) => handleDurationChange('STRENGTH', val, x, y)}
-            accentColor="emerald"
+            accentColor="crimson"
             title="Workout"
           />
         </div>
 
-        {/* Task 2: Financial Mastery */}
+        {/* Task 2: Financial Mastery (Porsche Gold) */}
         <div className={`p-4 rounded-xl border transition-all duration-200 ${
           financeMinutes > 0
             ? 'laser-conduit-gold bg-amber-950/15 border-amber-500/30 pl-4'
-            : 'bg-[#0a0e1a]/80 border-white/[0.07] hover:border-white/15'
+            : 'bg-[#121217]/80 border-white/[0.07] hover:border-white/15'
         }`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -463,7 +462,7 @@ export const OverviewDashboard: React.FC = () => {
                     Financial Modeling & Capital Markets
                   </h4>
                 </div>
-                <p className="text-[11px] text-slate-400 mt-0.5">
+                <p className="text-[11px] text-zinc-400 mt-0.5">
                   LBO models, debt structuring & quant analysis (up to 4h)
                 </p>
               </div>
@@ -472,7 +471,7 @@ export const OverviewDashboard: React.FC = () => {
             {financeMinutes > 0 ? (
               <CheckCircle2 className="h-5 w-5 text-amber-400" />
             ) : (
-              <Circle className="h-5 w-5 text-slate-600" />
+              <Circle className="h-5 w-5 text-zinc-600" />
             )}
           </div>
 
@@ -490,42 +489,42 @@ export const OverviewDashboard: React.FC = () => {
           onClick={handleDisciplineToggle}
           className={`p-4 rounded-xl border transition-all duration-200 cursor-pointer flex items-center justify-between group active:scale-[0.99] ${
             hasDisciplineToday
-              ? 'laser-conduit-cyan bg-purple-950/15 border-purple-500/30 text-white pl-4'
-              : 'bg-[#0a0e1a]/80 border-white/[0.07] hover:border-white/15'
+              ? 'laser-conduit-crimson bg-rose-950/15 border-rose-500/30 text-white pl-4'
+              : 'bg-[#121217]/80 border-white/[0.07] hover:border-white/15'
           }`}
         >
           <div className="flex items-center gap-3">
             <div className={`p-2 rounded-lg transition-all ${
               hasDisciplineToday
-                ? 'bg-[#8c52ff] text-white shadow-sm'
-                : 'bg-purple-500/10 text-purple-400 border border-purple-500/20 group-hover:scale-105'
+                ? 'bg-rose-500 text-white shadow-sm'
+                : 'bg-rose-500/10 text-rose-400 border border-rose-500/20 group-hover:scale-105'
             }`}>
               <Moon className="h-4 w-4" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[9px] font-mono font-bold text-purple-300 bg-purple-950/50 px-1.5 py-0.2 rounded border border-purple-500/25">
+                <span className="text-[9px] font-mono font-bold text-rose-300 bg-rose-950/50 px-1.5 py-0.2 rounded border border-rose-500/25">
                   DISCIPLINE
                 </span>
-                <span className={`text-xs sm:text-sm font-bold tracking-tight ${hasDisciplineToday ? 'line-through text-slate-400' : 'text-white'}`}>
+                <span className={`text-xs sm:text-sm font-bold tracking-tight ${hasDisciplineToday ? 'line-through text-zinc-400' : 'text-white'}`}>
                   8-Hour Sleep Hygiene & Recovery Protocol
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 mt-0.5">
+              <p className="text-[11px] text-zinc-400 mt-0.5">
                 Zero junk food, optimal hydration, no screens before bed (+50 XP)
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2.5">
-            <span className="px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-300 border border-purple-500/20 font-mono text-[10px] font-semibold">
+            <span className="px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-300 border border-rose-500/20 font-mono text-[10px] font-semibold">
               +50 XP
             </span>
             <div>
               {hasDisciplineToday ? (
-                <CheckCircle2 className="h-5 w-5 text-purple-400" />
+                <CheckCircle2 className="h-5 w-5 text-rose-400" />
               ) : (
-                <Circle className="h-5 w-5 text-slate-600 group-hover:text-purple-400 transition-colors" />
+                <Circle className="h-5 w-5 text-zinc-600 group-hover:text-rose-400 transition-colors" />
               )}
             </div>
           </div>
@@ -535,10 +534,10 @@ export const OverviewDashboard: React.FC = () => {
       {/* 3. Neural Body Scanner Showcase */}
       <div
         onClick={() => setActiveTab('hologram')}
-        className="luxury-card p-4 bg-[#0a0e1a]/80 hover:border-cyan-500/30 cursor-pointer transition-all flex items-center justify-between group active:scale-[0.99]"
+        className="luxury-card p-4 bg-[#121217]/80 hover:border-rose-500/30 cursor-pointer transition-all flex items-center justify-between group active:scale-[0.99]"
       >
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 text-black flex items-center justify-center shadow-sm shrink-0 group-hover:scale-105 transition-transform">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-rose-500 to-red-600 text-white flex items-center justify-center shadow-sm shrink-0 group-hover:scale-105 transition-transform">
             <Eye className="h-5 w-5" />
           </div>
           <div>
@@ -546,17 +545,17 @@ export const OverviewDashboard: React.FC = () => {
               <h4 className="text-xs sm:text-sm font-bold text-white">
                 Neural Body Fat Morph Scanner
               </h4>
-              <span className="px-1.5 py-0.2 rounded-full bg-cyan-400/10 text-cyan-300 border border-cyan-400/25 text-[8px] font-bold uppercase font-mono tracking-wider">
+              <span className="px-1.5 py-0.2 rounded-full bg-rose-400/10 text-rose-300 border border-rose-400/25 text-[8px] font-bold uppercase font-mono tracking-wider">
                 AI SCANNER
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 mt-0.5">
+            <p className="text-[11px] text-zinc-400 mt-0.5">
               Upload photo & drag the real-time slider from 8% to 58% Body Fat with ASMR marimba audio.
             </p>
           </div>
         </div>
 
-        <ChevronRight className="h-4 w-4 text-cyan-400 group-hover:translate-x-0.5 transition-transform" />
+        <ChevronRight className="h-4 w-4 text-rose-400 group-hover:translate-x-0.5 transition-transform" />
       </div>
 
       {/* 4. Reward Vault Banner */}

@@ -60,31 +60,31 @@ export const HeaderHUD: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-20 border-b border-white/[0.07] bg-[#050811]/90 backdrop-blur-2xl px-4 lg:px-8 py-2.5 transition-all font-sans">
+      <header className="sticky top-0 z-20 border-b border-white/[0.07] bg-[#09090d]/90 backdrop-blur-2xl px-4 lg:px-8 py-2.5 transition-all font-sans">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
           {/* Left: Clean Breadcrumbs & Level Badge */}
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsStoryOpen(true)}
-              className="relative p-0.5 rounded-full bg-gradient-to-tr from-cyan-400 via-purple-500 to-amber-400 hover:scale-105 active:scale-95 transition-all"
+              className="relative p-0.5 rounded-full bg-gradient-to-tr from-rose-500 via-red-600 to-amber-500 hover:scale-105 active:scale-95 transition-all shadow-sm"
               title="Daily Story Reel"
             >
-              <div className="h-7 w-7 rounded-full bg-[#05070e] flex items-center justify-center text-[11px] font-bold text-white">
+              <div className="h-7 w-7 rounded-full bg-[#0e0e13] flex items-center justify-center text-[11px] font-bold text-white">
                 {profile.level}
               </div>
             </button>
 
             <div className="flex items-center gap-1.5 text-xs">
               <span className="text-white font-bold tracking-tight">TITAN</span>
-              <ChevronRight className="h-3 w-3 text-slate-500" />
-              <span className="text-cyan-400 font-semibold">{tabLabels[activeTab] || 'Cockpit'}</span>
+              <ChevronRight className="h-3 w-3 text-zinc-500" />
+              <span className="text-rose-400 font-semibold">{tabLabels[activeTab] || 'Cockpit'}</span>
             </div>
           </div>
 
           {/* Right: Total XP Earned & Utility Controls */}
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Total XP Earned Badge (Top Right Corner) */}
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border border-amber-500/30 text-amber-300 shadow-sm backdrop-blur-md">
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-gradient-to-r from-amber-500/15 via-rose-500/10 to-amber-500/15 border border-amber-500/30 text-amber-300 shadow-sm backdrop-blur-md">
               <Zap className="h-3.5 w-3.5 text-amber-400 fill-amber-400 animate-pulse" />
               <span className="text-[10px] text-amber-200/70 font-semibold hidden xs:inline">Total XP:</span>
               <span className="font-mono font-bold text-xs text-white">
@@ -97,8 +97,8 @@ export const HeaderHUD: React.FC = () => {
               onClick={() => setActiveTab('charts')}
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-semibold transition-all ${
                 activeAlarmsCount > 0
-                  ? 'bg-rose-500/10 border-rose-500/25 text-rose-300'
-                  : 'bg-white/[0.03] border-white/[0.07] text-slate-400 hover:text-white'
+                  ? 'bg-rose-500/15 border-rose-500/30 text-rose-300'
+                  : 'bg-white/[0.03] border-white/[0.07] text-zinc-400 hover:text-white'
               }`}
               title="Tactical Alarms"
             >
@@ -125,7 +125,7 @@ export const HeaderHUD: React.FC = () => {
             {/* Settings Cog */}
             <button
               onClick={() => setIsSettingsOpen(true)}
-              className="p-1.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.08] text-slate-400 hover:text-white border border-white/[0.07] transition-all"
+              className="p-1.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.08] text-zinc-400 hover:text-white border border-white/[0.07] transition-all"
               title="Settings"
             >
               <Settings className="h-3.5 w-3.5" />
