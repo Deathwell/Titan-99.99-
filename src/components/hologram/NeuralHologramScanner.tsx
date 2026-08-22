@@ -34,6 +34,10 @@ import {
   BiometricAnalysisResult
 } from '../../lib/biometricVisionEngine';
 import {
+  HologramMorphEngine,
+  HologramRenderMode
+} from '../../lib/hologramMorphEngine';
+import {
   generativeBodyFatService,
   DISCRETE_BODY_FAT_STEPS,
   FilmstripStep,
@@ -47,15 +51,21 @@ export const NeuralHologramScanner: React.FC = () => {
   // Selected Photo & Ingestion State
   const [selectedImageSrc, setSelectedImageSrc] = useState<string>('/samples/sample_user_photo.jpg');
   const [isScanning, setIsScanning] = useState<boolean>(false);
+  const [scanStepText, setScanStepText] = useState<string>('');
   const [scanResult, setScanResult] = useState<BiometricAnalysisResult | null>(null);
 
   // Discrete Filmstrip State
   const [filmstripSteps, setFilmstripSteps] = useState<FilmstripStep[]>(DISCRETE_BODY_FAT_STEPS);
   const [activeStepIndex, setActiveStepIndex] = useState<number>(3); // Defaults to 20%
+  const [renderMode, setRenderMode] = useState<HologramRenderMode>('NEURAL_RECOMP');
+  const [showScanlines, setShowScanlines] = useState<boolean>(true);
+  const [showMuscleSynthesis, setShowMuscleSynthesis] = useState<boolean>(true);
+  const [zoomLevel, setZoomLevel] = useState<number>(1.0);
+  const [panOffset, setPanOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  // Cloud Generation State
   const [generatingStepIndex, setGeneratingStepIndex] = useState<number | null>(null);
   const [generationProgressText, setGenerationProgressText] = useState<string>('');
-
-  // Backend Configuration Modal
   const [showConfigModal, setShowConfigModal] = useState<boolean>(false);
   const [backendConfig, setBackendConfig] = useState<GenerativeBackendConfig>(generativeBodyFatService.getConfig());
   const [configSuccessMsg, setConfigSuccessMsg] = useState<string>('');
@@ -69,21 +79,89 @@ export const NeuralHologramScanner: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
 
+  // Canvas & Engine Refs
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const morphEngineRef = useRef<HologramMorphEngine | null>(null);
+  const loadedImageRef = useRef<HTMLImageElement | null>(null);
+
   // Active step computed data
   const currentStep = filmstripSteps[activeStepIndex] || filmstripSteps[0];
+
+  // Initialize Canvas Engine
+  useEffect(() => {
+    if (!canvasRef.current) return;
+    const canvas = canvasRef.current;
+    canvas.width = canvas.parentElement?.clientWidth || 700;
+    canvas.height = 540;
+
+    const engine = new HologramMorphEngine(canvas);
+    morphEngineRef.current = engine;
+
+    return () => {
+      engine.destroy();
+      morphEngineRef.current = null;
+    };
+  }, []);
+
+  // 60FPS Continuous Animation Render Loop
+  useEffect(() => {
+    let animId: number;
+
+    const renderLoop = () => {
+      if (
+        morphEngineRef.current &&
+        loadedImageRef.current &&
+        scanResult
+      ) {
+        morphEngineRef.current.renderHologramFrame(
+          loadedImageRef.current,
+          scanResult.landmarks,
+          {
+            renderMode,
+            targetBodyFat: currentStep.bodyFatPercent,
+            baselineBodyFat: scanResult.estimatedBodyFatPercent,
+            showScanlines,
+            showMuscleSynthesis,
+            showFatLayerHeatmap: renderMode === 'ANATOMICAL_XRAY',
+            zoomLevel,
+            panOffset
+          }
+        );
+      }
+      animId = requestAnimationFrame(renderLoop);
+    };
+
+    animId = requestAnimationFrame(renderLoop);
+    return () => cancelAnimationFrame(animId);
+  }, [renderMode, currentStep, showScanlines, showMuscleSynthesis, zoomLevel, panOffset, scanResult]);
 
   // Execute initial biometric scan
   const processImage = useCallback(async (src: string) => {
     setIsScanning(true);
     setIsAdopted(false);
+    setScanStepText('INITIATING ANTHROPOMETRIC VISION SCANNER...');
     soundEngine.playJarvisHudPing();
 
     try {
+      await new Promise(r => setTimeout(r, 200));
+      setScanStepText('EXTRACTING ANTI-ALIASED SILHOUETTE...');
+
       const result = await biometricVisionEngine.analyzeBiometricPhoto(
         src,
         undefined,
         profile.heightCm || 180
       );
+
+      setScanStepText('SYNTHESIZING ANATOMICAL RECOMP FIELD...');
+
+      // Load isolated image into memory for the morph engine
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = result.isolatedSubjectDataUrl;
+      await new Promise(res => {
+        img.onload = res;
+      });
+      loadedImageRef.current = img;
 
       setScanResult(result);
       setUserWeightKg(result.estimatedUserWeightKg);
@@ -99,11 +177,6 @@ export const NeuralHologramScanner: React.FC = () => {
         }
       });
       setActiveStepIndex(closestIdx);
-
-      // Initialize baseline frame in cache
-      const updatedSteps = [...filmstripSteps];
-      updatedSteps[closestIdx].cachedImageUrl = result.isolatedSubjectDataUrl;
-      setFilmstripSteps(updatedSteps);
 
       setIsScanning(false);
       soundEngine.playMilestoneFanfare();
@@ -121,36 +194,46 @@ export const NeuralHologramScanner: React.FC = () => {
     };
   }, []);
 
-  // Generate or retrieve cached frame when active step changes
-  const handleSelectStep = async (index: number) => {
+  // Handle step selection with sound & instant canvas refresh
+  const handleSelectStep = (index: number) => {
     setActiveStepIndex(index);
+    soundEngine.playClick(850 + index * 20);
+  };
+
+  // Trigger optional Cloud GPU generation
+  const handleGenerateCloudFrame = async (index: number) => {
     const step = filmstripSteps[index];
+    if (!scanResult) return;
 
-    if (!step.cachedImageUrl && scanResult) {
-      setGeneratingStepIndex(index);
-      setGenerationProgressText('Initializing GPU Inpainting Pipeline...');
+    setGeneratingStepIndex(index);
+    setGenerationProgressText('Connecting to GPU Inpainting Worker...');
 
-      try {
-        const generatedUrl = await generativeBodyFatService.generateStep(
-          scanResult.isolatedSubjectDataUrl,
-          step,
-          (msg) => setGenerationProgressText(msg)
-        );
+    try {
+      const generatedUrl = await generativeBodyFatService.generateStep(
+        scanResult.isolatedSubjectDataUrl,
+        step,
+        (msg) => setGenerationProgressText(msg)
+      );
 
-        setFilmstripSteps(prev => {
-          const next = [...prev];
-          next[index] = { ...next[index], cachedImageUrl: generatedUrl };
-          return next;
-        });
+      // Update image if returned
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = generatedUrl;
+      await new Promise(res => { img.onload = res; });
+      loadedImageRef.current = img;
 
-        setGeneratingStepIndex(null);
-        soundEngine.playClick(900);
-      } catch (err) {
-        console.error('Step generation error:', err);
-        setGeneratingStepIndex(null);
-      }
-    } else {
-      soundEngine.playClick(850);
+      setFilmstripSteps(prev => {
+        const next = [...prev];
+        next[index] = { ...next[index], cachedImageUrl: generatedUrl };
+        return next;
+      });
+
+      setGeneratingStepIndex(null);
+      soundEngine.playQuestComplete();
+    } catch (err: any) {
+      console.error('Cloud Generation Error:', err);
+      alert(err.message || 'Generation failed. Verify your GPU API Key.');
+      setGeneratingStepIndex(null);
     }
   };
 
@@ -281,7 +364,7 @@ export const NeuralHologramScanner: React.FC = () => {
                 </span>
               </div>
               <p className="text-xs text-slate-400 font-sans mt-0.5">
-                Personalized Multi-Step Filmstrip • ControlNet & InstantID Architecture • Zero Stock Models
+                Real-Time Physiological Transformation • Instant 60FPS Crossfading • Optional Cloud GPU Worker
               </p>
             </div>
           </div>
@@ -326,7 +409,7 @@ export const NeuralHologramScanner: React.FC = () => {
         <div className="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400 font-sans">
           <span>* Personalized visualization estimate. Biological fat distribution naturally varies across individuals.</span>
           <span className="text-titan-cyan font-mono text-[10px]">
-            Backend: {backendConfig.apiKey ? `${backendConfig.provider.toUpperCase()} (Connected)` : 'Local Anchor Preview'}
+            Backend: {backendConfig.apiKey ? `${backendConfig.provider.toUpperCase()} (Connected)` : 'Real-Time Neural Engine (Active)'}
           </span>
         </div>
       </div>
@@ -336,6 +419,60 @@ export const NeuralHologramScanner: React.FC = () => {
         {/* Central Viewport & Slider (7 Cols) */}
         <div className="lg:col-span-7 space-y-4">
           <div className="rounded-xl border border-titan-cardBorder bg-black/95 shadow-2xl overflow-hidden relative backdrop-blur-xl flex flex-col items-center justify-center min-h-[540px]">
+            {/* Viewport Top Header Controls */}
+            <div className="absolute top-3 left-3 right-3 z-10 flex items-center justify-between pointer-events-none">
+              {/* Render Mode Selector */}
+              <div className="flex items-center gap-1.5 pointer-events-auto bg-slate-900/90 border border-slate-800 rounded-lg p-1">
+                {(['NEURAL_RECOMP', 'ANATOMICAL_XRAY', 'CYBER_CYAN', 'MATRIX_GREEN'] as HologramRenderMode[]).map(mode => (
+                  <button
+                    key={mode}
+                    onClick={() => {
+                      setRenderMode(mode);
+                      soundEngine.playClick(850);
+                    }}
+                    className={`px-2.5 py-1 rounded text-[10px] font-bold transition-all ${
+                      renderMode === mode
+                        ? 'bg-titan-cyan text-black shadow-glow-cyan'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    {mode === 'NEURAL_RECOMP' && 'RECOMP SYNTHESIS'}
+                    {mode === 'ANATOMICAL_XRAY' && 'BIO X-RAY'}
+                    {mode === 'CYBER_CYAN' && 'CYBER CYAN'}
+                    {mode === 'MATRIX_GREEN' && 'MATRIX GREEN'}
+                  </button>
+                ))}
+              </div>
+
+              {/* Viewport Zoom / Reset Controls */}
+              <div className="flex items-center gap-1 pointer-events-auto bg-slate-900/90 border border-slate-800 rounded-lg p-1 text-slate-300 text-xs">
+                <button
+                  onClick={() => setZoomLevel(prev => Math.min(2.0, prev + 0.15))}
+                  className="p-1 hover:text-white"
+                  title="Zoom In"
+                >
+                  <ZoomIn className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => setZoomLevel(prev => Math.max(0.6, prev - 0.15))}
+                  className="p-1 hover:text-white"
+                  title="Zoom Out"
+                >
+                  <ZoomOut className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => {
+                    setZoomLevel(1.0);
+                    setPanOffset({ x: 0, y: 0 });
+                  }}
+                  className="p-1 hover:text-white"
+                  title="Reset View"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
+
             {/* Generating State Overlay */}
             {generatingStepIndex !== null && (
               <div className="absolute inset-0 z-20 bg-black/85 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center animate-in fade-in">
@@ -352,24 +489,39 @@ export const NeuralHologramScanner: React.FC = () => {
               </div>
             )}
 
-            {/* Rendered Frame Viewport */}
-            <div className="w-full h-[540px] relative flex items-center justify-center p-4">
-              {scanResult && (
-                <img
-                  src={currentStep.cachedImageUrl || scanResult.isolatedSubjectDataUrl}
-                  alt={currentStep.label}
-                  className="max-h-full max-w-full object-contain filter drop-shadow-[0_0_20px_rgba(6,182,212,0.35)] transition-all duration-300"
-                />
-              )}
+            {/* 60FPS Interactive Render Canvas */}
+            <canvas
+              ref={canvasRef}
+              className="w-full h-[540px] block"
+            />
 
-              {/* Viewport Floating Step Tag */}
-              <div className="absolute bottom-4 left-4 bg-slate-950/85 border border-cyan-500/40 rounded-lg px-3 py-1.5 text-xs text-slate-300 backdrop-blur-md">
-                <span className="text-slate-400">TARGET: </span>
-                <strong className="text-titan-cyan text-sm">{currentStep.label}</strong>
-                <span className="ml-2 text-[10px] text-slate-500">
-                  ({currentStep.category})
-                </span>
-              </div>
+            {/* Viewport Floating Step Tag */}
+            <div className="absolute bottom-4 left-4 z-10 bg-slate-950/85 border border-cyan-500/40 rounded-lg px-3 py-1.5 text-xs text-slate-300 backdrop-blur-md">
+              <span className="text-slate-400">TARGET: </span>
+              <strong className="text-titan-cyan text-sm">{currentStep.label}</strong>
+              <span className="ml-2 text-[10px] text-slate-500">
+                ({currentStep.category})
+              </span>
+            </div>
+
+            {/* Feature Toggles */}
+            <div className="absolute bottom-4 right-4 z-10 flex items-center gap-1.5 bg-slate-950/85 border border-slate-800 rounded-lg p-1.5 text-[10px]">
+              <button
+                onClick={() => setShowScanlines(!showScanlines)}
+                className={`px-2 py-0.5 rounded border transition-all ${
+                  showScanlines ? 'bg-cyan-950 border-cyan-500 text-cyan-300' : 'border-slate-800 text-slate-500'
+                }`}
+              >
+                Laser Scan
+              </button>
+              <button
+                onClick={() => setShowMuscleSynthesis(!showMuscleSynthesis)}
+                className={`px-2 py-0.5 rounded border transition-all ${
+                  showMuscleSynthesis ? 'bg-cyan-950 border-cyan-500 text-cyan-300' : 'border-slate-800 text-slate-500'
+                }`}
+              >
+                Muscle Striations
+              </button>
             </div>
           </div>
 
@@ -379,7 +531,7 @@ export const NeuralHologramScanner: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Sliders className="h-4 w-4 text-titan-cyan" />
                 <span className="text-xs font-bold text-white tracking-wider">
-                  DISCRETE BODY FAT FILMSTRIP
+                  BODY FAT FILMSTRIP SLIDER
                 </span>
               </div>
               <div className="flex items-baseline gap-2">
@@ -421,11 +573,23 @@ export const NeuralHologramScanner: React.FC = () => {
             </div>
 
             {/* Step Anatomical Description */}
-            <div className="p-3 rounded-lg bg-slate-900/90 border border-slate-800 text-xs text-slate-300 font-sans leading-relaxed">
-              <strong className="text-titan-cyan font-mono block text-[11px] mb-0.5">
-                ANATOMICAL COMPOSITION PROFILE:
-              </strong>
-              {currentStep.anatomicalDescription}
+            <div className="p-3 rounded-lg bg-slate-900/90 border border-slate-800 text-xs text-slate-300 font-sans leading-relaxed flex items-center justify-between gap-4">
+              <div>
+                <strong className="text-titan-cyan font-mono block text-[11px] mb-0.5">
+                  ANATOMICAL COMPOSITION PROFILE:
+                </strong>
+                {currentStep.anatomicalDescription}
+              </div>
+
+              {backendConfig.apiKey && (
+                <button
+                  onClick={() => handleGenerateCloudFrame(activeStepIndex)}
+                  className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/60 text-amber-300 text-[11px] font-bold shrink-0 flex items-center gap-1"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Cloud GPU Pass
+                </button>
+              )}
             </div>
 
             {/* Quick-Jump Step Cards */}
