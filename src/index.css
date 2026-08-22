@@ -1,21 +1,20 @@
 @import "tailwindcss";
 
 @theme {
-  --color-linear-bg: #08090c;
-  --color-linear-surface: #0e0f15;
-  --color-linear-card: #12141c;
-  --color-linear-cardHover: #181b26;
-  --color-linear-border: rgba(255, 255, 255, 0.08);
-  --color-linear-borderHover: rgba(255, 255, 255, 0.16);
-  --color-linear-indigo: #5e6ad2;
-  --color-linear-indigoLight: #7c88f2;
-  --color-linear-cyan: #56b6f7;
-  --color-linear-emerald: #30a46c;
-  --color-linear-amber: #f5a623;
-  --color-linear-rose: #e5484d;
-  --color-linear-text: #ededef;
-  --color-linear-textMuted: #8a8f98;
-  --color-linear-textDim: #62666d;
+  --color-titan-bg: #04060b;
+  --color-titan-surface: #0a0d18;
+  --color-titan-card: #0f1424;
+  --color-titan-border: rgba(255, 255, 255, 0.12);
+  
+  /* Automotive Luxury Accent Palette (Mercedes AMG / Audi RS / Porsche) */
+  --color-matrix-cyan: #00f0ff;
+  --color-matrix-cyanGlow: #00b4d8;
+  --color-amg-crimson: #ff1e42;
+  --color-porsche-gold: #e5b95c;
+  --color-champagne-bronze: #dfa15a;
+  --color-electric-violet: #8c52ff;
+  --color-cyber-emerald: #00e699;
+  --color-titanium-silver: #e2e8f0;
 }
 
 :root {
@@ -23,96 +22,183 @@
 }
 
 body {
-  background-color: #08090c;
+  background-color: #030509;
   background-image: 
-    radial-gradient(circle at 50% 0%, rgba(94, 106, 210, 0.08) 0%, transparent 60%),
-    radial-gradient(circle at 100% 100%, rgba(86, 182, 247, 0.04) 0%, transparent 40%),
-    linear-gradient(to bottom, #08090c, #0b0c12);
+    radial-gradient(circle at 50% -10%, rgba(0, 240, 255, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 10% 30%, rgba(140, 82, 255, 0.08) 0%, transparent 45%),
+    radial-gradient(circle at 90% 80%, rgba(229, 185, 92, 0.07) 0%, transparent 45%),
+    linear-gradient(to bottom, #030509 0%, #060913 50%, #030509 100%);
   background-attachment: fixed;
-  color: #ededef;
+  color: #f1f5f9;
   overflow-x: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, "Inter", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Segoe UI", Roboto, sans-serif;
   letter-spacing: -0.015em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Linear-Grade Precision Card */
-.linear-card, .social-card, .luxury-card {
-  background: rgba(14, 15, 21, 0.7);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 
-    0 12px 32px -8px rgba(0, 0, 0, 0.7),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  border-radius: 1rem;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.linear-card:hover, .social-card:hover, .luxury-card:hover {
-  border-color: rgba(255, 255, 255, 0.16);
-  background: rgba(18, 20, 28, 0.85);
-  box-shadow: 
-    0 20px 48px -12px rgba(0, 0, 0, 0.8),
-    0 0 20px -5px rgba(94, 106, 210, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.14);
-}
-
-/* Linear's Signature Glowing Top Border Beam */
-.linear-beam-card {
+/* Luxury Automotive Cockpit Card (Mercedes AMG / Audi e-tron GT style) */
+.luxury-card, .mercedes-card, .linear-card, .social-card {
   position: relative;
-  overflow: hidden;
-  background: rgba(14, 15, 21, 0.8);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 1rem;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  background: linear-gradient(135deg, rgba(16, 22, 38, 0.75) 0%, rgba(8, 12, 22, 0.85) 100%);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 
+    0 20px 50px -10px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 0 20px rgba(0, 240, 255, 0.02);
+  border-radius: 1.25rem;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.linear-beam-card::before {
+.luxury-card:hover, .mercedes-card:hover, .linear-card:hover {
+  border-color: rgba(0, 240, 255, 0.35);
+  border-top: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 
+    0 25px 60px -10px rgba(0, 0, 0, 0.9),
+    0 0 30px -5px rgba(0, 240, 255, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+}
+
+/* Hyper-Luxury Gold & Titanium Card */
+.gold-vault-card {
+  position: relative;
+  background: linear-gradient(135deg, rgba(30, 22, 14, 0.8) 0%, rgba(14, 11, 8, 0.9) 100%);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(229, 185, 92, 0.25);
+  border-top: 1px solid rgba(229, 185, 92, 0.5);
+  box-shadow: 
+    0 20px 50px -10px rgba(0, 0, 0, 0.8),
+    0 0 30px -5px rgba(229, 185, 92, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border-radius: 1.25rem;
+}
+
+/* Matrix LED Glow Effects */
+.shadow-matrix-cyan {
+  box-shadow: 0 0 35px -5px rgba(0, 240, 255, 0.45), 0 0 15px rgba(0, 240, 255, 0.3);
+}
+
+.shadow-porsche-gold {
+  box-shadow: 0 0 35px -5px rgba(229, 185, 92, 0.4), 0 0 15px rgba(229, 185, 92, 0.25);
+}
+
+.shadow-amg-crimson {
+  box-shadow: 0 0 35px -5px rgba(255, 30, 66, 0.45), 0 0 15px rgba(255, 30, 66, 0.3);
+}
+
+.shadow-cyber-emerald {
+  box-shadow: 0 0 35px -5px rgba(0, 230, 153, 0.4), 0 0 15px rgba(0, 230, 153, 0.25);
+}
+
+.shadow-electric-violet {
+  box-shadow: 0 0 35px -5px rgba(140, 82, 255, 0.45), 0 0 15px rgba(140, 82, 255, 0.25);
+}
+
+/* Metallic Text Gradients */
+.text-metallic-silver {
+  background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 50%, #94a3b8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-metallic-gold {
+  background: linear-gradient(180deg, #fff2cc 0%, #e5b95c 60%, #b88628 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-metallic-cyan {
+  background: linear-gradient(180deg, #ffffff 0%, #38bdf8 50%, #0284c7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Audi Cockpit Laser Conduits */
+.laser-conduit-cyan {
+  position: relative;
+}
+.laser-conduit-cyan::before {
   content: '';
   position: absolute;
+  left: 0;
   top: 0;
-  left: 20%;
-  right: 20%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(94, 106, 210, 0.8), rgba(86, 182, 247, 0.8), transparent);
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(to bottom, #00f0ff, #0284c7);
+  box-shadow: 0 0 12px #00f0ff;
+  border-radius: 9999px;
 }
 
-/* Linear Keyboard Shortcut Keycap */
+.laser-conduit-gold {
+  position: relative;
+}
+.laser-conduit-gold::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(to bottom, #ffe082, #e5b95c);
+  box-shadow: 0 0 12px #e5b95c;
+  border-radius: 9999px;
+}
+
+.laser-conduit-emerald {
+  position: relative;
+}
+.laser-conduit-emerald::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(to bottom, #6ee7b7, #00e699);
+  box-shadow: 0 0 12px #00e699;
+  border-radius: 9999px;
+}
+
+.laser-conduit-crimson {
+  position: relative;
+}
+.laser-conduit-crimson::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(to bottom, #fda4af, #ff1e42);
+  box-shadow: 0 0 12px #ff1e42;
+  border-radius: 9999px;
+}
+
+/* Linear/Porsche Keycap */
 .linear-kbd {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.15rem 0.4rem;
+  padding: 0.2rem 0.45rem;
   border-radius: 0.375rem;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.03) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 2px 4px rgba(0, 0, 0, 0.4);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.65rem;
-  font-weight: 600;
-  color: #8a8f98;
+  font-weight: 700;
+  color: #cbd5e1;
   line-height: 1;
 }
 
-/* Subtle Linear Glows */
-.shadow-glow-indigo {
-  box-shadow: 0 0 25px -4px rgba(94, 106, 210, 0.4);
-}
-
-.shadow-glow-cyan {
-  box-shadow: 0 0 25px -4px rgba(86, 182, 247, 0.35);
-}
-
-.shadow-glow-emerald {
-  box-shadow: 0 0 25px -4px rgba(48, 164, 108, 0.35);
-}
-
-/* Ultra Minimalist Scrollbar */
+/* Minimalist Luxury Scrollbar */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -120,10 +206,11 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: linear-gradient(to bottom, rgba(0, 240, 255, 0.2), rgba(140, 82, 255, 0.2));
   border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: linear-gradient(to bottom, rgba(0, 240, 255, 0.4), rgba(140, 82, 255, 0.4));
 }

@@ -13,7 +13,8 @@ import {
   Flame,
   ChevronDown,
   Sparkles,
-  Command
+  Command,
+  Crown
 } from 'lucide-react';
 import { useTitan } from '../../context/TitanContext';
 
@@ -23,6 +24,7 @@ interface NavItem {
   icon: React.ComponentType<{ className?: string }>;
   keycap: string;
   badge?: string;
+  badgeColor?: string;
 }
 
 export const NavigationSidebar: React.FC = () => {
@@ -43,12 +45,12 @@ export const NavigationSidebar: React.FC = () => {
 
   const navItems: NavItem[] = [
     { id: 'overview', label: 'Today', icon: Inbox, keycap: '1' },
-    { id: 'hologram', label: 'Body Scanner', icon: Eye, keycap: '2', badge: 'AI' },
-    { id: 'quests', label: 'Quests & Badges', icon: CheckCircle2, keycap: '3', badge: pendingQuestsCount > 0 ? `${pendingQuestsCount}` : undefined },
+    { id: 'hologram', label: 'Body Scanner', icon: Eye, keycap: '2', badge: 'AI LIVE', badgeColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-400/40' },
+    { id: 'quests', label: 'Quests & Badges', icon: CheckCircle2, keycap: '3', badge: pendingQuestsCount > 0 ? `${pendingQuestsCount}` : undefined, badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-400/40' },
     { id: 'charts', label: 'Analytics & Profile', icon: BarChart3, keycap: '4' }
   ];
 
-  // Listen for 1, 2, 3, 4 keyboard shortcuts (Linear pattern)
+  // Listen for 1, 2, 3, 4 keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (['input', 'textarea'].includes((e.target as HTMLElement)?.tagName?.toLowerCase())) return;
@@ -63,51 +65,51 @@ export const NavigationSidebar: React.FC = () => {
   }, [setActiveTab]);
 
   return (
-    <aside className="hidden md:flex flex-col justify-between w-60 lg:w-64 h-screen sticky top-0 border-r border-white/[0.06] bg-[#08090c]/95 backdrop-blur-2xl p-3 select-none z-30 font-sans">
-      {/* Top Workspace Header (Linear Style) */}
-      <div className="space-y-4">
-        {/* Workspace Brand Dropdown */}
-        <div className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-white/[0.04] transition-colors cursor-pointer group">
+    <aside className="hidden md:flex flex-col justify-between w-64 h-screen sticky top-0 border-r border-white/10 bg-[#060913]/95 backdrop-blur-2xl p-4 select-none z-30 font-sans">
+      {/* Top Brand Header */}
+      <div className="space-y-5">
+        {/* Brand Header */}
+        <div className="flex items-center justify-between px-2 py-2 rounded-xl bg-gradient-to-r from-white/[0.04] to-transparent border border-white/10">
           <div className="flex items-center gap-2.5">
-            <div className="h-6 w-6 rounded-md bg-gradient-to-br from-[#5e6ad2] to-[#56b6f7] flex items-center justify-center shadow-sm">
-              <Shield className="h-3.5 w-3.5 text-white stroke-[2.5]" />
+            <div className="h-7 w-7 rounded-lg bg-gradient-to-tr from-[#00f0ff] to-[#8c52ff] flex items-center justify-center shadow-matrix-cyan">
+              <Shield className="h-4 w-4 text-black stroke-[2.5]" />
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-semibold text-white tracking-tight">Titan Protocol</span>
-              <span className="text-[10px] px-1.5 py-0.2 rounded bg-white/[0.06] text-slate-400 font-mono">
-                99.9%
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-black text-white tracking-tight">TITAN PROTOCOL</span>
+              </div>
+              <span className="text-[10px] text-cyan-400 font-mono font-bold tracking-widest block">
+                99.9% PERCENTILE
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-1">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleSound();
-              }}
-              className="p-1 rounded text-slate-400 hover:text-white"
-              title={profile.soundEnabled ? 'Mute' : 'Unmute'}
-            >
-              {profile.soundEnabled ? <Volume2 className="h-3.5 w-3.5 text-[#56b6f7]" /> : <VolumeX className="h-3.5 w-3.5" />}
-            </button>
-          </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleSound();
+            }}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+            title={profile.soundEnabled ? 'Mute Audio' : 'Unmute Audio'}
+          >
+            {profile.soundEnabled ? <Volume2 className="h-3.5 w-3.5 text-cyan-400" /> : <VolumeX className="h-3.5 w-3.5" />}
+          </button>
         </div>
 
-        {/* Linear Quick Command Search Bar */}
+        {/* Quick Search Bar */}
         <div
           onClick={() => setIsSettingsOpen(true)}
-          className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] text-xs text-slate-400 cursor-pointer transition-all"
+          className="flex items-center justify-between px-3 py-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 text-xs text-slate-300 cursor-pointer transition-all shadow-inner"
         >
           <div className="flex items-center gap-2">
-            <Search className="h-3.5 w-3.5 text-slate-500" />
-            <span className="text-[11px] text-slate-400 font-medium">Search & Jump...</span>
+            <Search className="h-3.5 w-3.5 text-cyan-400" />
+            <span className="text-[11px] text-slate-400 font-medium">Search Protocol...</span>
           </div>
           <kbd className="linear-kbd">⌘K</kbd>
         </div>
 
-        {/* 4 Clean Primary Navigation Rows */}
-        <nav className="space-y-0.5 pt-1">
+        {/* 4 Primary Navigation Items */}
+        <nav className="space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -115,26 +117,24 @@ export const NavigationSidebar: React.FC = () => {
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition-all group ${
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all group ${
                   isActive
-                    ? 'bg-white/[0.08] text-white font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
-                    : 'text-[#8a8f98] hover:text-[#ededef] hover:bg-white/[0.04]'
+                    ? 'bg-gradient-to-r from-cyan-500/20 via-blue-600/15 to-transparent text-white border border-cyan-500/40 shadow-matrix-cyan'
+                    : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
                 }`}
               >
-                <div className="flex items-center gap-2.5">
-                  <Icon className={`h-4 w-4 transition-colors ${isActive ? 'text-[#56b6f7]' : 'text-[#8a8f98] group-hover:text-[#ededef]'}`} />
+                <div className="flex items-center gap-3">
+                  <Icon className={`h-4 w-4 transition-colors ${isActive ? 'text-cyan-400' : 'text-slate-400 group-hover:text-white'}`} />
                   <span className="tracking-tight">{item.label}</span>
                 </div>
 
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   {item.badge && (
-                    <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold font-mono ${
-                      isActive ? 'bg-[#5e6ad2] text-white' : 'bg-white/[0.06] text-slate-300'
-                    }`}>
+                    <span className={`px-2 py-0.5 rounded-md text-[9px] font-extrabold font-mono border ${item.badgeColor || 'bg-white/10 text-white'}`}>
                       {item.badge}
                     </span>
                   )}
-                  <kbd className="linear-kbd opacity-0 group-hover:opacity-100 transition-opacity">
+                  <kbd className="linear-kbd opacity-60 group-hover:opacity-100 transition-opacity">
                     {item.keycap}
                   </kbd>
                 </div>
@@ -144,48 +144,50 @@ export const NavigationSidebar: React.FC = () => {
         </nav>
       </div>
 
-      {/* Bottom Profile Tray (Linear Style) */}
-      <div className="pt-3 border-t border-white/[0.06] space-y-2">
-        {/* Streak & Sync Indicator */}
-        <div className="flex items-center justify-between px-2 py-1 text-xs text-slate-400">
+      {/* Bottom Profile Tray */}
+      <div className="pt-4 border-t border-white/10 space-y-3">
+        {/* Device Sync & Streak Badge */}
+        <div className="flex items-center justify-between px-2 text-xs">
           <div className="flex items-center gap-1.5">
-            <span className={`h-1.5 w-1.5 rounded-full ${isSynced ? 'bg-[#30a46c]' : 'bg-slate-500'}`} />
-            <span className="text-[11px] text-slate-400 font-medium">{isSynced ? 'Synced' : 'Local'}</span>
+            <span className={`h-2 w-2 rounded-full ${isSynced ? 'bg-emerald-400 shadow-cyber-emerald' : 'bg-slate-500'}`} />
+            <span className="text-[11px] text-slate-300 font-semibold">{isSynced ? 'Cloud Synced' : 'Offline Mode'}</span>
           </div>
 
-          <div className="flex items-center gap-1 text-[11px] font-semibold text-amber-400">
-            <Flame className="h-3.5 w-3.5 fill-amber-400" />
-            <span>{profile.streakDays}d</span>
+          <div className="flex items-center gap-1 text-[11px] font-bold text-amber-400">
+            <Flame className="h-3.5 w-3.5 fill-amber-400 animate-pulse" />
+            <span className="font-mono">{profile.streakDays}d</span>
           </div>
         </div>
 
         {/* User Card */}
-        <div className="flex items-center justify-between p-2 rounded-lg bg-white/[0.02] border border-white/[0.04]">
-          <div className="flex items-center gap-2 overflow-hidden">
-            <div className="h-7 w-7 rounded-full bg-gradient-to-tr from-[#5e6ad2] to-[#7c88f2] flex items-center justify-center text-white font-bold text-xs shrink-0">
-              {profile.level}
+        <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] border border-white/10 shadow-sm">
+          <div className="flex items-center gap-2.5 overflow-hidden">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-[#00f0ff] via-[#8c52ff] to-[#e5b95c] p-0.5 shadow-matrix-cyan shrink-0">
+              <div className="h-full w-full rounded-[6px] bg-[#060913] flex items-center justify-center text-white font-black text-xs">
+                {profile.level}
+              </div>
             </div>
             <div className="overflow-hidden">
-              <div className="text-xs font-semibold text-white truncate">
+              <div className="text-xs font-bold text-white truncate">
                 {profile.callsign || 'Operator'}
               </div>
-              <div className="text-[10px] text-slate-500 font-mono truncate">
-                Level {profile.level}
+              <div className="text-[10px] text-cyan-400 font-mono font-semibold truncate">
+                Level {profile.level} Operator
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-0.5">
+          <div className="flex items-center gap-1">
             <button
               onClick={() => setIsBackupOpen(true)}
-              className="p-1 rounded text-slate-400 hover:text-white hover:bg-white/[0.06]"
-              title="Backup"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10"
+              title="Backup Data"
             >
               <Database className="h-3.5 w-3.5" />
             </button>
             <button
               onClick={() => setIsSettingsOpen(true)}
-              className="p-1 rounded text-slate-400 hover:text-white hover:bg-white/[0.06]"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10"
               title="Settings"
             >
               <Settings className="h-3.5 w-3.5" />
