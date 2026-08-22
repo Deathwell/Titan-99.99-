@@ -22,7 +22,8 @@ import {
   Compass,
   Play,
   Pause,
-  Sparkles
+  Sparkles,
+  HeartPulse
 } from 'lucide-react';
 import { useTitan } from '../../context/TitanContext';
 import {
@@ -46,7 +47,7 @@ export const NeuralHologramScanner: React.FC = () => {
 
   // Hologram Morph & Viewport Controls
   const [targetBodyFat, setTargetBodyFat] = useState<number>(20.0);
-  const [renderMode, setRenderMode] = useState<HologramRenderMode>('PHOTOREALISTIC');
+  const [renderMode, setRenderMode] = useState<HologramRenderMode>('NEURAL_RECOMP');
   const [showScanlines, setShowScanlines] = useState<boolean>(true);
   const [showMuscleSynthesis, setShowMuscleSynthesis] = useState<boolean>(true);
   const [zoomLevel, setZoomLevel] = useState<number>(1.0);
@@ -98,8 +99,8 @@ export const NeuralHologramScanner: React.FC = () => {
             targetBodyFat,
             baselineBodyFat: scanResult.estimatedBodyFatPercent,
             showScanlines,
-            showWireframeGrid: false,
             showMuscleSynthesis,
+            showFatLayerHeatmap: renderMode === 'ANATOMICAL_XRAY',
             zoomLevel,
             panOffset
           }
@@ -128,12 +129,12 @@ export const NeuralHologramScanner: React.FC = () => {
 
       const result = await biometricVisionEngine.analyzeBiometricPhoto(
         src,
-        undefined, // Allow accurate automatic weight estimation
+        undefined, // Auto-estimate weight accurately based on silhouette
         profile.heightCm || 180
       );
 
       await new Promise(r => setTimeout(r, 250));
-      setScanStepText('INITIALIZING CONTINUOUS HOLOGRAPHIC MORPH FIELD...');
+      setScanStepText('SYNTHESIZING ANATOMICAL ADIPOSE & MUSCLE MATRIX...');
 
       // Load isolated image into memory for the morph engine
       const img = new Image();
@@ -276,14 +277,14 @@ export const NeuralHologramScanner: React.FC = () => {
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-base font-bold text-white tracking-wider flex items-center gap-2">
-                  NEURAL HOLOGRAPHIC MORPH SIMULATOR
+                  ANATOMICAL BODY FAT RECOMP & HOLOGRAPHIC SYNTHESIZER
                 </h2>
                 <span className="px-2 py-0.5 rounded-full bg-cyan-950 border border-cyan-500/60 text-[10px] text-titan-cyan font-bold animate-pulse">
-                  60FPS VISION ENGINE
+                  PHYSIOLOGICAL SYNTHESIS
                 </span>
               </div>
               <p className="text-xs text-slate-400 font-sans mt-0.5">
-                Clean Silhouette Extraction • Continuous Morphing of YOU • Scientifically Calibrated Adiposity (5% - 75%)
+                Subcutaneous Adipose & Muscle Striation Synthesis • Clean Silhouette • DEXA-Calibrated Model (5% - 75%)
               </p>
             </div>
           </div>
@@ -324,7 +325,7 @@ export const NeuralHologramScanner: React.FC = () => {
                 <span className="h-2 w-2 rounded-full bg-titan-cyan animate-ping inline-block" />
                 {scanStepText}
               </span>
-              <span className="font-bold">PROCESSING REAL-TIME BIOMETRIC PROJECTIONS...</span>
+              <span className="font-bold">SYNTHESIZING ANATOMICAL PROJECTIONS...</span>
             </div>
             <div className="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden border border-cyan-900/50">
               <div className="h-full bg-gradient-to-r from-cyan-500 via-emerald-400 to-cyan-400 animate-pulse w-full" />
@@ -342,7 +343,7 @@ export const NeuralHologramScanner: React.FC = () => {
             <div className="absolute top-3 left-3 right-3 z-10 flex items-center justify-between pointer-events-none">
               {/* Render Mode Selector */}
               <div className="flex items-center gap-1.5 pointer-events-auto bg-slate-900/90 border border-slate-800 rounded-lg p-1">
-                {(['PHOTOREALISTIC', 'CYBER_CYAN', 'MATRIX_GREEN', 'ANATOMICAL_XRAY'] as HologramRenderMode[]).map(mode => (
+                {(['NEURAL_RECOMP', 'ANATOMICAL_XRAY', 'CYBER_CYAN', 'MATRIX_GREEN'] as HologramRenderMode[]).map(mode => (
                   <button
                     key={mode}
                     onClick={() => {
@@ -355,10 +356,10 @@ export const NeuralHologramScanner: React.FC = () => {
                         : 'text-slate-400 hover:text-slate-200'
                     }`}
                   >
-                    {mode === 'PHOTOREALISTIC' && 'PHOTOREALISTIC'}
+                    {mode === 'NEURAL_RECOMP' && 'RECOMP SYNTHESIS'}
+                    {mode === 'ANATOMICAL_XRAY' && 'BIO X-RAY'}
                     {mode === 'CYBER_CYAN' && 'CYBER CYAN'}
                     {mode === 'MATRIX_GREEN' && 'MATRIX GREEN'}
-                    {mode === 'ANATOMICAL_XRAY' && 'BIO X-RAY'}
                   </button>
                 ))}
               </div>
@@ -400,10 +401,10 @@ export const NeuralHologramScanner: React.FC = () => {
 
             {/* Floating Telemetry Tag */}
             <div className="absolute bottom-3 left-3 z-10 bg-slate-950/85 border border-cyan-500/40 rounded-lg px-3 py-1.5 text-xs text-slate-300 backdrop-blur-md">
-              <span className="text-slate-400">SIMULATED ADIPOSITY: </span>
+              <span className="text-slate-400">PHYSIOLOGICAL TARGET: </span>
               <strong className="text-titan-cyan text-sm">{targetBodyFat.toFixed(1)}%</strong>
               <span className="ml-2 text-[10px] text-slate-500">
-                ({targetBodyFat < (scanResult?.estimatedBodyFatPercent || 20) ? 'DEFICIT / CUT' : 'SURPLUS / BULK'})
+                ({targetBodyFat < (scanResult?.estimatedBodyFatPercent || 20) ? 'DEFICIT / SHRED' : 'SURPLUS / ADIPOSE ACCUMULATION'})
               </span>
             </div>
 
@@ -423,7 +424,7 @@ export const NeuralHologramScanner: React.FC = () => {
                   showMuscleSynthesis ? 'bg-cyan-950 border-cyan-500 text-cyan-300' : 'border-slate-800 text-slate-500'
                 }`}
               >
-                Ab Cuts
+                Muscle Striations
               </button>
             </div>
           </div>
@@ -434,7 +435,7 @@ export const NeuralHologramScanner: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Sliders className="h-4 w-4 text-titan-cyan" />
                 <span className="text-xs font-bold text-white tracking-wider">
-                  BODY FAT MORPH SLIDER (5.0% - 75.0%)
+                  ANATOMICAL BODY FAT RECOMP SLIDER (5.0% - 75.0%)
                 </span>
               </div>
               <div className="flex items-baseline gap-2">
@@ -442,7 +443,7 @@ export const NeuralHologramScanner: React.FC = () => {
                   {targetBodyFat.toFixed(1)}%
                 </span>
                 <span className="text-xs text-slate-400">
-                  {targetBodyFat <= 9.0 ? 'STAGE SHREDDED' : targetBodyFat <= 13.5 ? 'ATHLETIC ELITE' : targetBodyFat <= 18.0 ? 'LEAN OPTIMAL' : targetBodyFat <= 25.0 ? 'AVERAGE' : targetBodyFat <= 50.0 ? 'HIGH ADIPOSE' : 'SEVERE ADIPOSITY'}
+                  {targetBodyFat <= 9.0 ? 'TITAN APEX SHREDDED' : targetBodyFat <= 13.5 ? 'ATHLETIC ELITE' : targetBodyFat <= 18.0 ? 'LEAN OPTIMAL' : targetBodyFat <= 25.0 ? 'AVERAGE FIT' : targetBodyFat <= 50.0 ? 'HIGH ADIPOSE' : 'SEVERE ADIPOSITY'}
                 </span>
               </div>
             </div>
