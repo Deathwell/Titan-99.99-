@@ -69,17 +69,15 @@ export const NavigationSidebar: React.FC = () => {
       {/* Top Brand Header */}
       <div className="space-y-5">
         {/* Brand Header */}
-        <div className="flex items-center justify-between px-2 py-2 rounded-xl bg-gradient-to-r from-white/[0.04] to-transparent border border-white/10">
+        <div className="flex items-center justify-between px-2 py-1.5">
           <div className="flex items-center gap-2.5">
-            <div className="h-7 w-7 rounded-lg bg-gradient-to-tr from-[#00f0ff] to-[#8c52ff] flex items-center justify-center shadow-matrix-cyan">
-              <Shield className="h-4 w-4 text-black stroke-[2.5]" />
-            </div>
+            <span className="h-2 w-2 rounded-full bg-[#00f0ff] animate-pulse" />
             <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs font-black text-white tracking-tight">TITAN PROTOCOL</span>
-              </div>
-              <span className="text-[10px] text-cyan-400 font-mono font-bold tracking-widest block">
-                99.9% PERCENTILE
+              <span className="text-xs font-black text-white tracking-wider font-mono block">
+                TITAN PROTOCOL
+              </span>
+              <span className="text-[9px] text-slate-400 font-mono tracking-widest block uppercase">
+                99.9% APEX SYSTEM
               </span>
             </div>
           </div>
@@ -92,7 +90,7 @@ export const NavigationSidebar: React.FC = () => {
             className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
             title={profile.soundEnabled ? 'Mute Audio' : 'Unmute Audio'}
           >
-            {profile.soundEnabled ? <Volume2 className="h-3.5 w-3.5 text-cyan-400" /> : <VolumeX className="h-3.5 w-3.5" />}
+            {profile.soundEnabled ? <Volume2 className="h-3.5 w-3.5 text-cyan-400" /> : <VolumeX className="h-3.5 w-3.5 text-slate-500" />}
           </button>
         </div>
 

@@ -52,11 +52,11 @@ function formatDurationLabel(minutes: number): { time: string; xp: number; isMax
   return { time, xp, isMax };
 }
 
-// Compute refined HSL colors and subtle lighting ramp
-function getRefinedLuminescence(value: number, accentColor: 'emerald' | 'gold') {
+// Compute high-energy vibrant neon luminescence for the slider
+function getSliderLuminescence(value: number, accentColor: 'emerald' | 'gold') {
   const ratio = Math.max(0, Math.min(1, value / 240));
   const isEmerald = accentColor === 'emerald';
-  const hue = isEmerald ? 158 : 42;
+  const hue = isEmerald ? 156 : 42; // 156 = Cyber Emerald, 42 = Porsche Gold
 
   if (value === 0) {
     return {
@@ -64,39 +64,45 @@ function getRefinedLuminescence(value: number, accentColor: 'emerald' | 'gold') 
       lightness: 40,
       glowRadius: 0,
       primaryColor: '#64748b',
-      fillGradient: 'transparent',
+      fillGradient: 'rgba(255,255,255,0.06)',
+      glowColor: 'transparent',
+      thumbGlow: 'none',
       badgeBg: 'rgba(255,255,255,0.03)',
-      badgeBorder: 'rgba(255,255,255,0.07)',
+      badgeBorder: 'rgba(255,255,255,0.08)',
       badgeText: '#64748b'
     };
   }
 
-  // Lightness scales smoothly from 45% to 85%
-  const lightness = Math.round(45 + ratio * 40);
-  const primaryColor = `hsl(${hue}, 95%, ${lightness}%)`;
-  const glowColor = `hsla(${hue}, 100%, ${lightness}%, ${0.25 + ratio * 0.45})`;
+  // Scaling lightness & intense neon glow
+  const lightness = Math.round(42 + ratio * 50); // 42% (rich neon) -> 92% (white-hot laser)
+  const primaryColor = `hsl(${hue}, 100%, ${lightness}%)`;
+  const glowColor = `hsla(${hue}, 100%, 55%, ${0.4 + ratio * 0.6})`;
+  const glowRadius = Math.round(4 + ratio * 20); // 4px -> 24px
+
+  const fillGradient = `linear-gradient(90deg, hsl(${hue}, 100%, 35%) 0%, hsl(${hue}, 100%, ${lightness}%) 75%, hsl(${hue}, 100%, ${Math.min(98, lightness + 15)}%) 100%)`;
 
   return {
     ratio,
     lightness,
-    glowRadius: Math.round(2 + ratio * 10),
+    glowRadius,
     primaryColor,
-    fillGradient: `linear-gradient(90deg, hsla(${hue}, 85%, 35%, 0.6) 0%, hsl(${hue}, 90%, ${lightness}%) 100%)`,
-    badgeBg: `hsla(${hue}, 90%, 25%, ${0.12 + ratio * 0.18})`,
-    badgeBorder: `hsla(${hue}, 90%, ${lightness}%, ${0.25 + ratio * 0.35})`,
-    badgeText: `hsl(${hue}, 95%, ${Math.min(92, lightness + 10)}%)`,
-    glowColor
+    glowColor,
+    fillGradient,
+    thumbGlow: `0 0 ${glowRadius + 6}px ${glowColor}, 0 0 2px #ffffff`,
+    badgeBg: `hsla(${hue}, 100%, 25%, ${0.15 + ratio * 0.25})`,
+    badgeBorder: `hsla(${hue}, 100%, ${lightness}%, ${0.35 + ratio * 0.45})`,
+    badgeText: `hsl(${hue}, 100%, ${Math.min(95, lightness + 8)}%)`
   };
 }
 
-interface LinearSliderProps {
+interface PrecisionSliderProps {
   value: number; // 0 to 240
   onChange: (val: number, clientX?: number, clientY?: number) => void;
   accentColor: 'emerald' | 'gold';
   title: string;
 }
 
-const LinearPrecisionSlider: React.FC<LinearSliderProps> = ({ value, onChange, accentColor, title }) => {
+const VibrantGlowSlider: React.FC<PrecisionSliderProps> = ({ value, onChange, accentColor, title }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const lastTickRef = useRef<number>(Math.floor(value / 15));
@@ -104,7 +110,7 @@ const LinearPrecisionSlider: React.FC<LinearSliderProps> = ({ value, onChange, a
 
   const percentage = Math.min(100, Math.max(0, (value / 240) * 100));
   const { time, xp, isMax } = formatDurationLabel(value);
-  const lum = getRefinedLuminescence(value, accentColor);
+  const lum = getSliderLuminescence(value, accentColor);
 
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawVal = parseInt(e.target.value, 10);
@@ -128,7 +134,7 @@ const LinearPrecisionSlider: React.FC<LinearSliderProps> = ({ value, onChange, a
 
   return (
     <div
-      className="space-y-2 mt-3 pt-2.5 border-t border-white/[0.05] relative select-none"
+      className="space-y-2 mt-3 pt-2.5 border-t border-white/[0.06] relative select-none"
       ref={trackRef}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => {
@@ -141,17 +147,20 @@ const LinearPrecisionSlider: React.FC<LinearSliderProps> = ({ value, onChange, a
         <div className="flex items-center gap-2">
           <Clock
             className="h-3.5 w-3.5 transition-colors duration-150"
-            style={{ color: lum.primaryColor }}
+            style={{ color: lum.primaryColor, filter: value > 0 ? `drop-shadow(0 0 4px ${lum.glowColor})` : 'none' }}
           />
           <span className="text-slate-400 font-medium text-[11px]">Duration:</span>
           <span
             className="font-mono font-bold tracking-tight text-xs transition-colors duration-150"
-            style={{ color: lum.primaryColor }}
+            style={{
+              color: lum.primaryColor,
+              textShadow: value > 0 ? `0 0 ${lum.glowRadius / 2}px ${lum.glowColor}` : 'none'
+            }}
           >
             {time}
           </span>
           {isMax && (
-            <span className="px-1.5 py-0.2 rounded bg-red-500/15 border border-red-500/30 text-red-400 font-mono font-bold text-[8px] uppercase tracking-widest animate-pulse">
+            <span className="px-1.5 py-0.2 rounded bg-red-500/20 border border-red-500/40 text-red-400 font-mono font-bold text-[8px] uppercase tracking-widest animate-pulse shadow-sm">
               4H MAX
             </span>
           )}
@@ -163,7 +172,8 @@ const LinearPrecisionSlider: React.FC<LinearSliderProps> = ({ value, onChange, a
             style={{
               backgroundColor: lum.badgeBg,
               borderColor: lum.badgeBorder,
-              color: lum.badgeText
+              color: lum.badgeText,
+              boxShadow: value > 0 ? `0 0 ${lum.glowRadius / 2}px ${lum.glowColor}` : 'none'
             }}
           >
             +{xp} XP
@@ -171,15 +181,16 @@ const LinearPrecisionSlider: React.FC<LinearSliderProps> = ({ value, onChange, a
         </div>
       </div>
 
-      {/* Sleek Linear Slider Capsule */}
+      {/* Vibrant Glowing Laser Slider Capsule */}
       <div className="relative py-2 flex items-center group">
         {/* Floating Minimalist Telemetry Pill */}
         {(isHovered || isDragging) && (
           <div
-            className="absolute bottom-full mb-1.5 -translate-x-1/2 px-2 py-0.5 rounded-md bg-[#0a0e1a]/95 border backdrop-blur-md shadow-xl pointer-events-none text-[10px] font-mono font-semibold whitespace-nowrap z-30"
+            className="absolute bottom-full mb-1.5 -translate-x-1/2 px-2.5 py-0.5 rounded-md bg-[#080c18]/95 border backdrop-blur-md shadow-2xl pointer-events-none text-[10px] font-mono font-bold whitespace-nowrap z-30 transition-opacity duration-150"
             style={{
               left: `${Math.max(10, Math.min(90, percentage))}%`,
-              borderColor: lum.badgeBorder
+              borderColor: lum.badgeBorder,
+              boxShadow: `0 4px 14px rgba(0,0,0,0.8), 0 0 ${lum.glowRadius}px ${lum.glowColor}`
             }}
           >
             <span style={{ color: lum.primaryColor }}>{time}</span>
@@ -188,15 +199,15 @@ const LinearPrecisionSlider: React.FC<LinearSliderProps> = ({ value, onChange, a
           </div>
         )}
 
-        {/* 4px Recessed Dark Rail Track */}
-        <div className="relative w-full h-1.5 rounded-full bg-black/40 border border-white/[0.08] overflow-hidden shadow-inner">
-          {/* Active Liquid Conduit Fill */}
+        {/* 5px Recessed Dark Track */}
+        <div className="relative w-full h-1.5 rounded-full bg-black/50 border border-white/[0.08] overflow-hidden shadow-inner">
+          {/* Active Liquid Laser Fill with Vibrant Neon Glow */}
           <div
             className="absolute top-0 bottom-0 left-0 rounded-full transition-all duration-75"
             style={{
               width: `${percentage}%`,
               background: lum.fillGradient,
-              boxShadow: value > 0 ? `0 0 ${lum.glowRadius}px ${lum.glowColor}` : 'none'
+              boxShadow: value > 0 ? `0 0 ${lum.glowRadius}px ${lum.glowColor}, 0 0 ${lum.glowRadius * 1.8}px ${lum.glowColor}` : 'none'
             }}
           />
         </div>
@@ -217,18 +228,22 @@ const LinearPrecisionSlider: React.FC<LinearSliderProps> = ({ value, onChange, a
           title={`Set ${title} duration`}
         />
 
-        {/* Precision Milled Titanium Dial Thumb */}
+        {/* Vibrant Glowing Dial Thumb */}
         <div
-          className="absolute top-1/2 -translate-y-1/2 -ml-2 h-4 w-4 rounded-full pointer-events-none transition-transform duration-75 flex items-center justify-center z-10 shadow-md"
+          className="absolute top-1/2 -translate-y-1/2 -ml-2 h-4 w-4 rounded-full pointer-events-none transition-transform duration-75 flex items-center justify-center z-10"
           style={{
             left: `${percentage}%`,
             background: 'radial-gradient(circle at 35% 30%, #ffffff 0%, #cbd5e1 45%, #475569 100%)',
-            border: `1.5px solid ${value > 0 ? lum.primaryColor : 'rgba(255,255,255,0.25)'}`
+            border: `1.5px solid ${value > 0 ? lum.primaryColor : 'rgba(255,255,255,0.3)'}`,
+            boxShadow: lum.thumbGlow
           }}
         >
           <div
             className="h-1.5 w-1.5 rounded-full transition-colors duration-150"
-            style={{ backgroundColor: lum.primaryColor }}
+            style={{
+              backgroundColor: lum.primaryColor,
+              boxShadow: value > 0 ? `0 0 6px ${lum.glowColor}` : 'none'
+            }}
           />
         </div>
       </div>
@@ -236,10 +251,10 @@ const LinearPrecisionSlider: React.FC<LinearSliderProps> = ({ value, onChange, a
       {/* Crisp Linear Hour Ticks */}
       <div className="flex items-center justify-between text-[9px] font-mono text-slate-500 px-0.5">
         <span className={value === 0 ? 'text-white font-medium' : ''}>0h</span>
-        <span className={value >= 60 && value < 120 ? 'text-slate-300 font-semibold' : ''}>1h</span>
-        <span className={value >= 120 && value < 180 ? 'text-slate-300 font-semibold' : ''}>2h</span>
-        <span className={value >= 180 && value < 240 ? 'text-slate-300 font-semibold' : ''}>3h</span>
-        <span style={{ color: isMax ? lum.primaryColor : undefined, fontWeight: isMax ? 'bold' : 'normal' }}>
+        <span style={{ color: value >= 60 && value < 120 ? lum.primaryColor : undefined, fontWeight: value >= 60 && value < 120 ? 'bold' : 'normal' }}>1h</span>
+        <span style={{ color: value >= 120 && value < 180 ? lum.primaryColor : undefined, fontWeight: value >= 120 && value < 180 ? 'bold' : 'normal' }}>2h</span>
+        <span style={{ color: value >= 180 && value < 240 ? lum.primaryColor : undefined, fontWeight: value >= 180 && value < 240 ? 'bold' : 'normal' }}>3h</span>
+        <span style={{ color: isMax ? lum.primaryColor : undefined, fontWeight: isMax ? 'bold' : 'normal', textShadow: isMax ? `0 0 8px ${lum.glowColor}` : 'none' }}>
           4h MAX
         </span>
       </div>
@@ -309,80 +324,64 @@ export const OverviewDashboard: React.FC = () => {
   const claimedDropToday = isMysteryDropClaimedToday();
 
   return (
-    <div className="space-y-5 max-w-3xl mx-auto select-none font-sans py-1">
-      {/* 1. Header Greeting Bar */}
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-0.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#00f0ff] animate-pulse" />
+    <div className="space-y-6 max-w-3xl mx-auto select-none font-sans py-2">
+      {/* 1. Ultra-Sleek Telemetry Header (Clean, Modern, No Clunky Box or Shield) */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-[#00f0ff] animate-pulse" />
             <span className="text-[10px] font-bold tracking-widest text-[#00f0ff] uppercase font-mono">
-              OPERATOR COCKPIT
+              OPERATOR ACTIVE
             </span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
-            {greeting}, <span className="text-metallic-silver">{profile.callsign || 'Operator'}</span>
-          </h2>
+
+          {/* Minimalist Streak Pill */}
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-300 font-semibold text-xs backdrop-blur-md">
+            <Flame className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
+            <span className="font-mono">{profile.streakDays}d Streak</span>
+          </div>
         </div>
 
-        {/* Minimalist Streak Pill */}
-        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-300 font-semibold text-xs backdrop-blur-md">
-          <Flame className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
-          <span className="font-mono">{profile.streakDays}d Streak</span>
-        </div>
-      </div>
-
-      {/* 2. Linear / Supercar Sleek Telemetry Cluster */}
-      <div className="luxury-card p-5 sm:p-6 relative overflow-hidden bg-[#0a0e1a]/90 border border-white/[0.08]">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-5 relative z-10">
-          <div className="space-y-2 text-center sm:text-left">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-400/25 text-cyan-300 text-[10px] font-bold tracking-widest uppercase font-mono">
-              <Crown className="h-3 w-3 text-amber-400" /> APEX PERFORMANCE
-            </div>
-
-            <div>
-              <div className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-                TOP <span className="text-metallic-cyan"><CountUpNumber end={topPercent} decimals={1} suffix="%" /></span>
-              </div>
-              <div className="flex items-center justify-center sm:justify-start gap-1.5 mt-0.5 text-xs text-slate-400">
-                <Gauge className="h-3.5 w-3.5 text-cyan-400" />
-                <span>Outranking <strong className="text-white font-mono"><CountUpNumber end={composite.humansDefeated / 1000000} decimals={1} suffix="M" /></strong> global contenders</span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-center sm:justify-start gap-2 pt-1">
-              <span className="px-2.5 py-0.5 rounded-md bg-white/[0.04] text-slate-300 border border-white/[0.08] text-[11px] font-medium">
-                Tier {profile.level} Operator
-              </span>
-              <span className="px-2.5 py-0.5 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/25 text-[11px] font-mono font-semibold">
-                {profile.xp} Total XP
+        {/* Hero Rank Display */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-2 border-b border-white/[0.08]">
+          <div>
+            <span className="text-xs text-slate-400 font-medium block">
+              {greeting}, <strong className="text-white font-semibold">{profile.callsign || 'Operator'}</strong>
+            </span>
+            <div className="text-3xl sm:text-5xl font-black text-white tracking-tight mt-1 flex items-baseline gap-3">
+              <span>TOP</span>
+              <span className="text-metallic-cyan">
+                <CountUpNumber end={topPercent} decimals={1} suffix="%" />
               </span>
             </div>
           </div>
 
-          {/* Integrated Precision Gauge Ring */}
-          <div className="relative flex items-center justify-center shrink-0">
-            <div className="h-24 w-24 rounded-full bg-gradient-to-tr from-[#00f0ff]/30 via-[#8c52ff]/30 to-[#e5b95c]/30 p-0.5">
-              <div className="h-full w-full rounded-full bg-[#05070d] flex flex-col items-center justify-center border border-white/10">
-                <Shield className="h-6 w-6 text-cyan-400 stroke-[2]" />
-                <span className="text-[11px] font-bold text-white font-mono mt-0.5 tracking-wider">99.9%</span>
-                <span className="text-[8px] text-cyan-400 font-mono tracking-widest">TITAN</span>
-              </div>
-            </div>
+          {/* Key Metric Indicators */}
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <span className="px-3 py-1 rounded-lg bg-white/[0.04] text-slate-300 border border-white/[0.08] font-mono">
+              <strong className="text-white"><CountUpNumber end={composite.humansDefeated / 1000000} decimals={1} suffix="M" /></strong> Defeated
+            </span>
+            <span className="px-3 py-1 rounded-lg bg-white/[0.04] text-slate-300 border border-white/[0.08] font-medium">
+              Tier {profile.level}
+            </span>
+            <span className="px-3 py-1 rounded-lg bg-cyan-500/10 text-cyan-300 border border-cyan-400/25 font-mono font-semibold">
+              {profile.xp} XP
+            </span>
           </div>
         </div>
       </div>
 
-      {/* 3. Daily Excellence Tasks */}
-      <div className="space-y-3">
+      {/* 2. Daily Excellence Tasks with Vibrant Glowing Sliders */}
+      <div className="space-y-3.5">
         <div className="flex items-center justify-between px-0.5">
           <div className="flex items-center gap-2">
             <Radio className="h-3.5 w-3.5 text-cyan-400 animate-pulse" />
-            <h3 className="text-[11px] font-bold tracking-widest text-slate-300 uppercase">
+            <h3 className="text-[11px] font-bold tracking-widest text-slate-300 uppercase font-mono">
               DAILY PROTOCOLS ({completedCount}/3)
             </h3>
           </div>
-          <span className="text-[10px] text-slate-400 font-mono">
-            DRAG TO LOG TIME & EARN XP
+          <span className="text-[10px] text-cyan-400 font-mono font-bold">
+            SLIDE TO BOOST INTENSITY & XP
           </span>
         </div>
 
@@ -424,8 +423,8 @@ export const OverviewDashboard: React.FC = () => {
             )}
           </div>
 
-          {/* Linear Precision Slider */}
-          <LinearPrecisionSlider
+          {/* Vibrant Glowing Slider */}
+          <VibrantGlowSlider
             value={workoutMinutes}
             onChange={(val, x, y) => handleDurationChange('STRENGTH', val, x, y)}
             accentColor="emerald"
@@ -471,8 +470,8 @@ export const OverviewDashboard: React.FC = () => {
             )}
           </div>
 
-          {/* Linear Precision Slider */}
-          <LinearPrecisionSlider
+          {/* Vibrant Glowing Slider */}
+          <VibrantGlowSlider
             value={financeMinutes}
             onChange={(val, x, y) => handleDurationChange('MODELING', val, x, y)}
             accentColor="gold"
@@ -527,7 +526,7 @@ export const OverviewDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* 4. Neural Body Scanner Telemetry Showcase */}
+      {/* 3. Neural Body Scanner Showcase */}
       <div
         onClick={() => setActiveTab('hologram')}
         className="luxury-card p-4 bg-[#0a0e1a]/80 hover:border-cyan-500/30 cursor-pointer transition-all flex items-center justify-between group active:scale-[0.99]"
@@ -554,7 +553,7 @@ export const OverviewDashboard: React.FC = () => {
         <ChevronRight className="h-4 w-4 text-cyan-400 group-hover:translate-x-0.5 transition-transform" />
       </div>
 
-      {/* 5. Luxury Watch / Gold Vault Capsule Banner */}
+      {/* 4. Reward Vault Banner */}
       <div
         onClick={() => setIsLootOpen(true)}
         className="gold-vault-card p-3.5 hover:border-amber-400/40 cursor-pointer transition-all flex items-center justify-between group active:scale-[0.99]"
