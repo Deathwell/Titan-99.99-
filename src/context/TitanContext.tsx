@@ -264,16 +264,8 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         saveNightlyRewards(payload.nightlyRewards);
       }
       if (payload.alarms && Array.isArray(payload.alarms)) {
-        const incomingAlarms = payload.alarms;
-        setAlarms(prev => {
-          // Merge alarms by id so no alarm created on desktop or mobile is ever lost
-          const map = new Map<string, TacticalAlarm>();
-          prev.forEach(a => map.set(a.id, a));
-          incomingAlarms.forEach(a => map.set(a.id, a));
-          const merged = Array.from(map.values());
-          saveAlarms(merged);
-          return merged;
-        });
+        setAlarms(payload.alarms);
+        saveAlarms(payload.alarms);
       }
 
       setSyncStatus('SYNCED');
@@ -370,23 +362,19 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
 
   const connectSyncCode = async (code: string): Promise<boolean> => {
+    const clean = code.trim().toUpperCase();
     setSyncStatus('CONNECTING');
-    const freshPayload = await cloudSyncEngine.pullStateFromCloud(code);
+    setSyncCode(clean);
+    cloudSyncEngine.setStoredSyncCode(clean);
+    cloudSyncEngine.startRealTimeListener(clean, handleRemoteCloudUpdate);
+    setSyncStatus('SYNCED');
 
+    const freshPayload = await cloudSyncEngine.pullStateFromCloud(clean);
     if (freshPayload) {
       handleRemoteCloudUpdate(freshPayload);
-      setSyncCode(code);
-      cloudSyncEngine.setStoredSyncCode(code);
-      cloudSyncEngine.startRealTimeListener(code, handleRemoteCloudUpdate);
-      setSyncStatus('SYNCED');
       return true;
     } else {
-      // If code is fresh, push current local state to start channel
-      setSyncCode(code);
-      cloudSyncEngine.setStoredSyncCode(code);
-      cloudSyncEngine.startRealTimeListener(code, handleRemoteCloudUpdate);
       broadcastCurrentState();
-      setSyncStatus('SYNCED');
       return true;
     }
   };
@@ -1006,6 +994,15 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       rate: alarm.voiceRate,
       loop: true
     });
+
+    // Mobile device tactile vibration
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      try {
+        navigator.vibrate([600, 200, 600, 200, 800, 200, 1000]);
+      } catch {
+        // Ignore
+      }
+    }
   };
 
   const dismissAlarm = () => {
