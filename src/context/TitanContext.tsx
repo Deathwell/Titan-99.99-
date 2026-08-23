@@ -6,6 +6,8 @@ import {
   DailyQuest,
   DecayPenaltyEvent,
   DimensionWeights,
+  ExcuseCategory,
+  ExcuseVerdict,
   FinanceStudyLogEntry,
   HistoricalSnapshot,
   NeuralVoiceSettings,
@@ -13,6 +15,7 @@ import {
   NightlyRewardKey,
   SyllabusTopic,
   TacticalAlarm,
+  TribunalCase,
   UserMetricsState,
   UserProfile,
   WorkoutLogEntry
@@ -92,6 +95,10 @@ interface TitanContextType {
   isVictoryModalOpen: boolean;
   openVictoryModal: () => void;
   closeVictoryModal: () => void;
+  isTribunalOpen: boolean;
+  setIsTribunalOpen: (open: boolean) => void;
+  openTribunalModal: () => void;
+  applyTribunalVerdict: (category: ExcuseCategory, explanation: string, verdict: ExcuseVerdict) => void;
   isCommandPaletteOpen: boolean;
   setIsCommandPaletteOpen: (open: boolean) => void;
   analyticsSubTab: 'CHARTS' | 'ALARMS' | 'CURRICULUM' | 'DOSSIER';
@@ -183,10 +190,16 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const [isMobilePushSetupOpen, setIsMobilePushSetupOpen] = useState(false);
   const [isVictoryModalOpen, setIsVictoryModalOpen] = useState(false);
+  const [isTribunalOpen, setIsTribunalOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [analyticsSubTab, setAnalyticsSubTab] = useState<'CHARTS' | 'ALARMS' | 'CURRICULUM' | 'DOSSIER'>('CHARTS');
   const [activeQuizTopic, setActiveQuizTopic] = useState<SyllabusTopic | null>(null);
   const [activeDecayAlert, setActiveDecayAlert] = useState<DecayPenaltyEvent | null>(null);
+
+  const openTribunalModal = () => {
+    setIsTribunalOpen(true);
+    soundEngine.playClick(800);
+  };
 
   const openAlarmsTab = () => {
     setActiveTab('charts');
@@ -656,6 +669,77 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     });
     setActiveDecayAlert(null);
     soundEngine.playClick(800);
+  };
+
+  const applyTribunalVerdict = (category: ExcuseCategory, explanation: string, verdict: ExcuseVerdict) => {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const newCase: TribunalCase = {
+      id: `case-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      date: todayStr,
+      category,
+      categoryLabel: category.replace(/_/g, ' '),
+      userExplanation: explanation,
+      verdict
+    };
+
+    if (verdict.verdictType === 'PARDON_GRANTED') {
+      setProfile(prev => {
+        const history = prev.tribunalHistory || [];
+        const updated: UserProfile = {
+          ...prev,
+          decayPenaltyActive: false,
+          tribunalHistory: [newCase, ...history]
+        };
+        saveProfile(updated);
+        return updated;
+      });
+      setActiveDecayAlert(null);
+    } else if (verdict.verdictType === 'BULLSHIT_REJECTED') {
+      const penaltyXP = Math.abs(verdict.xpAdjustment || 150);
+      const newBlackMark: BlackMarkEntry = {
+        id: `mark-${Date.now()}`,
+        dateTriggered: todayStr,
+        penaltyXP,
+        missedDaysCount: 1,
+        reason: `Tribunal Bullshit Verdict: ${verdict.title}`,
+        status: 'ACTIVE_INFRACTION',
+        streakAtInfraction: profile.streakDays || 0,
+        consecutiveStreakRequiredToExpunge: 30,
+        consecutiveDaysAchieved: 0
+      };
+
+      setProfile(prev => {
+        const nextXP = Math.max(0, prev.xp - penaltyXP);
+        const nextLevel = Math.floor(Math.sqrt(nextXP / 12)) + 1;
+        const currentMarks = prev.blackMarks || [];
+        const history = prev.tribunalHistory || [];
+        const updated: UserProfile = {
+          ...prev,
+          streakDays: 0,
+          xp: nextXP,
+          level: Math.max(1, nextLevel),
+          decayPenaltyActive: true,
+          blackMarks: [newBlackMark, ...currentMarks],
+          tribunalHistory: [newCase, ...history]
+        };
+        saveProfile(updated);
+        return updated;
+      });
+    } else {
+      const penaltyXP = Math.abs(verdict.xpAdjustment || 50);
+      setProfile(prev => {
+        const nextXP = Math.max(0, prev.xp - penaltyXP);
+        const history = prev.tribunalHistory || [];
+        const updated: UserProfile = {
+          ...prev,
+          xp: nextXP,
+          tribunalHistory: [newCase, ...history]
+        };
+        saveProfile(updated);
+        return updated;
+      });
+    }
   };
 
   const dismissDecayAlert = () => {
@@ -1403,6 +1487,10 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         isVictoryModalOpen,
         openVictoryModal,
         closeVictoryModal,
+        isTribunalOpen,
+        setIsTribunalOpen,
+        openTribunalModal,
+        applyTribunalVerdict,
         isCommandPaletteOpen,
         setIsCommandPaletteOpen,
         analyticsSubTab,

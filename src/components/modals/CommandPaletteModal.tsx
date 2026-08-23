@@ -16,7 +16,8 @@ import {
   ArrowRight,
   Zap,
   Sparkles,
-  Command
+  Command,
+  Scale
 } from 'lucide-react';
 import { useTitan } from '../../context/TitanContext';
 import { soundEngine } from '../../lib/audio';
@@ -44,7 +45,8 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({ isOpen
     setIsSettingsOpen,
     setIsSyncModalOpen,
     setDailyTaskDuration,
-    toggleDailyAccomplishment
+    toggleDailyAccomplishment,
+    openTribunalModal
   } = useTitan();
 
   const [query, setQuery] = useState('');
@@ -187,6 +189,18 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({ isOpen
       iconColor: 'text-emerald-400',
       action: () => {
         setIsSyncModalOpen(true);
+        onClose();
+      }
+    },
+    {
+      id: 'sys-tribunal',
+      category: 'SYSTEM',
+      title: 'Face AI Judge (Mom + Boss Tribunal)',
+      subtitle: 'Submit excuse or medical emergency appeal to AI Judge',
+      icon: Scale,
+      iconColor: 'text-amber-400',
+      action: () => {
+        openTribunalModal();
         onClose();
       }
     }

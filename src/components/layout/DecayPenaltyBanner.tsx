@@ -1,17 +1,14 @@
 import React from 'react';
 import {
-  AlertTriangle,
-  Flame,
-  RotateCcw,
-  X,
-  Zap,
   ShieldAlert,
-  ArrowRight
+  ArrowRight,
+  X,
+  Scale
 } from 'lucide-react';
 import { useTitan } from '../../context/TitanContext';
 
 export const DecayPenaltyBanner: React.FC = () => {
-  const { activeDecayAlert, dismissDecayAlert, setActiveTab, clearDecayPenalty } = useTitan();
+  const { activeDecayAlert, dismissDecayAlert, setActiveTab, clearDecayPenalty, openTribunalModal } = useTitan();
 
   if (!activeDecayAlert) return null;
 
@@ -47,13 +44,21 @@ export const DecayPenaltyBanner: React.FC = () => {
               </span>
               <span className="text-slate-600">•</span>
               <button
+                onClick={openTribunalModal}
+                className="px-3 py-1 rounded-lg bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white font-bold flex items-center gap-1.5 shadow-sm"
+              >
+                <Scale className="h-3.5 w-3.5" />
+                <span>Appeal to AI Judge (Mom + Boss Tribunal)</span>
+              </button>
+              <span className="text-slate-600">•</span>
+              <button
                 onClick={() => {
                   dismissDecayAlert();
                   setActiveTab('physique');
                 }}
                 className="text-white hover:underline font-bold flex items-center gap-1"
               >
-                <span>Log Session Today to Rebuild Gains</span>
+                <span>Log Session Today</span>
                 <ArrowRight className="h-3.5 w-3.5" />
               </button>
             </div>

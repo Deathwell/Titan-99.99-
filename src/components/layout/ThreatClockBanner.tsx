@@ -11,7 +11,8 @@ import {
   Skull,
   Bell,
   BellRing,
-  Smartphone
+  Smartphone,
+  Scale
 } from 'lucide-react';
 import { useTitan } from '../../context/TitanContext';
 import { soundEngine } from '../../lib/audio';
@@ -25,7 +26,8 @@ export const ThreatClockBanner: React.FC = () => {
     simulateMissedDays,
     requestPushPermission,
     sendTestPushAlert,
-    setIsMobilePushSetupOpen
+    setIsMobilePushSetupOpen,
+    openTribunalModal
   } = useTitan();
 
   const [timeLeft, setTimeLeft] = useState<{ hours: number; minutes: number; seconds: number }>({
@@ -182,6 +184,15 @@ export const ThreatClockBanner: React.FC = () => {
 
               {!hasLoggedToday && (
                 <>
+                  <button
+                    onClick={() => openTribunalModal()}
+                    className="px-2.5 py-0.5 rounded bg-gradient-to-r from-rose-950/80 to-amber-950/80 hover:from-rose-900 hover:to-amber-900 border border-rose-500/50 text-rose-300 text-[10px] font-mono font-bold transition-all flex items-center gap-1 shadow-sm"
+                    title="Face the Mom + Boss AI Judge to submit an excuse or medical emergency"
+                  >
+                    <Scale className="h-3 w-3 text-amber-400" />
+                    <span>⚖️ Face AI Judge</span>
+                  </button>
+
                   <button
                     onClick={() => simulateMissedDays(1)}
                     className="px-2 py-0.5 rounded bg-rose-950/50 hover:bg-rose-900/80 border border-rose-500/30 text-rose-300 text-[10px] font-mono font-semibold transition-all"

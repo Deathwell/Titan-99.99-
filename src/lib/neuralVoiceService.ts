@@ -154,6 +154,13 @@ class NeuralVoiceService {
     soundEngine.speakVoiceMessage(text, options);
   }
 
+  public speak(text: string, onEnd?: () => void) {
+    this.speakSmartVoice(text);
+    if (onEnd) {
+      setTimeout(onEnd, Math.min(12000, Math.max(2000, text.length * 70)));
+    }
+  }
+
   public stop() {
     if (this.activeAudioElement) {
       this.activeAudioElement.pause();

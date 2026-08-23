@@ -9,14 +9,18 @@ import {
   CheckCircle2,
   Calendar,
   Zap,
-  Info
+  Info,
+  Scale,
+  Gavel,
+  FileText
 } from 'lucide-react';
 import { useTitan } from '../../context/TitanContext';
 import { soundEngine } from '../../lib/audio';
 
 export const BlackMarkDossier: React.FC = () => {
-  const { profile, simulateMissedDays } = useTitan();
+  const { profile, openTribunalModal } = useTitan();
   const blackMarks = profile.blackMarks || [];
+  const tribunalHistory = profile.tribunalHistory || [];
 
   const activeMarks = blackMarks.filter(m => m.status === 'ACTIVE_INFRACTION');
   const expungedMarks = blackMarks.filter(m => m.status === 'EXPUNGED');
@@ -57,17 +61,25 @@ export const BlackMarkDossier: React.FC = () => {
           </div>
         </div>
 
-        {/* Status Badge */}
+        {/* Action Controls */}
         <div className="flex items-center gap-2">
+          <button
+            onClick={openTribunalModal}
+            className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-rose-950/80 to-amber-950/80 hover:from-rose-900 hover:to-amber-900 border border-rose-500/40 text-rose-300 text-xs font-mono font-bold transition-all flex items-center gap-1.5 shadow-sm"
+          >
+            <Scale className="h-3.5 w-3.5 text-amber-400" />
+            <span>⚖️ Face AI Tribunal</span>
+          </button>
+
           {activeMarks.length === 0 ? (
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold">
               <ShieldCheck className="h-3.5 w-3.5" />
-              <span>0 Active Black Marks</span>
+              <span>0 Black Marks</span>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/15 border border-rose-500/40 text-rose-300 text-xs font-semibold shadow-[0_0_15px_rgba(244,63,94,0.2)]">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-300 text-xs font-semibold shadow-[0_0_15px_rgba(244,63,94,0.2)]">
               <AlertTriangle className="h-3.5 w-3.5 animate-bounce" />
-              <span>{activeMarks.length} Black Mark(s) Active</span>
+              <span>{activeMarks.length} Mark(s)</span>
             </div>
           )}
         </div>
@@ -80,7 +92,7 @@ export const BlackMarkDossier: React.FC = () => {
           <span>THE UNCOMPROMISING TITAN LAW OF DISCIPLINE:</span>
         </div>
         <p className="text-[11px] text-zinc-400 pl-5">
-          Every missed calendar day permanently stamps a <strong className="text-white">Black Mark</strong> onto your permanent Operator record, erases previous gains, and resets your streak to 0. A Black Mark can <strong className="text-white">only be expunged</strong> by executing a grueling <strong className="text-rose-400">30-day consecutive unbroken streak</strong>.
+          Every unexcused missed calendar day permanently stamps a <strong className="text-white">Black Mark</strong> onto your permanent Operator record, erases previous gains, and resets your streak to 0. You can submit legitimate medical emergencies to the <strong className="text-amber-400">AI Tribunal</strong> for a 24h pardon, while weak rationalizations are rejected with prejudice.
         </p>
       </div>
 
@@ -147,6 +159,69 @@ export const BlackMarkDossier: React.FC = () => {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Tribunal Rulings & Excuses Ledger */}
+      {tribunalHistory.length > 0 && (
+        <div className="space-y-3 pt-2 border-t border-white/[0.08]">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider font-mono flex items-center gap-1.5">
+              <Gavel className="h-3.5 w-3.5 text-amber-400" />
+              <span>AI TRIBUNAL HEARINGS LEDGER ({tribunalHistory.length})</span>
+            </span>
+          </div>
+
+          <div className="space-y-2">
+            {tribunalHistory.map((item) => {
+              const isPardon = item.verdict.verdictType === 'PARDON_GRANTED';
+              const isBS = item.verdict.verdictType === 'BULLSHIT_REJECTED';
+
+              return (
+                <div
+                  key={item.id}
+                  className={`p-3.5 rounded-xl border space-y-2 transition-all ${
+                    isPardon
+                      ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-100'
+                      : isBS
+                      ? 'bg-rose-950/30 border-rose-500/40 text-rose-100'
+                      : 'bg-amber-950/20 border-amber-500/30 text-amber-100'
+                  }`}
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold font-mono border ${
+                        isPardon
+                          ? 'bg-emerald-900/60 border-emerald-400 text-emerald-300'
+                          : isBS
+                          ? 'bg-rose-900/80 border-rose-500 text-rose-300'
+                          : 'bg-amber-900/60 border-amber-400 text-amber-300'
+                      }`}>
+                        {item.verdict.title}
+                      </span>
+                      <span className="text-[10px] text-zinc-400 font-mono">
+                        {item.date} • {item.categoryLabel}
+                      </span>
+                    </div>
+
+                    <span className={`text-[10px] font-mono font-bold ${
+                      isPardon ? 'text-emerald-400' : 'text-rose-400'
+                    }`}>
+                      {item.verdict.xpAdjustment === 0 ? '0 XP (Waived)' : `${item.verdict.xpAdjustment} XP`}
+                    </span>
+                  </div>
+
+                  <div className="text-xs text-zinc-300 font-sans italic bg-black/40 p-2 rounded-lg border border-white/[0.05]">
+                    "{item.userExplanation}"
+                  </div>
+
+                  <div className="text-[11px] text-zinc-300 font-sans leading-relaxed">
+                    <strong>Judge Ruling:</strong> {item.verdict.verdictReason}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 

@@ -266,6 +266,40 @@ export interface BlackMarkEntry {
   expungedAt?: string;
 }
 
+export type ExcuseVerdictType = 'PARDON_GRANTED' | 'BULLSHIT_REJECTED' | 'PROBATIONARY_PASS';
+
+export type ExcuseCategory = 
+  | 'ACUTE_ILLNESS_FEVER'
+  | 'SEVERE_INJURY_MEDICAL'
+  | 'EXHAUSTION_BURNOUT'
+  | 'WORK_OVERTIME_PRESSURE'
+  | 'PROCRASTINATION_DISTRACTION'
+  | 'FAMILY_CRISIS'
+  | 'TRAVEL_TRANSIT'
+  | 'OTHER';
+
+export interface ExcuseVerdict {
+  verdictType: ExcuseVerdictType;
+  title: string;
+  verdictReason: string;
+  realityCheck: string;
+  voiceTranscript: string;
+  xpAdjustment: number;
+  streakProtected: boolean;
+  blackMarkIssued: boolean;
+  recoveryAdvice?: string;
+}
+
+export interface TribunalCase {
+  id: string;
+  timestamp: string;
+  date: string;
+  category: ExcuseCategory;
+  categoryLabel: string;
+  userExplanation: string;
+  verdict: ExcuseVerdict;
+}
+
 export interface UserProfile {
   callsign: string;
   operatorId: string;
@@ -283,5 +317,6 @@ export interface UserProfile {
   decayPenaltyActive: boolean;
   lastDecayEvent?: DecayPenaltyEvent;
   blackMarks?: BlackMarkEntry[];
+  tribunalHistory?: TribunalCase[];
   neuralVoice?: NeuralVoiceSettings;
 }
