@@ -334,112 +334,99 @@ export const OverviewDashboard: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto select-none font-sans px-2 sm:px-4 py-2">
-      {/* 1. Top Telemetry Bar */}
-      <div className="flex items-center justify-between px-1">
-        <div className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-[#ff2e4d] animate-pulse" />
-          <span className="text-[11px] font-bold tracking-widest text-[#ff2e4d] uppercase font-mono">
-            OPERATOR ACTIVE
-          </span>
-          <span className="text-zinc-600 hidden sm:inline">•</span>
-          <span className="text-[11px] text-zinc-500 font-mono hidden sm:inline uppercase">
-            Global Population: 8.15B Humans
-          </span>
-        </div>
+      {/* 1. Executive Telemetry Overview Card */}
+      <div className="luxury-card p-5 sm:p-6 relative overflow-hidden bg-[#0c0c11]/90 border border-white/[0.08] shadow-2xl backdrop-blur-2xl">
+        {/* Subtle Ambient Lighting */}
+        <div className="pointer-events-none absolute -left-20 -top-20 h-48 w-48 rounded-full bg-rose-500/10 blur-3xl" />
+        <div className="pointer-events-none absolute -right-20 -bottom-20 h-48 w-48 rounded-full bg-amber-500/10 blur-3xl" />
 
-        {/* Top Right XP Earned Today & Streak Badges */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-300 font-semibold text-xs backdrop-blur-md">
-            <Zap className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
-            <span className="font-mono font-bold">
-              <CountUpNumber end={todayTotalXP} decimals={0} prefix="+" suffix=" XP Today" />
-            </span>
-          </div>
-
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/25 text-rose-300 font-semibold text-xs backdrop-blur-md">
-            <Flame className="h-3.5 w-3.5 text-rose-400 fill-rose-400" />
-            <span className="font-mono font-bold">{profile.streakDays}d Streak</span>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. Spacious Imperial Hero Showcase Card */}
-      <div className="luxury-card p-6 sm:p-8 relative overflow-hidden bg-[#0c0c11]/90 border border-white/[0.08] shadow-2xl backdrop-blur-2xl">
-        {/* Subtle Ambient Aurora */}
-        <div className="pointer-events-none absolute -left-24 -top-24 h-64 w-64 rounded-full bg-rose-500/10 blur-3xl" />
-        <div className="pointer-events-none absolute -right-24 -bottom-24 h-64 w-64 rounded-full bg-amber-500/10 blur-3xl" />
-
-        <div className="relative space-y-6">
-          {/* Header Greeting & Callsign */}
-          <div>
-            <span className="text-xs text-zinc-400 font-mono tracking-wider uppercase block">
-              {greeting}, operative
-            </span>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-white tracking-tight mt-0.5">
-              {profile.callsign || 'Operator'}
-            </h1>
-          </div>
-
-          {/* Main Percentile Display & Sub-Headline */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center pt-2 border-t border-white/[0.06]">
-            {/* Left: Giant Serif Percentile Display */}
-            <div className="lg:col-span-5 space-y-1">
-              <span className="text-[10px] font-mono font-bold tracking-widest text-zinc-400 uppercase">
-                CURRENT PERCENTILE STANDING
-              </span>
-              <div className="flex items-baseline gap-3">
-                <span className="text-2xl sm:text-3xl font-serif text-zinc-400 font-light uppercase">
-                  TOP
+        <div className="relative space-y-5">
+          {/* Header Row: Greeting & Live Badges */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/[0.06]">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-[#ff2e4d] animate-pulse" />
+                <span className="text-[10px] font-bold tracking-widest text-[#ff2e4d] uppercase font-mono">
+                  OPERATOR ACTIVE
                 </span>
-                <span className="text-5xl sm:text-6xl lg:text-7xl font-serif font-bold tracking-tight bg-gradient-to-r from-white via-rose-100 to-rose-400 bg-clip-text text-transparent drop-shadow-md">
-                  <CountUpNumber end={topPercent} decimals={topPercent < 1 ? 2 : 1} suffix="%" />
+                <span className="text-zinc-600">•</span>
+                <span className="text-[11px] text-zinc-500 font-mono">
+                  8.15B Global Population
                 </span>
               </div>
-              <p className="text-xs text-zinc-400 font-sans mt-1">
-                Outranking over <strong className="text-white font-mono">{(composite.humansDefeated / 1_000_000).toFixed(1)}M</strong> humans on Earth.
-              </p>
+              <h2 className="text-xl sm:text-2xl font-serif font-bold text-white tracking-tight mt-1">
+                {greeting}, <span className="text-zinc-300 font-normal capitalize">{profile.callsign || 'Operator'}</span>
+              </h2>
             </div>
 
-            {/* Right: Clean 3-Metric Telemetry Bento Grid */}
-            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {/* Stat 1: Global Rank */}
-              <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.07] hover:border-white/15 transition-all">
-                <span className="text-[10px] font-mono text-zinc-500 uppercase block">
-                  GLOBAL RANK
-                </span>
-                <div className="text-base sm:text-lg font-bold font-mono text-white mt-1">
-                  {composite.globalRankFormatted}
-                </div>
-                <span className="text-[10px] text-zinc-400 mt-0.5 block">
-                  Out of 8.15B Humans
+            {/* Badges: Today XP & Streak */}
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-300 font-semibold text-xs backdrop-blur-md">
+                <Zap className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
+                <span className="font-mono font-bold">
+                  <CountUpNumber end={todayTotalXP} decimals={0} prefix="+" suffix=" XP Today" />
                 </span>
               </div>
 
-              {/* Stat 2: Humans Defeated */}
-              <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.07] hover:border-white/15 transition-all">
-                <span className="text-[10px] font-mono text-zinc-500 uppercase block">
-                  DEFEATED
-                </span>
-                <div className="text-base sm:text-lg font-bold font-mono text-rose-300 mt-1">
-                  <CountUpNumber end={composite.humansDefeated / 1_000_000} decimals={1} suffix="M" />
-                </div>
-                <span className="text-[10px] text-zinc-400 mt-0.5 block">
-                  Planetary Population
-                </span>
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/25 text-rose-300 font-semibold text-xs backdrop-blur-md">
+                <Flame className="h-3.5 w-3.5 text-rose-400 fill-rose-400" />
+                <span className="font-mono font-bold">{profile.streakDays}d Streak</span>
               </div>
+            </div>
+          </div>
 
-              {/* Stat 3: Operator Tier */}
-              <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.07] hover:border-white/15 transition-all">
-                <span className="text-[10px] font-mono text-zinc-500 uppercase block">
-                  OPERATOR LEVEL
-                </span>
-                <div className="text-base sm:text-lg font-bold font-mono text-amber-300 mt-1">
-                  Tier {profile.level}
-                </div>
-                <span className="text-[10px] text-zinc-400 mt-0.5 block">
-                  Ascendant Rank
-                </span>
+          {/* 4-Column Balanced Telemetry Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {/* Stat 1: Global Standing */}
+            <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-white/15 transition-all">
+              <span className="text-[10px] font-mono font-bold tracking-widest text-zinc-500 uppercase block">
+                GLOBAL STANDING
+              </span>
+              <div className="text-xl sm:text-2xl font-serif font-bold text-white mt-1">
+                Top <CountUpNumber end={topPercent} decimals={topPercent < 1 ? 2 : 1} suffix="%" />
               </div>
+              <span className="text-[11px] text-zinc-400 mt-0.5 block">
+                {composite.oneInNFormatted}
+              </span>
+            </div>
+
+            {/* Stat 2: Global Rank */}
+            <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-white/15 transition-all">
+              <span className="text-[10px] font-mono font-bold tracking-widest text-zinc-500 uppercase block">
+                PLANETARY RANK
+              </span>
+              <div className="text-lg sm:text-xl font-mono font-bold text-zinc-100 mt-1">
+                {composite.globalRankFormatted}
+              </div>
+              <span className="text-[11px] text-zinc-400 mt-0.5 block">
+                vs 8.15B Humans
+              </span>
+            </div>
+
+            {/* Stat 3: Humans Defeated */}
+            <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-white/15 transition-all">
+              <span className="text-[10px] font-mono font-bold tracking-widest text-zinc-500 uppercase block">
+                OUTRANKED
+              </span>
+              <div className="text-lg sm:text-xl font-mono font-bold text-rose-300 mt-1">
+                <CountUpNumber end={composite.humansDefeated / 1_000_000} decimals={1} suffix="M" />
+              </div>
+              <span className="text-[11px] text-zinc-400 mt-0.5 block">
+                Humans Defeated
+              </span>
+            </div>
+
+            {/* Stat 4: Operator Tier */}
+            <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-white/15 transition-all">
+              <span className="text-[10px] font-mono font-bold tracking-widest text-zinc-500 uppercase block">
+                OPERATOR TIER
+              </span>
+              <div className="text-lg sm:text-xl font-mono font-bold text-amber-300 mt-1">
+                Tier {profile.level}
+              </div>
+              <span className="text-[11px] text-zinc-400 mt-0.5 block">
+                Ascendant Status
+              </span>
             </div>
           </div>
         </div>
