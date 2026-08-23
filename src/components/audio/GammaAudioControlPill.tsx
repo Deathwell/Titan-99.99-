@@ -198,8 +198,8 @@ export const GammaAudioControlPill: React.FC = () => {
 
           {/* Scientific Info Note */}
           <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/[0.06] text-[10px] text-zinc-400 font-sans leading-relaxed">
-            <span className="text-cyan-300 font-bold font-mono block mb-0.5">🧠 Neuro-Acoustic Entrainment:</span>
-            40Hz gamma oscillations induce prefrontal coherence, blocking brain fog and external noise while you train & model.
+            <span className="text-cyan-300 font-bold font-mono block mb-0.5">🎵 Procedural Ambient Harmonic Music:</span>
+            Synthesizes evolving D-Minor ambient pads & glass chimes with embedded 40Hz gamma brainwave pulses for deep prefrontal focus.
           </div>
         </div>
       )}

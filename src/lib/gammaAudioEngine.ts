@@ -1,47 +1,69 @@
-// Continuous 40Hz Gamma Neuro-Acoustic Ambient Synthesizer
-// Procedural Web Audio API generator for binaural entrainment, 40Hz sub-bass, and filtered brown noise
+// Continuous 40Hz Gamma Harmonic Musical Synthesizer
+// Procedural Web Audio Engine: Warm polyphonic ambient pads, ethereal chimes, and 40Hz gamma entrainment
 
-export type GammaPreset = 'GAMMA_FLOW' | 'DEEP_COCOON' | 'SUB_BASS_40HZ';
+export type GammaPreset = 'CYBER_PADS' | 'ETHEREAL_CHIMES' | 'INTERSTELLAR_DRONE';
 
 export interface GammaPresetConfig {
   name: string;
   description: string;
-  binauralGain: number;
+  padFilterCutoff: number;
+  melodyIntervalMs: number;
+  melodyVolume: number;
   subBassGain: number;
-  brownNoiseGain: number;
-  carrierFreq: number; // e.g. 200 Hz
-  beatFreq: number;    // 40 Hz
+  binauralGain: number;
 }
 
 export const GAMMA_PRESETS: Record<GammaPreset, GammaPresetConfig> = {
-  GAMMA_FLOW: {
-    name: '40Hz Gamma Flow',
-    description: 'Balanced 40Hz binaural waves with subtle warm brown noise for deep analytical focus.',
-    binauralGain: 0.35,
-    subBassGain: 0.40,
-    brownNoiseGain: 0.25,
-    carrierFreq: 200,
-    beatFreq: 40
+  CYBER_PADS: {
+    name: 'Blade Runner Cyber Chords',
+    description: 'Lush, warm Hans Zimmer ambient synth chords in D-Minor with embedded 40Hz sub-pulse.',
+    padFilterCutoff: 420,
+    melodyIntervalMs: 3800,
+    melodyVolume: 0.25,
+    subBassGain: 0.45,
+    binauralGain: 0.30
   },
-  DEEP_COCOON: {
-    name: '40Hz Noise Cocoon',
-    description: 'Elevated warm brown noise with 40Hz sub-pulse to eliminate all external distractions.',
-    binauralGain: 0.20,
+  ETHEREAL_CHIMES: {
+    name: 'Ethereal Glass Chimes & Strings',
+    description: 'Serene meditative pentatonic chimes over breathing warm harmonic strings.',
+    padFilterCutoff: 580,
+    melodyIntervalMs: 2400,
+    melodyVolume: 0.40,
     subBassGain: 0.35,
-    brownNoiseGain: 0.45,
-    carrierFreq: 180,
-    beatFreq: 40
+    binauralGain: 0.25
   },
-  SUB_BASS_40HZ: {
-    name: 'Pure 40Hz Sub-Bass',
-    description: 'Clean, minimalist 40Hz fundamental sine tone for late-night sensory grounding.',
-    binauralGain: 0.15,
-    subBassGain: 0.70,
-    brownNoiseGain: 0.15,
-    carrierFreq: 216,
-    beatFreq: 40
+  INTERSTELLAR_DRONE: {
+    name: 'Interstellar Deep Space Drone',
+    description: 'Slow-evolving cosmic resonance with pure 40Hz gamma prefrontal synchronization.',
+    padFilterCutoff: 300,
+    melodyIntervalMs: 5200,
+    melodyVolume: 0.15,
+    subBassGain: 0.60,
+    binauralGain: 0.35
   }
 };
+
+// D-Minor / F-Major Pentatonic Chord Voicings (Hz)
+const CHORD_PROGRESSIONS = [
+  // Chord 1: D-Minor (D2, A2, D3, F3)
+  [73.42, 110.00, 146.83, 174.61],
+  // Chord 2: Bb-Major (Bb1, F2, Bb2, D3)
+  [58.27, 87.31, 116.54, 146.83],
+  // Chord 3: F-Major (F1, C2, F2, A2)
+  [43.65, 65.41, 87.31, 110.00],
+  // Chord 4: C-Major (C2, G2, C3, E3)
+  [65.41, 98.00, 130.81, 164.81]
+];
+
+// Pentatonic Melodic Notes for gentle ambient chimes
+const MELODY_SCALE_HZ = [
+  293.66, // D4
+  349.23, // F4
+  392.00, // G4
+  440.00, // A4
+  523.25, // C5
+  587.33  // D5
+];
 
 const STORAGE_KEY_PLAYING = 'titan_gamma_playing';
 const STORAGE_KEY_VOLUME = 'titan_gamma_volume';
@@ -51,33 +73,35 @@ export class GammaAudioEngine {
   private ctx: AudioContext | null = null;
   private masterGain: GainNode | null = null;
 
-  // Binaural Oscillators
+  // Polyphonic Synth Pad Voice Nodes
+  private padOscillators: OscillatorNode[] = [];
+  private padGainNodes: GainNode[] = [];
+  private padFilter: BiquadFilterNode | null = null;
+
+  // 40Hz Binaural Entrainment Nodes
   private oscLeft: OscillatorNode | null = null;
   private oscRight: OscillatorNode | null = null;
-  private pannerLeft: StereoPannerNode | null = null;
-  private pannerRight: StereoPannerNode | null = null;
   private binauralGainNode: GainNode | null = null;
 
-  // Sub-Bass 40Hz Oscillator
+  // 40Hz Fundamental Sub-Bass
   private oscSub: OscillatorNode | null = null;
   private subGainNode: GainNode | null = null;
-  private subFilter: BiquadFilterNode | null = null;
 
-  // Brown Noise Generator
-  private noiseSource: AudioBufferSourceNode | null = null;
-  private noiseFilter: BiquadFilterNode | null = null;
-  private noiseGainNode: GainNode | null = null;
+  // Generative Melody & Chord Progression Timers
+  private chordIntervalId: ReturnType<typeof setInterval> | null = null;
+  private melodyTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  private currentChordIndex: number = 0;
 
   private isRunning: boolean = false;
-  private currentVolume: number = 0.18; // 18% gentle default background
-  private currentPreset: GammaPreset = 'GAMMA_FLOW';
+  private currentVolume: number = 0.22;
+  private currentPreset: GammaPreset = 'CYBER_PADS';
   private listeners: Set<(isPlaying: boolean) => void> = new Set();
 
   constructor() {
     if (typeof window !== 'undefined') {
       const storedVol = localStorage.getItem(STORAGE_KEY_VOLUME);
       if (storedVol !== null) {
-        this.currentVolume = parseFloat(storedVol) || 0.18;
+        this.currentVolume = parseFloat(storedVol) || 0.22;
       }
       const storedPreset = localStorage.getItem(STORAGE_KEY_PRESET) as GammaPreset;
       if (storedPreset && GAMMA_PRESETS[storedPreset]) {
@@ -122,27 +146,7 @@ export class GammaAudioEngine {
   }
 
   /**
-   * Generates a 5-second seamless looped buffer of warm Brown Noise
-   */
-  private createBrownNoiseBuffer(): AudioBuffer | null {
-    if (!this.ctx) return null;
-    const bufferSize = this.ctx.sampleRate * 5;
-    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-
-    let lastOut = 0.0;
-    for (let i = 0; i < bufferSize; i++) {
-      const white = Math.random() * 2 - 1;
-      // Brown noise integration filter
-      data[i] = (lastOut + 0.02 * white) / 1.02;
-      lastOut = data[i];
-      data[i] *= 3.5; // Gain compensation
-    }
-    return buffer;
-  }
-
-  /**
-   * Starts the continuous 40Hz Gamma procedural ambient stream
+   * Starts the continuous 40Hz musical ambient soundscape
    */
   public async start(): Promise<boolean> {
     if (this.isRunning) return true;
@@ -152,95 +156,103 @@ export class GammaAudioEngine {
       const preset = GAMMA_PRESETS[this.currentPreset];
       const now = this.ctx.currentTime;
 
-      // Master Gain with smooth 1.2s fade-in
+      // Master Gain with smooth 1.5s fade-in
       this.masterGain = this.ctx.createGain();
       this.masterGain.gain.setValueAtTime(0, now);
-      this.masterGain.gain.linearRampToValueAtTime(this.currentVolume, now + 1.2);
+      this.masterGain.gain.linearRampToValueAtTime(this.currentVolume, now + 1.5);
       this.masterGain.connect(this.ctx.destination);
 
-      // 1. Binaural Beat Synthesizer (Carrier + 40Hz difference)
-      const carrier = preset.carrierFreq;
-      const leftFreq = carrier - preset.beatFreq / 2; // e.g. 180 Hz
-      const rightFreq = carrier + preset.beatFreq / 2; // e.g. 220 Hz -> 40 Hz beat!
+      // 1. Ambient Warm Pad Filter (Sweeping lowpass for lush warmth)
+      this.padFilter = this.ctx.createBiquadFilter();
+      this.padFilter.type = 'lowpass';
+      this.padFilter.frequency.setValueAtTime(preset.padFilterCutoff, now);
+      this.padFilter.Q.setValueAtTime(2.0, now);
+      this.padFilter.connect(this.masterGain);
 
-      this.binauralGainNode = this.ctx.createGain();
-      this.binauralGainNode.gain.setValueAtTime(preset.binauralGain, now);
-      this.binauralGainNode.connect(this.masterGain);
+      // Start 4 Pad Voice Oscillators (Triangle + Sawtooth warm detuning)
+      this.padOscillators = [];
+      this.padGainNodes = [];
+      const chord = CHORD_PROGRESSIONS[0];
 
-      // Left Channel
-      this.oscLeft = this.ctx.createOscillator();
-      this.oscLeft.type = 'sine';
-      this.oscLeft.frequency.setValueAtTime(leftFreq, now);
+      for (let i = 0; i < 4; i++) {
+        const osc = this.ctx.createOscillator();
+        osc.type = i % 2 === 0 ? 'sawtooth' : 'triangle';
+        osc.frequency.setValueAtTime(chord[i] || 110, now);
 
-      if (this.ctx.createStereoPanner) {
-        this.pannerLeft = this.ctx.createStereoPanner();
-        this.pannerLeft.pan.setValueAtTime(-1.0, now);
-        this.oscLeft.connect(this.pannerLeft);
-        this.pannerLeft.connect(this.binauralGainNode);
-      } else {
-        this.oscLeft.connect(this.binauralGainNode);
+        const gainNode = this.ctx.createGain();
+        gainNode.gain.setValueAtTime(0.12, now);
+
+        osc.connect(gainNode);
+        gainNode.connect(this.padFilter);
+        osc.start(now);
+
+        this.padOscillators.push(osc);
+        this.padGainNodes.push(gainNode);
       }
 
-      // Right Channel
+      // 2. 40Hz Binaural Entrainment Layer (Embedded in the chords)
+      this.binauralGainNode = this.ctx.createGain();
+      this.binauralGainNode.gain.setValueAtTime(preset.binauralGain * 0.35, now);
+      this.binauralGainNode.connect(this.masterGain);
+
+      this.oscLeft = this.ctx.createOscillator();
+      this.oscLeft.type = 'sine';
+      this.oscLeft.frequency.setValueAtTime(200, now); // Left ear: 200 Hz
+
       this.oscRight = this.ctx.createOscillator();
       this.oscRight.type = 'sine';
-      this.oscRight.frequency.setValueAtTime(rightFreq, now);
+      this.oscRight.frequency.setValueAtTime(240, now); // Right ear: 240 Hz -> 40Hz Beat
 
       if (this.ctx.createStereoPanner) {
-        this.pannerRight = this.ctx.createStereoPanner();
-        this.pannerRight.pan.setValueAtTime(1.0, now);
-        this.oscRight.connect(this.pannerRight);
-        this.pannerRight.connect(this.binauralGainNode);
+        const panL = this.ctx.createStereoPanner();
+        panL.pan.setValueAtTime(-0.8, now);
+        this.oscLeft.connect(panL);
+        panL.connect(this.binauralGainNode);
+
+        const panR = this.ctx.createStereoPanner();
+        panR.pan.setValueAtTime(0.8, now);
+        this.oscRight.connect(panR);
+        panR.connect(this.binauralGainNode);
       } else {
+        this.oscLeft.connect(this.binauralGainNode);
         this.oscRight.connect(this.binauralGainNode);
       }
 
       this.oscLeft.start(now);
       this.oscRight.start(now);
 
-      // 2. Pure Sub-Bass 40Hz Fundamental Oscillator
+      // 3. Pure 40Hz Fundamental Sub-Bass Resonance
       this.subGainNode = this.ctx.createGain();
-      this.subGainNode.gain.setValueAtTime(preset.subBassGain, now);
+      this.subGainNode.gain.setValueAtTime(preset.subBassGain * 0.45, now);
 
-      this.subFilter = this.ctx.createBiquadFilter();
-      this.subFilter.type = 'lowpass';
-      this.subFilter.frequency.setValueAtTime(90, now);
+      const subFilter = this.ctx.createBiquadFilter();
+      subFilter.type = 'lowpass';
+      subFilter.frequency.setValueAtTime(80, now);
 
       this.oscSub = this.ctx.createOscillator();
       this.oscSub.type = 'sine';
-      this.oscSub.frequency.setValueAtTime(40, now); // Pure 40.0 Hz Fundamental
+      this.oscSub.frequency.setValueAtTime(40.0, now); // Pure 40.0 Hz Fundamental
 
-      this.oscSub.connect(this.subFilter);
-      this.subFilter.connect(this.subGainNode);
+      this.oscSub.connect(subFilter);
+      subFilter.connect(this.subGainNode);
       this.subGainNode.connect(this.masterGain);
       this.oscSub.start(now);
 
-      // 3. Filtered Brown Noise Atmosphere
-      const noiseBuffer = this.createBrownNoiseBuffer();
-      if (noiseBuffer) {
-        this.noiseSource = this.ctx.createBufferSource();
-        this.noiseSource.buffer = noiseBuffer;
-        this.noiseSource.loop = true;
+      // 4. Start Harmonious Musical Chord Transitions (Every 9 Seconds)
+      this.currentChordIndex = 0;
+      this.chordIntervalId = setInterval(() => {
+        this.transitionToNextChord();
+      }, 9000);
 
-        this.noiseFilter = this.ctx.createBiquadFilter();
-        this.noiseFilter.type = 'lowpass';
-        this.noiseFilter.frequency.setValueAtTime(320, now);
-
-        this.noiseGainNode = this.ctx.createGain();
-        this.noiseGainNode.gain.setValueAtTime(preset.brownNoiseGain, now);
-
-        this.noiseSource.connect(this.noiseFilter);
-        this.noiseFilter.connect(this.noiseGainNode);
-        this.noiseGainNode.connect(this.masterGain);
-        this.noiseSource.start(now);
-      }
+      // 5. Start Generative Meditative Chimes
+      this.scheduleNextMelodyChime();
 
       this.isRunning = true;
       localStorage.setItem(STORAGE_KEY_PLAYING, 'true');
       this.notify();
       return true;
     } catch (err) {
-      console.warn('Failed to start 40Hz Gamma Audio Engine:', err);
+      console.warn('Failed to start 40Hz Musical Audio Engine:', err);
       this.isRunning = false;
       this.notify();
       return false;
@@ -248,39 +260,123 @@ export class GammaAudioEngine {
   }
 
   /**
-   * Stops the ambient stream with a smooth 0.8s fade-out
+   * Smoothly slides pad notes to the next musical chord in the progression
+   */
+  private transitionToNextChord() {
+    if (!this.ctx || !this.isRunning || this.padOscillators.length < 4) return;
+
+    this.currentChordIndex = (this.currentChordIndex + 1) % CHORD_PROGRESSIONS.length;
+    const nextChord = CHORD_PROGRESSIONS[this.currentChordIndex];
+    const now = this.ctx.currentTime;
+
+    // Smooth 3.5s portamento glide between chords
+    for (let i = 0; i < 4; i++) {
+      const osc = this.padOscillators[i];
+      const targetFreq = nextChord[i];
+      if (osc && targetFreq) {
+        osc.frequency.setTargetAtTime(targetFreq, now, 1.8);
+      }
+    }
+  }
+
+  /**
+   * Generates a soft, crystal-clear glass chime note in the pentatonic scale
+   */
+  private scheduleNextMelodyChime() {
+    if (!this.isRunning || !this.ctx) return;
+
+    const preset = GAMMA_PRESETS[this.currentPreset];
+    const delay = preset.melodyIntervalMs + (Math.random() - 0.5) * 1200;
+
+    this.melodyTimeoutId = setTimeout(() => {
+      if (!this.isRunning || !this.ctx) return;
+
+      try {
+        const now = this.ctx.currentTime;
+        const noteFreq = MELODY_SCALE_HZ[Math.floor(Math.random() * MELODY_SCALE_HZ.length)];
+
+        // Sine wave bell oscillator
+        const chimeOsc = this.ctx.createOscillator();
+        chimeOsc.type = 'sine';
+        chimeOsc.frequency.setValueAtTime(noteFreq, now);
+
+        // Warm second harmonic
+        const chimeHarmonic = this.ctx.createOscillator();
+        chimeHarmonic.type = 'triangle';
+        chimeHarmonic.frequency.setValueAtTime(noteFreq * 2, now);
+
+        const chimeGain = this.ctx.createGain();
+        chimeGain.gain.setValueAtTime(0, now);
+        // Attack: 0.1s, Decay: 2.8s
+        chimeGain.gain.linearRampToValueAtTime(preset.melodyVolume * 0.18, now + 0.08);
+        chimeGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.8);
+
+        chimeOsc.connect(chimeGain);
+        chimeHarmonic.connect(chimeGain);
+
+        if (this.masterGain) {
+          chimeGain.connect(this.masterGain);
+        }
+
+        chimeOsc.start(now);
+        chimeHarmonic.start(now);
+        chimeOsc.stop(now + 3.0);
+        chimeHarmonic.stop(now + 3.0);
+      } catch {
+        // ignore chime error
+      }
+
+      this.scheduleNextMelodyChime();
+    }, Math.max(800, delay));
+  }
+
+  /**
+   * Stops the musical ambient stream with a luxurious 1.0s fade-out
    */
   public stop() {
     if (!this.isRunning || !this.ctx) return;
+
+    if (this.chordIntervalId) {
+      clearInterval(this.chordIntervalId);
+      this.chordIntervalId = null;
+    }
+    if (this.melodyTimeoutId) {
+      clearTimeout(this.melodyTimeoutId);
+      this.melodyTimeoutId = null;
+    }
 
     try {
       const now = this.ctx.currentTime;
       if (this.masterGain) {
         this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now);
-        this.masterGain.gain.linearRampToValueAtTime(0.0001, now + 0.8);
+        this.masterGain.gain.linearRampToValueAtTime(0.0001, now + 1.0);
       }
 
       setTimeout(() => {
         try {
+          this.padOscillators.forEach(osc => {
+            try { osc.stop(); osc.disconnect(); } catch {}
+          });
+          this.padOscillators = [];
+          this.padGainNodes = [];
+
           this.oscLeft?.stop();
           this.oscRight?.stop();
           this.oscSub?.stop();
-          this.noiseSource?.stop();
 
           this.oscLeft?.disconnect();
           this.oscRight?.disconnect();
           this.oscSub?.disconnect();
-          this.noiseSource?.disconnect();
         } catch {
-          // ignore cleanup errors
+          // ignore cleanup
         }
 
         this.isRunning = false;
         localStorage.setItem(STORAGE_KEY_PLAYING, 'false');
         this.notify();
-      }, 850);
+      }, 1050);
     } catch (err) {
-      console.warn('Error stopping 40Hz Gamma Audio Engine:', err);
+      console.warn('Error stopping 40Hz Musical Audio Engine:', err);
       this.isRunning = false;
       this.notify();
     }
@@ -313,24 +409,17 @@ export class GammaAudioEngine {
     this.currentPreset = preset;
     localStorage.setItem(STORAGE_KEY_PRESET, preset);
 
-    if (this.isRunning) {
-      // Re-apply gains smoothly
+    if (this.isRunning && this.ctx) {
       const config = GAMMA_PRESETS[preset];
-      if (this.ctx) {
-        const now = this.ctx.currentTime;
-        if (this.binauralGainNode) {
-          this.binauralGainNode.gain.linearRampToValueAtTime(config.binauralGain, now + 0.5);
-        }
-        if (this.subGainNode) {
-          this.subGainNode.gain.linearRampToValueAtTime(config.subBassGain, now + 0.5);
-        }
-        if (this.noiseGainNode) {
-          this.noiseGainNode.gain.linearRampToValueAtTime(config.brownNoiseGain, now + 0.5);
-        }
-        if (this.oscLeft && this.oscRight) {
-          this.oscLeft.frequency.linearRampToValueAtTime(config.carrierFreq - config.beatFreq / 2, now + 0.5);
-          this.oscRight.frequency.linearRampToValueAtTime(config.carrierFreq + config.beatFreq / 2, now + 0.5);
-        }
+      const now = this.ctx.currentTime;
+      if (this.padFilter) {
+        this.padFilter.frequency.setTargetAtTime(config.padFilterCutoff, now, 1.2);
+      }
+      if (this.subGainNode) {
+        this.subGainNode.gain.setTargetAtTime(config.subBassGain * 0.45, now, 1.2);
+      }
+      if (this.binauralGainNode) {
+        this.binauralGainNode.gain.setTargetAtTime(config.binauralGain * 0.35, now, 1.2);
       }
     }
   }
