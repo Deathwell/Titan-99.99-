@@ -29,6 +29,9 @@ import { CountUpNumber } from '../effects/CountUpNumber';
 import { MysteryLootModal, isMysteryDropClaimedToday } from '../modals/MysteryLootModal';
 import { ThreatClockBanner } from './ThreatClockBanner';
 import { DarkeningPrecisionSlider } from '../action/DarkeningPrecisionSlider';
+import { TacticalMissionProtocolModal } from '../modals/TacticalMissionProtocolModal';
+import { ActiveMissionTimerHUD } from '../action/ActiveMissionTimerHUD';
+import { TacticalPrescription, PrescriptionDomain } from '../../lib/prescriptionEngine';
 
 export const OverviewDashboard: React.FC = () => {
   const {
@@ -45,6 +48,9 @@ export const OverviewDashboard: React.FC = () => {
 
   const [greeting, setGreeting] = useState<string>('Welcome');
   const [isLootOpen, setIsLootOpen] = useState<boolean>(false);
+  const [isPrescriptionModalOpen, setIsPrescriptionModalOpen] = useState<boolean>(false);
+  const [prescriptionDomain, setPrescriptionDomain] = useState<PrescriptionDomain>('FITNESS');
+  const [activeMissionPrescription, setActiveMissionPrescription] = useState<TacticalPrescription | null>(null);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -237,6 +243,55 @@ export const OverviewDashboard: React.FC = () => {
       {/* 2. Inactivity Threat & Contender Overtake Radar */}
       <ThreatClockBanner />
 
+      {/* Tactical AI Daily Prescription Protocol Launcher (For Clueless / Indecisive Days) */}
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-[#0e0e14] to-purple-950/30 border border-cyan-500/30 shadow-[0_0_25px_rgba(6,182,212,0.15)] flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="p-3 rounded-2xl bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shadow-inner shrink-0">
+            <Sparkles className="h-6 w-6 animate-pulse" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono text-[9px] font-bold border border-cyan-500/30 uppercase tracking-widest">
+                ZERO UNCERTAINTY
+              </span>
+              <span className="text-zinc-400 text-xs font-mono">Unsure what to execute today?</span>
+            </div>
+            <h4 className="text-sm sm:text-base font-bold text-white font-serif mt-0.5">
+              Tactical AI Mission Prescription & Guided Timer
+            </h4>
+            <p className="text-xs text-zinc-400 mt-0.5">
+              Select your time frame (15m–4h) to receive curated workout routines with exact sets/reps or finance curricula.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              soundEngine.playClick(800);
+              setPrescriptionDomain('FITNESS');
+              setIsPrescriptionModalOpen(true);
+            }}
+            className="px-4 py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-xs font-bold font-mono flex items-center gap-2 transition-all shadow-sm active:scale-95"
+          >
+            <Dumbbell className="h-4 w-4" />
+            <span>Prescribe Workout</span>
+          </button>
+
+          <button
+            onClick={() => {
+              soundEngine.playClick(800);
+              setPrescriptionDomain('FINANCE');
+              setIsPrescriptionModalOpen(true);
+            }}
+            className="px-4 py-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-bold font-mono flex items-center gap-2 transition-all shadow-sm active:scale-95"
+          >
+            <LineChart className="h-4 w-4" />
+            <span>Prescribe Study</span>
+          </button>
+        </div>
+      </div>
+
       {/* 3. Daily Excellence Tasks with Darkening Progressive Sliders */}
       <div className="space-y-3.5">
         <div className="flex items-center justify-between px-0.5">
@@ -282,11 +337,28 @@ export const OverviewDashboard: React.FC = () => {
               </div>
             </div>
 
-            {workoutMinutes > 0 ? (
-              <CheckCircle2 className="h-5 w-5 text-rose-400" />
-            ) : (
-              <Circle className="h-5 w-5 text-zinc-600" />
-            )}
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  soundEngine.playClick(800);
+                  setPrescriptionDomain('FITNESS');
+                  setIsPrescriptionModalOpen(true);
+                }}
+                className="text-[10px] font-mono text-rose-300/80 hover:text-rose-200 px-2 py-0.5 rounded bg-rose-500/10 border border-rose-500/20 transition-all hidden xs:flex items-center gap-1"
+                title="Open AI Workout Prescription"
+              >
+                <Sparkles className="h-3 w-3 text-rose-400" />
+                <span>AI Prescription</span>
+              </button>
+
+              {workoutMinutes > 0 ? (
+                <CheckCircle2 className="h-5 w-5 text-rose-400" />
+              ) : (
+                <Circle className="h-5 w-5 text-zinc-600" />
+              )}
+            </div>
           </div>
 
           {/* Darkening Precision Slider */}
@@ -329,11 +401,28 @@ export const OverviewDashboard: React.FC = () => {
               </div>
             </div>
 
-            {financeMinutes > 0 ? (
-              <CheckCircle2 className="h-5 w-5 text-amber-400" />
-            ) : (
-              <Circle className="h-5 w-5 text-zinc-600" />
-            )}
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  soundEngine.playClick(800);
+                  setPrescriptionDomain('FINANCE');
+                  setIsPrescriptionModalOpen(true);
+                }}
+                className="text-[10px] font-mono text-amber-300/80 hover:text-amber-200 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 transition-all hidden xs:flex items-center gap-1"
+                title="Open AI Finance Prescription"
+              >
+                <Sparkles className="h-3 w-3 text-amber-400" />
+                <span>AI Prescription</span>
+              </button>
+
+              {financeMinutes > 0 ? (
+                <CheckCircle2 className="h-5 w-5 text-amber-400" />
+              ) : (
+                <Circle className="h-5 w-5 text-zinc-600" />
+              )}
+            </div>
           </div>
 
           {/* Darkening Precision Slider */}
@@ -540,6 +629,24 @@ export const OverviewDashboard: React.FC = () => {
 
       {/* Mystery Loot Modal */}
       <MysteryLootModal isOpen={isLootOpen} onClose={() => setIsLootOpen(false)} />
+
+      {/* Tactical AI Mission Prescription Modal */}
+      <TacticalMissionProtocolModal
+        isOpen={isPrescriptionModalOpen}
+        onClose={() => setIsPrescriptionModalOpen(false)}
+        initialDomain={prescriptionDomain}
+        onLaunchTimer={(prescription) => {
+          setActiveMissionPrescription(prescription);
+        }}
+      />
+
+      {/* Live Tactical Mission Timer HUD Dock */}
+      {activeMissionPrescription && (
+        <ActiveMissionTimerHUD
+          prescription={activeMissionPrescription}
+          onClose={() => setActiveMissionPrescription(null)}
+        />
+      )}
     </div>
   );
 };
