@@ -272,7 +272,9 @@ export const OverviewDashboard: React.FC = () => {
     financeLogs,
     setDailyTaskDuration,
     toggleDailyAccomplishment,
-    setActiveTab
+    setActiveTab,
+    openVictoryModal,
+    todayRewardClaim
   } = useTitan();
 
   const [greeting, setGreeting] = useState<string>('Welcome');
@@ -584,7 +586,78 @@ export const OverviewDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. Neural Body Scanner Showcase */}
+      {/* 3. Guilt-Free Nightly Victory Reward Selector */}
+      {completedCount >= 2 || (workoutMinutes > 0 && financeMinutes > 0) ? (
+        <div
+          onClick={openVictoryModal}
+          className="p-4 rounded-2xl border-2 border-purple-500/60 bg-gradient-to-r from-purple-950/80 via-indigo-950/80 to-purple-950/80 shadow-[0_0_25px_rgba(168,85,247,0.25)] cursor-pointer transition-all flex flex-wrap items-center justify-between gap-4 group active:scale-[0.99]"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="h-11 w-11 rounded-2xl bg-purple-900/80 border border-purple-400 text-2xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+              {todayRewardClaim ? todayRewardClaim.icon : '🏆'}
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded bg-purple-900 text-purple-200 text-[10px] font-mono font-bold tracking-wider border border-purple-400">
+                  {todayRewardClaim ? 'GUILT-FREE REWARD ACTIVE' : '100% PROTOCOL COMPLETE'}
+                </span>
+                <span className="text-emerald-300 text-xs font-bold flex items-center gap-1 font-mono">
+                  <Sparkles className="h-3.5 w-3.5 text-emerald-400 animate-spin" /> REWARD UNLOCKED
+                </span>
+              </div>
+              <h4 className="text-sm sm:text-base font-extrabold text-white mt-1">
+                {todayRewardClaim
+                  ? `${todayRewardClaim.icon} ${todayRewardClaim.title.toUpperCase()}`
+                  : 'CHOOSE YOUR GUILT-FREE NIGHTLY REWARD'}
+              </h4>
+              <p className="text-[11px] text-purple-200 mt-0.5">
+                {todayRewardClaim
+                  ? 'Guilt-free indulgence active for tonight. Relax with zero procrastination anxiety!'
+                  : 'You paid the price of discipline today. Choose your unrestricted celebration.'}
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              openVictoryModal();
+            }}
+            className="px-4 py-2 rounded-xl bg-purple-500 hover:bg-purple-400 text-white font-extrabold text-xs shadow-glow-purple flex items-center gap-2 transition-all transform active:scale-95 whitespace-nowrap"
+          >
+            <Gift className="h-4 w-4" />
+            <span>{todayRewardClaim ? 'Change Reward' : 'Claim Reward (+150 XP)'}</span>
+          </button>
+        </div>
+      ) : (
+        <div
+          onClick={openVictoryModal}
+          className="p-3.5 rounded-2xl border border-white/[0.08] bg-[#0c0d14]/70 hover:border-purple-500/30 cursor-pointer transition-all flex items-center justify-between group active:scale-[0.99]"
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-white/[0.03] text-zinc-500 border border-white/[0.06] group-hover:text-purple-400 transition-colors">
+              <Lock className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-zinc-300">
+                  Guilt-Free Nightly Reward ({completedCount}/3 Completed)
+                </span>
+                <span className="text-[9px] font-mono text-zinc-500">
+                  LOCKED UNTIL DAILY LOGS COMPLETE
+                </span>
+              </div>
+              <p className="text-[10px] text-zinc-400 mt-0.5">
+                Slide workout & finance minutes above to unlock Gaming, Media Binge, or Feast Cheat Meals.
+              </p>
+            </div>
+          </div>
+
+          <ChevronRight className="h-4 w-4 text-zinc-500 group-hover:text-purple-400 group-hover:translate-x-0.5 transition-all" />
+        </div>
+      )}
+
+      {/* 4. Neural Body Scanner Showcase */}
       <div
         onClick={() => setActiveTab('hologram')}
         className="luxury-card p-4 bg-[#121217]/80 hover:border-rose-500/30 cursor-pointer transition-all flex items-center justify-between group active:scale-[0.99]"
