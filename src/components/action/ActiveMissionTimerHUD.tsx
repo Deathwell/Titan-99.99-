@@ -179,33 +179,37 @@ export const ActiveMissionTimerHUD: React.FC<ActiveMissionTimerHUDProps> = ({
           <div>
             <div className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
               <Clock className="h-3 w-3 text-cyan-400" />
-              <span>Time Remaining</span>
+              <span>Time Remaining (Lockout to 00:00)</span>
             </div>
             <div className="text-2xl sm:text-3xl font-mono font-extrabold text-white tracking-wider tabular-nums drop-shadow-[0_0_12px_rgba(6,182,212,0.4)]">
               {timeDisplay}
             </div>
           </div>
 
-          {/* Action Button Controls */}
+          {/* Action Button Controls (Anti-Cheat: Only Pause & Forfeit Available) */}
           <div className="flex items-center gap-2">
             <button
               onClick={togglePause}
-              className={`px-3 py-2 rounded-xl border font-mono font-bold text-xs flex items-center gap-1.5 transition-all shadow-md active:scale-95 ${
+              className={`px-3.5 py-2 rounded-xl border font-mono font-bold text-xs flex items-center gap-1.5 transition-all shadow-md active:scale-95 ${
                 isPaused
                   ? 'bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-400 animate-pulse shadow-[0_0_15px_rgba(16,185,129,0.3)]'
                   : 'bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border-amber-500/40'
               }`}
             >
-              {isPaused ? <Play className="h-4 w-4 fill-white" /> : <Pause className="h-4 w-4" />}
+              {isPaused ? <Play className="h-3.5 w-3.5 fill-white" /> : <Pause className="h-3.5 w-3.5" />}
               <span>{isPaused ? 'Resume' : 'Pause'}</span>
             </button>
 
             <button
-              onClick={handleCompleteMission}
-              className="px-3 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs flex items-center gap-1.5 border border-cyan-400/40 shadow-[0_0_15px_rgba(6,182,212,0.3)] transition-all active:scale-95"
+              onClick={() => {
+                soundEngine.playClick(600);
+                setIsAbortConfirmOpen(true);
+              }}
+              className="px-3.5 py-2 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-500/30 font-mono font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95 shadow-sm"
+              title="Forfeit / End Workout Early"
             >
-              <CheckCircle2 className="h-4 w-4" />
-              <span className="hidden xs:inline">Finish</span>
+              <X className="h-3.5 w-3.5" />
+              <span>Forfeit</span>
             </button>
           </div>
         </div>
