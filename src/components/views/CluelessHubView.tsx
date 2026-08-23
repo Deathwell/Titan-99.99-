@@ -18,7 +18,8 @@ import {
   Info,
   Calendar,
   Layers,
-  Award
+  Award,
+  HelpCircle
 } from 'lucide-react';
 import { useTitan } from '../../context/TitanContext';
 import {
@@ -31,6 +32,7 @@ import {
 } from '../../lib/prescriptionEngine';
 import { soundEngine } from '../../lib/audio';
 import { ActiveMissionTimerHUD } from '../action/ActiveMissionTimerHUD';
+import { ExerciseGuideModal } from '../modals/ExerciseGuideModal';
 
 const DURATION_PRESETS = [15, 30, 45, 60, 75, 90, 105, 120, 150, 180, 240];
 
@@ -48,6 +50,9 @@ export const CluelessHubView: React.FC = () => {
   // Active Timer & Confirmation States
   const [activeTimerPrescription, setActiveTimerPrescription] = useState<TacticalPrescription | null>(null);
   const [isConfirmingStart, setIsConfirmingStart] = useState<boolean>(false);
+
+  // Form Guide Modal State
+  const [guideExerciseName, setGuideExerciseName] = useState<string | null>(null);
 
   // Generate dynamic recommendation in 0ms
   const prescription = useMemo(() => {
@@ -70,6 +75,12 @@ export const CluelessHubView: React.FC = () => {
     soundEngine.playMilestoneFanfare();
     setActiveTimerPrescription(prescription);
     setIsConfirmingStart(false);
+  };
+
+  const handleOpenGuide = (e: React.MouseEvent, exerciseName: string) => {
+    e.stopPropagation();
+    soundEngine.playClick(800);
+    setGuideExerciseName(exerciseName);
   };
 
   const getCategoryBadge = (category: string) => {
@@ -107,7 +118,7 @@ export const CluelessHubView: React.FC = () => {
             Clueless? AI Workout Prescription
           </h1>
           <p className="text-xs sm:text-sm text-zinc-400 mt-1">
-            Specify your parameters below to generate an optimum, science-backed workout plan and start the guided timer.
+            Click any exercise to view step-by-step form guides, illustrations, and biomechanics.
           </p>
         </div>
 
@@ -421,14 +432,14 @@ export const CluelessHubView: React.FC = () => {
         </div>
       </div>
 
-      {/* 4. EXERCISE SEQUENCE LIST (Clear, Full-Width, Non-Overlapping) */}
+      {/* 4. EXERCISE SEQUENCE LIST (Clear, Full-Width, Clickable for Form Guide) */}
       <div className="space-y-4">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-xs font-mono font-bold text-zinc-300 uppercase tracking-wider">
             STEP-BY-STEP EXERCISE PROTOCOL ({prescription.exerciseSteps.length} MOVEMENTS)
           </h3>
-          <span className="text-xs text-zinc-400 font-mono">
-            {prescription.durationMinutes}m Total
+          <span className="text-xs text-cyan-400 font-mono">
+            💡 Click any exercise to view form guide
           </span>
         </div>
 
@@ -438,20 +449,30 @@ export const CluelessHubView: React.FC = () => {
             return (
               <div
                 key={step.id || idx}
-                className="p-4 sm:p-5 rounded-2xl bg-[#0e0e14] border border-white/[0.08] hover:border-white/20 transition-all space-y-3 shadow-md"
+                onClick={(e) => handleOpenGuide(e, step.name)}
+                className="p-4 sm:p-5 rounded-2xl bg-[#0e0e14] border border-white/[0.08] hover:border-cyan-500/40 transition-all space-y-3 shadow-md cursor-pointer group hover:bg-[#11131c]"
               >
-                {/* Top Row: Number, Name, Category Badge, Sets & Reps */}
+                {/* Top Row: Number, Name, Form Guide Button, Category Badge, Sets & Reps */}
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-7 w-7 rounded-xl bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 font-mono font-bold text-xs flex items-center justify-center shrink-0">
+                    <div className="h-7 w-7 rounded-xl bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 font-mono font-bold text-xs flex items-center justify-center shrink-0 group-hover:bg-cyan-500/20">
                       {idx + 1}
                     </div>
-                    <h4 className="text-sm sm:text-base font-bold text-white font-serif leading-snug">
+                    <h4 className="text-sm sm:text-base font-bold text-white font-serif leading-snug group-hover:text-cyan-200 transition-colors">
                       {step.name}
                     </h4>
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={(e) => handleOpenGuide(e, step.name)}
+                      className="px-2.5 py-1 rounded-lg bg-cyan-950/40 text-cyan-300 border border-cyan-500/30 text-[10px] font-mono font-bold hover:bg-cyan-900/60 transition-all flex items-center gap-1"
+                    >
+                      <BookOpen className="h-3 w-3" />
+                      <span>Form Guide</span>
+                    </button>
+
                     <span className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold border ${badge.color}`}>
                       {badge.label}
                     </span>
@@ -515,6 +536,14 @@ export const CluelessHubView: React.FC = () => {
           <span>START WORKOUT TIMER ({durationMinutes} MIN)</span>
         </button>
       </div>
+
+      {/* Form Guide Detail Modal */}
+      {guideExerciseName && (
+        <ExerciseGuideModal
+          exerciseName={guideExerciseName}
+          onClose={() => setGuideExerciseName(null)}
+        />
+      )}
 
       {/* Initiation Confirmation Dialog */}
       {isConfirmingStart && (

@@ -19,6 +19,7 @@ import { useTitan } from '../../context/TitanContext';
 import { TacticalPrescription } from '../../lib/prescriptionEngine';
 import { soundEngine } from '../../lib/audio';
 import { triggerGlobalConfetti } from '../effects/ConfettiCanvas';
+import { ExerciseGuideModal } from '../modals/ExerciseGuideModal';
 
 interface ActiveMissionTimerHUDProps {
   prescription: TacticalPrescription;
@@ -39,6 +40,7 @@ export const ActiveMissionTimerHUD: React.FC<ActiveMissionTimerHUDProps> = ({
   const [isCompletedModalOpen, setIsCompletedModalOpen] = useState<boolean>(false);
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
   const [isAudioTicking, setIsAudioTicking] = useState<boolean>(true);
+  const [activeGuideExercise, setActiveGuideExercise] = useState<string | null>(null);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -244,9 +246,22 @@ export const ActiveMissionTimerHUD: React.FC<ActiveMissionTimerHUDProps> = ({
                       <span className={`text-xs font-bold leading-tight ${isDone ? 'line-through text-zinc-400' : 'text-white'}`}>
                         {step.name}
                       </span>
-                      <span className="text-[10px] font-mono text-rose-300 bg-rose-950/40 px-1.5 py-0.2 rounded border border-rose-500/20 shrink-0">
-                        {step.sets} × {step.reps}
-                      </span>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            soundEngine.playClick(750);
+                            setActiveGuideExercise(step.name);
+                          }}
+                          className="px-1.5 py-0.5 rounded bg-cyan-950/60 text-cyan-300 border border-cyan-500/30 text-[9px] font-mono hover:bg-cyan-900/80"
+                        >
+                          Guide 📖
+                        </button>
+                        <span className="text-[10px] font-mono text-rose-300 bg-rose-950/40 px-1.5 py-0.2 rounded border border-rose-500/20">
+                          {step.sets} × {step.reps}
+                        </span>
+                      </div>
                     </div>
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-zinc-400 mt-1 font-mono">
                       <span className="text-cyan-300">{step.targetMuscle}</span>
@@ -271,6 +286,14 @@ export const ActiveMissionTimerHUD: React.FC<ActiveMissionTimerHUDProps> = ({
           </div>
         )}
       </div>
+
+      {/* Mid-Workout Exercise Form Guide Modal */}
+      {activeGuideExercise && (
+        <ExerciseGuideModal
+          exerciseName={activeGuideExercise}
+          onClose={() => setActiveGuideExercise(null)}
+        />
+      )}
 
       {/* Abort Confirmation Dialog */}
       {isAbortConfirmOpen && (
