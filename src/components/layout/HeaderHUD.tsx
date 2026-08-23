@@ -19,6 +19,7 @@ import { CountUpNumber } from '../effects/CountUpNumber';
 import { DailyStoryReelModal } from '../modals/DailyStoryReelModal';
 import { MysteryLootModal, isMysteryDropClaimedToday } from '../modals/MysteryLootModal';
 import { GammaAudioControlPill } from '../audio/GammaAudioControlPill';
+import { FluidThemeSelector } from '../effects/FluidThemeSelector';
 
 export const HeaderHUD: React.FC = () => {
   const {
@@ -97,6 +98,9 @@ export const HeaderHUD: React.FC = () => {
 
             {/* 40Hz Gamma Focus Audio Control Pill */}
             <GammaAudioControlPill />
+
+            {/* Interactive Fluid Plasma Atmosphere Switcher */}
+            <FluidThemeSelector />
 
             {/* 3D Holographic ID Card */}
             <button

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { fluidThemeManager, FluidThemeConfig } from '../../lib/fluidThemeEngine';
 
 interface Particle {
   x: number;
@@ -10,6 +11,9 @@ interface Particle {
   colorHue: number;
   colorSat: number;
   colorLight: number;
+  coreOffset: number;
+  midOffset: number;
+  outerOffset: number;
   alpha: number;
   decay: number;
   spin: number;
@@ -23,6 +27,7 @@ interface Shockwave {
   radius: number;
   maxRadius: number;
   alpha: number;
+  colorHue: number;
   ringWidth: number;
 }
 
@@ -54,24 +59,29 @@ export const RedFluidCanvas: React.FC = () => {
 
     window.addEventListener('resize', handleResize, { passive: true });
 
+    let currentTheme: FluidThemeConfig = fluidThemeManager.getTheme();
+    const unsubscribeTheme = fluidThemeManager.subscribe(newTheme => {
+      currentTheme = newTheme;
+    });
+
     const particles: Particle[] = [];
     const shockwaves: Shockwave[] = [];
-    const MAX_PARTICLES = isMobile ? 110 : 280;
+    const MAX_PARTICLES = isMobile ? 120 : 300;
 
     let lastPointerX = width / 2;
     let lastPointerY = height / 2;
     let hasPointer = false;
 
-    // Ambient floating filaments for gentle living background depth
+    // Ambient floating filaments with active theme color
     const blobCount = isMobile ? 2 : 4;
     const ambientBlobs = Array.from({ length: blobCount }).map((_, i) => ({
       x: Math.random() * width,
       y: Math.random() * height,
       vx: (Math.random() - 0.5) * 0.22,
       vy: (Math.random() - 0.5) * 0.22,
-      radius: (isMobile ? 130 : 200) + Math.random() * 100,
-      hue: 348 + (i % 2 === 0 ? 0 : 8),
-      alpha: 0.02 + Math.random() * 0.012,
+      radius: (isMobile ? 140 : 210) + Math.random() * 100,
+      hueOffset: (i % 2 === 0 ? 0 : 6),
+      alpha: 0.022 + Math.random() * 0.012,
       pulse: Math.random() * Math.PI * 2
     }));
 
@@ -88,32 +98,36 @@ export const RedFluidCanvas: React.FC = () => {
 
       const speed = Math.sqrt(vx * vx + vy * vy);
       const angle = Math.random() * Math.PI * 2;
-      const dist = Math.random() * (isClick ? 18 : 7);
-      const pSpeed = (Math.random() * 1.3 + 0.3) * (isClick ? 2.8 : Math.min(speed * 0.32, 3.4));
+      const dist = Math.random() * (isClick ? 18 : 8);
+      const pSpeed = (Math.random() * 1.35 + 0.35) * (isClick ? 2.9 : Math.min(speed * 0.34, 3.6));
 
-      // Velocity-reactive bioluminescence: fast sweeps glow with neon ruby energy
-      const isFast = speed > 6.0 || isClick;
-      const hue = isFast ? 352 + Math.random() * 10 : 346 + Math.random() * 12;
-      const sat = 96 + Math.random() * 4;
-      const light = isFast ? 50 + Math.random() * 8 : 42 + Math.random() * 8;
+      // Velocity-reactive luminescence
+      const isFast = speed > 5.5 || isClick;
+      const hue = currentTheme.baseHue + Math.random() * currentTheme.hueRange;
+      const sat = currentTheme.sat;
+      const light = currentTheme.baseLight + (isFast ? 8 + Math.random() * 8 : Math.random() * 6);
 
-      // Perfectly balanced volumetric scale: dense silky ribbons without oversized fog
+      // Calibrated Volumetric Scale ("A tiny more volume but less than before"):
+      // Base size: 16-24px expanding on motion to 30-42px
       const size = isClick
-        ? Math.random() * 38 + 20
-        : Math.random() * 26 + 12 + Math.min(speed * 1.6, 22);
+        ? Math.random() * 42 + 24
+        : Math.random() * 28 + 14 + Math.min(speed * 1.9, 26);
 
       particles.push({
         x: x + Math.cos(angle) * dist,
         y: y + Math.sin(angle) * dist,
         vx: vx * 0.2 + Math.cos(angle) * pSpeed,
         vy: vy * 0.2 + Math.sin(angle) * pSpeed,
-        size: size * 0.3,
+        size: size * 0.28,
         maxSize: size,
         colorHue: hue,
         colorSat: sat,
         colorLight: light,
-        alpha: isClick ? 0.62 : 0.44,
-        decay: isClick ? 0.011 + Math.random() * 0.005 : 0.014 + Math.random() * 0.006,
+        coreOffset: currentTheme.gradientCoreOffset,
+        midOffset: currentTheme.gradientMidOffset,
+        outerOffset: currentTheme.gradientOuterOffset,
+        alpha: isClick ? 0.65 : 0.46,
+        decay: isClick ? 0.01 + Math.random() * 0.005 : 0.013 + Math.random() * 0.006,
         spin: (Math.random() - 0.5) * 0.07,
         angle: Math.random() * Math.PI * 2,
         curl: (Math.random() - 0.5) * 0.09
@@ -137,7 +151,6 @@ export const RedFluidCanvas: React.FC = () => {
         const vx = dx * 0.75;
         const vy = dy * 0.75;
 
-        // Smooth interpolation step
         const stepDist = isMobile ? 8 : 6;
         const steps = Math.max(1, Math.floor(dist / stepDist));
 
@@ -190,21 +203,23 @@ export const RedFluidCanvas: React.FC = () => {
         );
       }
 
-      // Dual-ring expanding shockwave pressure ripple
+      // Dual-ring expanding shockwave pressure ripple with active theme color
       shockwaves.push({
         x: clientX,
         y: clientY,
         radius: 6,
-        maxRadius: (isMobile ? 120 : 170) + Math.random() * 40,
+        maxRadius: (isMobile ? 125 : 180) + Math.random() * 40,
         alpha: 0.8,
+        colorHue: currentTheme.shockwaveHue,
         ringWidth: isMobile ? 2.0 : 2.5
       });
       shockwaves.push({
         x: clientX,
         y: clientY,
         radius: 2,
-        maxRadius: (isMobile ? 80 : 110) + Math.random() * 25,
+        maxRadius: (isMobile ? 80 : 115) + Math.random() * 25,
         alpha: 0.5,
+        colorHue: currentTheme.shockwaveHue + 6,
         ringWidth: 1.5
       });
     };
@@ -219,7 +234,7 @@ export const RedFluidCanvas: React.FC = () => {
       ctx.fillStyle = 'rgba(4, 6, 10, 0.24)';
       ctx.fillRect(0, 0, width, height);
 
-      // 1. Ambient Background Drifting Glows (Subtle, organic depth)
+      // 1. Ambient Background Drifting Glows with active theme hue
       for (let b = 0; b < ambientBlobs.length; b++) {
         const blob = ambientBlobs[b];
         blob.x += blob.vx;
@@ -231,8 +246,8 @@ export const RedFluidCanvas: React.FC = () => {
         if (blob.y < -blob.radius) blob.y = height + blob.radius;
         if (blob.y > height + blob.radius) blob.y = -blob.radius;
 
-        const currentRadius = blob.radius + Math.sin(blob.pulse) * 22;
-        const currentAlpha = blob.alpha + Math.sin(blob.pulse * 0.8) * 0.006;
+        const currentRadius = blob.radius + Math.sin(blob.pulse) * 24;
+        const currentAlpha = blob.alpha + Math.sin(blob.pulse * 0.8) * 0.007;
 
         const grad = ctx.createRadialGradient(
           blob.x,
@@ -242,8 +257,9 @@ export const RedFluidCanvas: React.FC = () => {
           blob.y,
           currentRadius
         );
-        grad.addColorStop(0, `hsla(${blob.hue}, 95%, 48%, ${currentAlpha})`);
-        grad.addColorStop(0.5, `hsla(${blob.hue}, 90%, 28%, ${currentAlpha * 0.3})`);
+        const hue = currentTheme.ambientHue + blob.hueOffset;
+        grad.addColorStop(0, `hsla(${hue}, ${currentTheme.sat}%, ${currentTheme.baseLight + 4}%, ${currentAlpha})`);
+        grad.addColorStop(0.5, `hsla(${hue}, ${currentTheme.sat}%, ${currentTheme.baseLight - 14}%, ${currentAlpha * 0.3})`);
         grad.addColorStop(1, 'transparent');
 
         ctx.fillStyle = grad;
@@ -267,13 +283,13 @@ export const RedFluidCanvas: React.FC = () => {
         }
 
         ctx.lineWidth = wave.ringWidth;
-        ctx.strokeStyle = `hsla(350, 100%, 62%, ${wave.alpha})`;
+        ctx.strokeStyle = `hsla(${wave.colorHue}, 100%, 62%, ${wave.alpha})`;
         ctx.beginPath();
         ctx.arc(wave.x, wave.y, wave.radius, 0, Math.PI * 2);
         ctx.stroke();
       }
 
-      // 3. Render Perfectly Balanced Volumetric Fluid Smoke Ribbons
+      // 3. Render Multi-Stop Volumetric Fluid Smoke Ribbons
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
 
@@ -294,7 +310,7 @@ export const RedFluidCanvas: React.FC = () => {
           continue;
         }
 
-        // Multi-Stop Volumetric Glow: Luminous Core -> Velvet Crimson -> Dark Cabernet
+        // Multi-Stop Volumetric Glow: Luminous Core -> Rich Mid-Tone -> Deep Ambient Falloff
         const radGrad = ctx.createRadialGradient(
           p.x,
           p.y,
@@ -306,15 +322,15 @@ export const RedFluidCanvas: React.FC = () => {
 
         radGrad.addColorStop(
           0,
-          `hsla(${p.colorHue}, ${p.colorSat}%, ${p.colorLight + 8}%, ${p.alpha * 0.95})`
+          `hsla(${p.colorHue}, ${p.colorSat}%, ${p.colorLight + p.coreOffset}%, ${p.alpha * 0.95})`
         );
         radGrad.addColorStop(
-          0.3,
-          `hsla(${p.colorHue}, ${p.colorSat}%, ${p.colorLight}%, ${p.alpha * 0.55})`
+          0.32,
+          `hsla(${p.colorHue}, ${p.colorSat}%, ${p.colorLight + p.midOffset}%, ${p.alpha * 0.55})`
         );
         radGrad.addColorStop(
-          0.65,
-          `hsla(${p.colorHue - 6}, ${p.colorSat}%, ${p.colorLight - 14}%, ${p.alpha * 0.18})`
+          0.68,
+          `hsla(${p.colorHue - 5}, ${p.colorSat}%, ${p.colorLight + p.outerOffset}%, ${p.alpha * 0.18})`
         );
         radGrad.addColorStop(1, 'transparent');
 
@@ -333,6 +349,7 @@ export const RedFluidCanvas: React.FC = () => {
 
     return () => {
       cancelAnimationFrame(animId);
+      unsubscribeTheme();
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('touchmove', handleTouchMove);
