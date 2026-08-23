@@ -12,12 +12,15 @@ import {
   AlarmClock,
   ChevronRight,
   Radio,
-  Zap
+  Zap,
+  LogOut
 } from 'lucide-react';
 import { useTitan } from '../../context/TitanContext';
+import { soundEngine } from '../../lib/audio';
 import { CountUpNumber } from '../effects/CountUpNumber';
 import { DailyStoryReelModal } from '../modals/DailyStoryReelModal';
 import { MysteryLootModal, isMysteryDropClaimedToday } from '../modals/MysteryLootModal';
+import { LogoutModal } from '../modals/LogoutModal';
 import { GammaAudioControlPill } from '../audio/GammaAudioControlPill';
 import { FluidThemeSelector } from '../effects/FluidThemeSelector';
 
@@ -41,6 +44,7 @@ export const HeaderHUD: React.FC = () => {
   const [timeStr, setTimeStr] = useState<string>('');
   const [isStoryOpen, setIsStoryOpen] = useState<boolean>(false);
   const [isLootOpen, setIsLootOpen] = useState<boolean>(false);
+  const [isLogoutOpen, setIsLogoutOpen] = useState<boolean>(false);
 
   const isSynced = syncStatus === 'SYNCED';
 
@@ -66,11 +70,11 @@ export const HeaderHUD: React.FC = () => {
     <>
       <header className="sticky top-0 z-20 border-b border-white/[0.07] bg-[#09090d]/90 backdrop-blur-2xl px-4 lg:px-8 py-2.5 transition-all font-sans">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
-          {/* Left: Clean Breadcrumbs & Level Badge */}
-          <div className="flex items-center gap-3">
+          {/* Left: Clean Breadcrumbs, Level Badge & Logout Action */}
+          <div className="flex items-center gap-2.5 sm:gap-3">
             <button
               onClick={() => setIsStoryOpen(true)}
-              className="relative p-0.5 rounded-full bg-gradient-to-tr from-rose-500 via-red-600 to-amber-500 hover:scale-105 active:scale-95 transition-all shadow-sm"
+              className="relative p-0.5 rounded-full bg-gradient-to-tr from-rose-500 via-red-600 to-amber-500 hover:scale-105 active:scale-95 transition-all shadow-sm shrink-0"
               title="Daily Story Reel"
             >
               <div className="h-7 w-7 rounded-full bg-[#0e0e13] flex items-center justify-center text-[11px] font-bold text-white">
@@ -78,11 +82,24 @@ export const HeaderHUD: React.FC = () => {
               </div>
             </button>
 
-            <div className="flex items-center gap-1.5 text-xs">
+            <div className="flex items-center gap-1.5 text-xs shrink-0">
               <span className="text-white font-bold tracking-tight">TITAN</span>
               <ChevronRight className="h-3 w-3 text-zinc-500" />
               <span className="text-rose-400 font-semibold">{tabLabels[activeTab] || 'Cockpit'}</span>
             </div>
+
+            {/* Logout Action Button Near TITAN */}
+            <button
+              onClick={() => {
+                soundEngine.playClick(700);
+                setIsLogoutOpen(true);
+              }}
+              className="ml-0.5 sm:ml-1 px-2 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 hover:text-rose-200 border border-rose-500/25 hover:border-rose-500/40 text-[10px] font-mono font-bold flex items-center gap-1.5 transition-all group shadow-sm active:scale-95 shrink-0"
+              title="Terminate Operator Session (Logout)"
+            >
+              <LogOut className="h-3 w-3 text-rose-400 group-hover:text-rose-300 transition-transform group-hover:-translate-x-0.5" />
+              <span className="hidden xs:inline tracking-wider">LOGOUT</span>
+            </button>
           </div>
 
           {/* Right: Total XP Earned & Utility Controls */}
@@ -164,6 +181,8 @@ export const HeaderHUD: React.FC = () => {
       <DailyStoryReelModal isOpen={isStoryOpen} onClose={() => setIsStoryOpen(false)} />
       {/* Mystery Loot Modal */}
       <MysteryLootModal isOpen={isLootOpen} onClose={() => setIsLootOpen(false)} />
+      {/* Logout Confirmation Modal */}
+      <LogoutModal isOpen={isLogoutOpen} onClose={() => setIsLogoutOpen(false)} />
     </>
   );
 };
