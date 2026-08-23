@@ -146,8 +146,8 @@ export class GammaAudioEngine {
       this.masterGain.gain.linearRampToValueAtTime(this.currentVolume, now + 0.3); // Instant, smooth 300ms fade
       this.masterGain.connect(this.ctx.destination);
 
-      // 1. Play Real Hans Zimmer Master Audio from RAM (Starts immediately at 18.5s full power organ!)
-      const START_OFFSET = 18.5;
+      // 1. Play Real Hans Zimmer Master Audio from RAM (Starts immediately at 21.5s peak organ crescendo!)
+      const START_OFFSET = 21.5;
       this.currentSourceNode = this.ctx.createBufferSource();
       this.currentSourceNode.buffer = this.audioBuffer;
       this.currentSourceNode.loop = true;
@@ -221,7 +221,7 @@ export class GammaAudioEngine {
       this.fallbackAudio.loop = true;
     }
     this.fallbackAudio.volume = this.currentVolume;
-    this.fallbackAudio.currentTime = 18.5;
+    this.fallbackAudio.currentTime = 21.5;
     this.fallbackAudio.play().catch(() => {});
     this.isPlaying = true;
     localStorage.setItem(STORAGE_KEY_MUTED, 'false');
