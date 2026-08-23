@@ -1,11 +1,12 @@
 // Instant Zero-Latency Hans Zimmer "Cornfield Chase" 40Hz Gamma Audio Engine
 // Pre-decodes MP3 into Web Audio RAM buffer for instant 0ms playback
 // Default is ON (unmuted) on page load, drops directly at 23.5s peak theme.
+// Synchronous state machine: Reliable ON by default, 1-click OFF, 1-click ON.
 
 const CORNFIELD_CHASE_SRC = '/audio/interstellar-cornfield.mp3';
 const START_OFFSET_SECONDS = 23.5; // Starts directly at peak crescendo
-const STORAGE_KEY_MUTED = 'titan_cornfield_muted';
-const STORAGE_KEY_VOLUME = 'titan_cornfield_volume';
+const STORAGE_KEY_MUTED = 'titan_cornfield_muted_v2';
+const STORAGE_KEY_VOLUME = 'titan_cornfield_volume_v2';
 
 export class GammaAudioEngine {
   private ctx: AudioContext | null = null;
@@ -21,11 +22,13 @@ export class GammaAudioEngine {
   private binauralGain: GainNode | null = null;
 
   private isPlaying: boolean = false;
+  private isUserMuted: boolean = false;
   private isPreloading: boolean = false;
   private isPreloaded: boolean = false;
   private currentVolume: number = 0.35; // 35% rich listening volume
   private listeners: Set<(isPlaying: boolean) => void> = new Set();
-  private autoPlayInitialized: boolean = false;
+  private gestureListenersAttached: boolean = false;
+  private fallbackAudio: HTMLAudioElement | null = null;
 
   constructor() {
     if (typeof window !== 'undefined') {
@@ -34,26 +37,30 @@ export class GammaAudioEngine {
         this.currentVolume = parseFloat(storedVol) || 0.35;
       }
 
+      // Default is ON unless explicitly muted by user
+      const storedMuted = localStorage.getItem(STORAGE_KEY_MUTED);
+      this.isUserMuted = storedMuted === 'true';
+
       // Preload audio buffer immediately into RAM on app load
       this.preloadAudio();
 
-      // Check if user explicitly muted previously
-      const isExplicitlyMuted = localStorage.getItem(STORAGE_KEY_MUTED) === 'true';
+      if (!this.isUserMuted) {
+        // Optimistically set playing = true so UI displays ACTIVE by default
+        this.isPlaying = true;
 
-      if (!isExplicitlyMuted) {
-        // 1. Try to start immediately on page load
-        setTimeout(() => {
-          this.start().catch(() => {});
-        }, 100);
+        // Try direct playback on load
+        this.start().catch(() => {});
 
-        // 2. Setup listeners for any first gesture to ensure 100% autoplay compliance
-        this.setupAutoPlayOnFirstInteraction();
+        // Attach global gesture handlers so audio unlocks on the very first user touch/move/key
+        this.attachGestureListeners();
       }
     }
   }
 
   public subscribe(listener: (isPlaying: boolean) => void) {
     this.listeners.add(listener);
+    // Immediately inform subscriber of current state
+    listener(this.isPlaying);
     return () => {
       this.listeners.delete(listener);
     };
@@ -76,9 +83,6 @@ export class GammaAudioEngine {
       const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       if (!AudioCtx) return false;
       this.ctx = new AudioCtx();
-    }
-    if (this.ctx.state === 'suspended') {
-      this.ctx.resume().catch(() => {});
     }
     return true;
   }
@@ -107,42 +111,56 @@ export class GammaAudioEngine {
   }
 
   /**
-   * Automatically triggers music on any first user gesture (click, scroll, key, move, tap)
+   * Unlocks audio on ANY first gesture across the screen
    */
-  public setupAutoPlayOnFirstInteraction() {
-    if (this.autoPlayInitialized || typeof window === 'undefined') return;
-    this.autoPlayInitialized = true;
+  private attachGestureListeners() {
+    if (this.gestureListenersAttached || typeof window === 'undefined') return;
+    this.gestureListenersAttached = true;
 
     const events = ['click', 'pointerdown', 'keydown', 'touchstart', 'wheel', 'scroll', 'mousemove'];
 
-    const handleFirstGesture = () => {
-      events.forEach(e => window.removeEventListener(e, handleFirstGesture));
-      events.forEach(e => document.removeEventListener(e, handleFirstGesture));
+    const handleGesture = () => {
+      this.removeGestureListeners();
+
+      if (this.isUserMuted) return;
 
       if (this.ctx && this.ctx.state === 'suspended') {
         this.ctx.resume().catch(() => {});
       }
 
-      if (!this.isPlaying && localStorage.getItem(STORAGE_KEY_MUTED) !== 'true') {
-        this.start();
+      if (!this.currentSourceNode && !this.fallbackAudio) {
+        this.start().catch(() => {});
       }
     };
 
-    events.forEach(e => window.addEventListener(e, handleFirstGesture, { once: true, passive: true }));
-    events.forEach(e => document.addEventListener(e, handleFirstGesture, { once: true, passive: true }));
+    events.forEach(e => window.addEventListener(e, handleGesture, { once: true, passive: true }));
+    events.forEach(e => document.addEventListener(e, handleGesture, { once: true, passive: true }));
+  }
+
+  private removeGestureListeners() {
+    this.gestureListenersAttached = false;
   }
 
   /**
    * Starts playing Cornfield Chase immediately at 23.5s with zero noise & zero delay
    */
   public async start(): Promise<boolean> {
-    if (this.isPlaying) return true;
-    if (!this.initAudioContext() || !this.ctx) return false;
+    this.isUserMuted = false;
+    this.isPlaying = true;
+    localStorage.setItem(STORAGE_KEY_MUTED, 'false');
+    this.notify();
+
+    if (!this.initAudioContext() || !this.ctx) {
+      return this.startFallbackAudio();
+    }
 
     try {
       if (this.ctx.state === 'suspended') {
         await this.ctx.resume();
       }
+
+      // Stop any existing playing nodes first to prevent overlaps
+      this.cleanupNodes();
 
       // Ensure buffer is ready
       if (!this.audioBuffer) {
@@ -150,16 +168,14 @@ export class GammaAudioEngine {
       }
 
       if (!this.audioBuffer) {
-        // Fallback: Use direct HTML5 Audio if decode failed
         return this.startFallbackAudio();
       }
 
       const now = this.ctx.currentTime;
 
-      // Master Gain for volume
+      // Master Gain
       this.masterGain = this.ctx.createGain();
-      this.masterGain.gain.setValueAtTime(0, now);
-      this.masterGain.gain.linearRampToValueAtTime(this.currentVolume, now + 0.25); // Instant 250ms smooth ramp
+      this.masterGain.gain.setValueAtTime(this.currentVolume, now);
       this.masterGain.connect(this.ctx.destination);
 
       // 1. Play Real Hans Zimmer Master Audio from RAM (Starts immediately at 23.5s peak crescendo!)
@@ -181,7 +197,7 @@ export class GammaAudioEngine {
 
       this.subOsc = this.ctx.createOscillator();
       this.subOsc.type = 'sine';
-      this.subOsc.frequency.setValueAtTime(40.0, now); // Pure 40Hz fundamental
+      this.subOsc.frequency.setValueAtTime(40.0, now);
 
       this.subOsc.connect(subFilter);
       subFilter.connect(this.subGain);
@@ -219,17 +235,13 @@ export class GammaAudioEngine {
       this.binauralLeft.start(now);
       this.binauralRight.start(now);
 
-      this.isPlaying = true;
-      localStorage.setItem(STORAGE_KEY_MUTED, 'false');
-      this.notify();
       return true;
     } catch (err) {
-      console.warn('Error starting instant Cornfield Chase audio:', err);
+      console.warn('Web Audio start deferred by browser policy, using fallback or waiting for gesture:', err);
       return this.startFallbackAudio();
     }
   }
 
-  private fallbackAudio: HTMLAudioElement | null = null;
   private startFallbackAudio(): boolean {
     if (!this.fallbackAudio) {
       this.fallbackAudio = new Audio(CORNFIELD_CHASE_SRC);
@@ -238,58 +250,59 @@ export class GammaAudioEngine {
     this.fallbackAudio.volume = this.currentVolume;
     this.fallbackAudio.currentTime = START_OFFSET_SECONDS;
     this.fallbackAudio.play().catch(() => {});
-    this.isPlaying = true;
-    localStorage.setItem(STORAGE_KEY_MUTED, 'false');
-    this.notify();
     return true;
   }
 
-  /**
-   * Stops audio immediately with a clean fade
-   */
-  public stop() {
-    if (!this.isPlaying) return;
-
+  private cleanupNodes() {
     try {
-      if (this.ctx && this.masterGain) {
-        const now = this.ctx.currentTime;
-        this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now);
-        this.masterGain.gain.linearRampToValueAtTime(0.0001, now + 0.25);
+      if (this.currentSourceNode) {
+        this.currentSourceNode.stop();
+        this.currentSourceNode.disconnect();
+        this.currentSourceNode = null;
       }
-
+      if (this.subOsc) {
+        this.subOsc.stop();
+        this.subOsc.disconnect();
+        this.subOsc = null;
+      }
+      if (this.binauralLeft) {
+        this.binauralLeft.stop();
+        this.binauralLeft.disconnect();
+        this.binauralLeft = null;
+      }
+      if (this.binauralRight) {
+        this.binauralRight.stop();
+        this.binauralRight.disconnect();
+        this.binauralRight = null;
+      }
+      if (this.masterGain) {
+        this.masterGain.disconnect();
+        this.masterGain = null;
+      }
       if (this.fallbackAudio) {
         this.fallbackAudio.pause();
+        this.fallbackAudio.currentTime = START_OFFSET_SECONDS;
       }
-
-      setTimeout(() => {
-        try {
-          this.currentSourceNode?.stop();
-          this.currentSourceNode?.disconnect();
-          this.currentSourceNode = null;
-
-          this.subOsc?.stop();
-          this.subOsc?.disconnect();
-          this.subOsc = null;
-
-          this.binauralLeft?.stop();
-          this.binauralLeft?.disconnect();
-          this.binauralLeft = null;
-
-          this.binauralRight?.stop();
-          this.binauralRight?.disconnect();
-          this.binauralRight = null;
-        } catch {
-          // ignore
-        }
-
-        this.isPlaying = false;
-        localStorage.setItem(STORAGE_KEY_MUTED, 'true');
-        this.notify();
-      }, 260);
-    } catch (err) {
-      this.isPlaying = false;
-      this.notify();
+    } catch {
+      // ignore
     }
+  }
+
+  /**
+   * Synchronously and instantly stops audio playback
+   */
+  public stop() {
+    this.isUserMuted = true;
+    this.isPlaying = false;
+    localStorage.setItem(STORAGE_KEY_MUTED, 'true');
+    this.removeGestureListeners();
+    this.cleanupNodes();
+
+    if (this.ctx && this.ctx.state === 'running') {
+      this.ctx.suspend().catch(() => {});
+    }
+
+    this.notify();
   }
 
   public toggle(): boolean {
@@ -309,8 +322,7 @@ export class GammaAudioEngine {
 
     if (this.ctx && this.masterGain && this.isPlaying) {
       const now = this.ctx.currentTime;
-      this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now);
-      this.masterGain.gain.linearRampToValueAtTime(clamped, now + 0.05);
+      this.masterGain.gain.setValueAtTime(clamped, now);
     }
     if (this.fallbackAudio) {
       this.fallbackAudio.volume = clamped;

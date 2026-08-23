@@ -40,7 +40,9 @@ export const GammaAudioControlPill: React.FC = () => {
 
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
+    e.preventDefault();
     const nowPlaying = gammaAudioEngine.toggle();
+    setIsPlaying(nowPlaying);
     if (nowPlaying) {
       soundEngine.playClick(900);
     } else {
