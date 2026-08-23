@@ -598,6 +598,70 @@ class TacticalSoundEngine {
     }
   }
 
+  /**
+   * Fluid Shockwave Sub-Bass Haptic Tap on Click
+   */
+  public playShockwaveHaptic() {
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    try {
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(85, now);
+      osc.frequency.exponentialRampToValueAtTime(38, now + 0.18);
+
+      gain.gain.setValueAtTime(0.22, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.18);
+    } catch {
+      // Ignore
+    }
+  }
+
+  /**
+   * Fast Fluid Swirl Micro-Whoosh
+   */
+  private lastWhooshTime: number = 0;
+  public playFluidWhoosh(pitchFactor: number = 1.0) {
+    const now = Date.now();
+    if (now - this.lastWhooshTime < 180) return; // Throttle to prevent sound pileup
+    this.lastWhooshTime = now;
+
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    try {
+      const t = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      const baseFreq = 220 * Math.max(0.6, Math.min(2.0, pitchFactor));
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(baseFreq, t);
+      osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.5, t + 0.08);
+
+      gain.gain.setValueAtTime(0.03, t);
+      gain.gain.exponentialRampToValueAtTime(0.0005, t + 0.08);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(t);
+      osc.stop(t + 0.08);
+    } catch {
+      // Ignore
+    }
+  }
+
   public stopAlarm() {
     this.stopAlarmSoundOnly();
     this.stopSpeaking();

@@ -1,13 +1,14 @@
 import React, { useEffect, useRef } from 'react';
+import { soundEngine } from '../../lib/audio';
 
-interface Particle {
+interface FluidParticle {
   x: number;
   y: number;
   vx: number;
   vy: number;
   size: number;
   maxSize: number;
-  colorHue: number; // 345 - 360 (Crimson/Ruby), occasionally 30-45 (Gold embers)
+  colorHue: number;
   colorSat: number;
   colorLight: number;
   alpha: number;
@@ -17,13 +18,26 @@ interface Particle {
   curl: number;
 }
 
-interface Ripple {
+interface SparkEmber {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  size: number;
+  alpha: number;
+  life: number;
+  maxLife: number;
+  colorHue: number; // 38-48 (Gold) or 348-358 (Ruby)
+  sparkleSpeed: number;
+}
+
+interface Shockwave {
   x: number;
   y: number;
   radius: number;
   maxRadius: number;
   alpha: number;
-  color: string;
+  colorHue: number;
 }
 
 export const RedFluidCanvas: React.FC = () => {
@@ -48,65 +62,105 @@ export const RedFluidCanvas: React.FC = () => {
 
     window.addEventListener('resize', handleResize);
 
-    const particles: Particle[] = [];
-    const ripples: Ripple[] = [];
-    const MAX_PARTICLES = 300;
+    const particles: FluidParticle[] = [];
+    const embers: SparkEmber[] = [];
+    const shockwaves: Shockwave[] = [];
+
+    const MAX_PARTICLES = 280;
+    const MAX_EMBERS = 120;
 
     let mouseX = width / 2;
     let mouseY = height / 2;
     let lastMouseX = mouseX;
     let lastMouseY = mouseY;
     let lastTime = performance.now();
-    let isMoving = false;
     let moveTimeout: number;
 
     // Ambient floating filaments
-    const ambientBlobs = Array.from({ length: 5 }).map((_, i) => ({
+    const ambientBlobs = Array.from({ length: 6 }).map((_, i) => ({
       x: Math.random() * width,
       y: Math.random() * height,
-      vx: (Math.random() - 0.5) * 0.4,
-      vy: (Math.random() - 0.5) * 0.4,
-      radius: 180 + Math.random() * 220,
+      vx: (Math.random() - 0.5) * 0.35,
+      vy: (Math.random() - 0.5) * 0.35,
+      radius: 190 + Math.random() * 220,
       hue: 348 + (i % 2 === 0 ? 0 : 8),
-      alpha: 0.04 + Math.random() * 0.03,
+      alpha: 0.045 + Math.random() * 0.03,
       pulse: Math.random() * Math.PI * 2
     }));
 
-    const createSplat = (x: number, y: number, vx: number, vy: number, count: number = 3, isClick: boolean = false) => {
+    // Update global CSS variables on root for 3D card spotlight illumination
+    const updateCSSPointer = (x: number, y: number) => {
+      document.documentElement.style.setProperty('--mouse-x', `${x}px`);
+      document.documentElement.style.setProperty('--mouse-y', `${y}px`);
+    };
+
+    const spawnEmbers = (x: number, y: number, vx: number, vy: number, count: number = 8) => {
+      for (let i = 0; i < count; i++) {
+        if (embers.length >= MAX_EMBERS) {
+          embers.shift();
+        }
+
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 5 + 2;
+        const isGold = Math.random() > 0.45;
+
+        embers.push({
+          x,
+          y,
+          vx: vx * 0.35 + Math.cos(angle) * speed,
+          vy: vy * 0.35 + Math.sin(angle) * speed - 1.2, // slight upward buoyancy
+          size: Math.random() * 2.2 + 1.0,
+          alpha: 1.0,
+          life: 0,
+          maxLife: Math.random() * 40 + 25,
+          colorHue: isGold ? 42 + Math.random() * 12 : 352 + Math.random() * 8,
+          sparkleSpeed: Math.random() * 0.3 + 0.15
+        });
+      }
+    };
+
+    const createSplat = (x: number, y: number, vx: number, vy: number, count: number = 4, isClick: boolean = false) => {
       const speed = Math.sqrt(vx * vx + vy * vy);
-      
+
+      // Fast flick triggers sparkling ember shower & micro acoustic whoosh!
+      if (speed > 7.5 || isClick) {
+        spawnEmbers(x, y, vx, vy, isClick ? 14 : Math.min(8, Math.floor(speed * 0.8)));
+        if (speed > 10 && !isClick) {
+          soundEngine.playFluidWhoosh(0.9 + Math.min(1.0, speed / 25));
+        }
+      }
+
       for (let i = 0; i < count; i++) {
         if (particles.length >= MAX_PARTICLES) {
           particles.shift();
         }
 
         const angle = Math.random() * Math.PI * 2;
-        const dist = Math.random() * (isClick ? 35 : 18);
-        const pSpeed = (Math.random() * 1.5 + 0.5) * (isClick ? 3.5 : Math.min(speed * 0.4, 4));
+        const dist = Math.random() * (isClick ? 32 : 16);
+        const pSpeed = (Math.random() * 1.6 + 0.4) * (isClick ? 3.2 : Math.min(speed * 0.4, 4.5));
 
-        // Color palette: Velvet Crimson, Neon Ruby, Deep Burgundy, and Gold Embers
-        const isEmber = Math.random() < 0.12 || (speed > 8 && Math.random() < 0.25);
-        const hue = isEmber ? 38 + Math.random() * 15 : 346 + Math.random() * 16;
-        const sat = isEmber ? 100 : 92 + Math.random() * 8;
-        const light = isEmber ? 68 + Math.random() * 20 : 48 + Math.random() * 18;
+        const isEmber = Math.random() < 0.14 || (speed > 8 && Math.random() < 0.3);
+        const hue = isEmber ? 40 + Math.random() * 14 : 348 + Math.random() * 14;
+        const sat = isEmber ? 100 : 94 + Math.random() * 6;
+        const light = isEmber ? 70 + Math.random() * 18 : 50 + Math.random() * 18;
 
-        const size = isClick ? Math.random() * 60 + 30 : Math.random() * 45 + 15 + Math.min(speed * 3, 40);
+        const size = isClick ? Math.random() * 55 + 25 : Math.random() * 42 + 14 + Math.min(speed * 2.8, 38);
 
         particles.push({
           x: x + Math.cos(angle) * dist,
           y: y + Math.sin(angle) * dist,
-          vx: vx * 0.25 + Math.cos(angle) * pSpeed,
-          vy: vy * 0.25 + Math.sin(angle) * pSpeed,
+          vx: vx * 0.22 + Math.cos(angle) * pSpeed,
+          vy: vy * 0.22 + Math.sin(angle) * pSpeed,
           size: size * 0.2,
           maxSize: size,
           colorHue: hue,
           colorSat: sat,
           colorLight: light,
-          alpha: isClick ? 0.65 : 0.45,
-          decay: isClick ? 0.008 + Math.random() * 0.006 : 0.012 + Math.random() * 0.008,
-          spin: (Math.random() - 0.5) * 0.05,
+          alpha: isClick ? 0.65 : 0.48,
+          decay: isClick ? 0.009 + Math.random() * 0.005 : 0.011 + Math.random() * 0.007,
+          spin: (Math.random() - 0.5) * 0.06,
           angle: Math.random() * Math.PI * 2,
-          curl: (Math.random() - 0.5) * 0.08
+          curl: (Math.random() - 0.5) * 0.09
         });
       }
     };
@@ -132,6 +186,9 @@ export const RedFluidCanvas: React.FC = () => {
       mouseX = clientX;
       mouseY = clientY;
 
+      // Update 3D card spotlight CSS coordinates
+      updateCSSPointer(clientX, clientY);
+
       const dx = mouseX - lastMouseX;
       const dy = mouseY - lastMouseY;
       const dist = Math.sqrt(dx * dx + dy * dy);
@@ -140,15 +197,11 @@ export const RedFluidCanvas: React.FC = () => {
         const vx = (dx / dt) * 16;
         const vy = (dy / dt) * 16;
 
-        // Splat density scales with velocity
-        const splatCount = Math.min(6, Math.max(2, Math.floor(dist / 12)));
+        const splatCount = Math.min(6, Math.max(2, Math.floor(dist / 10)));
         createSplat(mouseX, mouseY, vx, vy, splatCount, false);
 
-        isMoving = true;
         window.clearTimeout(moveTimeout);
-        moveTimeout = window.setTimeout(() => {
-          isMoving = false;
-        }, 150);
+        moveTimeout = window.setTimeout(() => {}, 150);
       }
 
       lastMouseX = mouseX;
@@ -167,16 +220,29 @@ export const RedFluidCanvas: React.FC = () => {
         clientY = (e as MouseEvent).clientY;
       }
 
-      createSplat(clientX, clientY, (Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4, 18, true);
+      updateCSSPointer(clientX, clientY);
 
-      // Create plasma shockwave ripple
-      ripples.push({
+      // Acoustic sub-bass shockwave haptic pulse
+      soundEngine.playShockwaveHaptic();
+
+      createSplat(clientX, clientY, (Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4, 16, true);
+
+      // Dual shockwave pressure ring
+      shockwaves.push({
         x: clientX,
         y: clientY,
-        radius: 10,
-        maxRadius: 180 + Math.random() * 80,
-        alpha: 0.7,
-        color: 'hsla(350, 100%, 65%,'
+        radius: 8,
+        maxRadius: 200 + Math.random() * 60,
+        alpha: 0.8,
+        colorHue: 350
+      });
+      shockwaves.push({
+        x: clientX,
+        y: clientY,
+        radius: 4,
+        maxRadius: 140 + Math.random() * 40,
+        alpha: 0.6,
+        colorHue: 42
       });
     };
 
@@ -185,19 +251,18 @@ export const RedFluidCanvas: React.FC = () => {
     window.addEventListener('mousedown', handlePointerDown, { passive: true });
     window.addEventListener('touchstart', handlePointerDown, { passive: true });
 
-    let t = 0;
     const render = () => {
-      t += 0.015;
-
-      // Dark fade trail to produce glowing fluid smoke trails
-      ctx.fillStyle = 'rgba(7, 7, 10, 0.22)';
+      // Smooth dark trail
+      ctx.fillStyle = 'rgba(6, 7, 11, 0.2)';
       ctx.fillRect(0, 0, width, height);
 
-      // 1. Draw Ambient Organic Crimson Nebula
-      ambientBlobs.forEach(blob => {
+      // 1. Render Ambient Organic Crimson Nebula
+      ambientBloBlobs:
+      for (let b = 0; b < ambientBlobs.length; b++) {
+        const blob = ambientBlobs[b];
         blob.x += blob.vx;
         blob.y += blob.vy;
-        blob.pulse += 0.02;
+        blob.pulse += 0.018;
 
         if (blob.x < -blob.radius) blob.x = width + blob.radius;
         if (blob.x > width + blob.radius) blob.x = -blob.radius;
@@ -223,43 +288,39 @@ export const RedFluidCanvas: React.FC = () => {
         ctx.beginPath();
         ctx.arc(blob.x, blob.y, currentRadius, 0, Math.PI * 2);
         ctx.fill();
-      });
-
-      // 2. Render Shockwave Ripples
-      for (let i = ripples.length - 1; i >= 0; i--) {
-        const rip = ripples[i];
-        rip.radius += (rip.maxRadius - rip.radius) * 0.08;
-        rip.alpha -= 0.022;
-
-        if (rip.alpha <= 0 || rip.radius >= rip.maxRadius - 2) {
-          ripples.splice(i, 1);
-          continue;
-        }
-
-        ctx.save();
-        ctx.globalCompositeOperation = 'screen';
-        ctx.lineWidth = 2.5;
-        ctx.strokeStyle = `${rip.color}${rip.alpha})`;
-        ctx.shadowColor = 'rgba(255, 35, 75, 0.8)';
-        ctx.shadowBlur = 15;
-        ctx.beginPath();
-        ctx.arc(rip.x, rip.y, rip.radius, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.restore();
       }
 
-      // 3. Render Fluid Plasma Splats with Additive Luminescence
+      // 2. Render Shockwave Pressure Rings
       ctx.save();
       ctx.globalCompositeOperation = 'screen';
 
+      for (let i = shockwaves.length - 1; i >= 0; i--) {
+        const wave = shockwaves[i];
+        wave.radius += (wave.maxRadius - wave.radius) * 0.09;
+        wave.alpha -= 0.024;
+
+        if (wave.alpha <= 0 || wave.radius >= wave.maxRadius - 2) {
+          shockwaves.splice(i, 1);
+          continue;
+        }
+
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = `hsla(${wave.colorHue}, 100%, 65%, ${wave.alpha})`;
+        ctx.shadowColor = `hsla(${wave.colorHue}, 100%, 60%, 0.8)`;
+        ctx.shadowBlur = 14;
+        ctx.beginPath();
+        ctx.arc(wave.x, wave.y, wave.radius, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // 3. Render Fluid Plasma Splats (Silky Velvet Smoke)
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
 
-        // Vorticity curl & fluid physics
         p.vx += Math.cos(p.angle) * p.curl;
         p.vy += Math.sin(p.angle) * p.curl;
-        p.vx *= 0.96;
-        p.vy *= 0.96;
+        p.vx *= 0.95;
+        p.vy *= 0.95;
         p.x += p.vx;
         p.y += p.vy;
 
@@ -272,7 +333,6 @@ export const RedFluidCanvas: React.FC = () => {
           continue;
         }
 
-        // Radiant multi-stop gaseous fluid gradient
         const radGrad = ctx.createRadialGradient(
           p.x,
           p.y,
@@ -282,14 +342,41 @@ export const RedFluidCanvas: React.FC = () => {
           p.size
         );
 
-        radGrad.addColorStop(0, `hsla(${p.colorHue}, ${p.colorSat}%, ${p.colorLight + 15}%, ${p.alpha * 0.95})`);
-        radGrad.addColorStop(0.35, `hsla(${p.colorHue}, ${p.colorSat}%, ${p.colorLight}%, ${p.alpha * 0.6})`);
-        radGrad.addColorStop(0.7, `hsla(${p.colorHue - 5}, ${p.colorSat}%, ${p.colorLight - 15}%, ${p.alpha * 0.25})`);
+        radGrad.addColorStop(0, `hsla(${p.colorHue}, ${p.colorSat}%, ${p.colorLight + 16}%, ${p.alpha * 0.95})`);
+        radGrad.addColorStop(0.35, `hsla(${p.colorHue}, ${p.colorSat}%, ${p.colorLight}%, ${p.alpha * 0.55})`);
+        radGrad.addColorStop(0.7, `hsla(${p.colorHue - 6}, ${p.colorSat}%, ${p.colorLight - 14}%, ${p.alpha * 0.22})`);
         radGrad.addColorStop(1, 'transparent');
 
         ctx.fillStyle = radGrad;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 4. Render Spark Embers (Golden & Ruby Parabolic Sparks)
+      for (let i = embers.length - 1; i >= 0; i--) {
+        const e = embers[i];
+        e.life++;
+        e.x += e.vx;
+        e.y += e.vy;
+        e.vy += 0.08; // subtle gravity
+        e.vx *= 0.97;
+        e.vy *= 0.97;
+
+        const progress = e.life / e.maxLife;
+        e.alpha = (1 - progress) * (0.6 + Math.sin(e.life * e.sparkleSpeed) * 0.4);
+
+        if (progress >= 1.0 || e.alpha <= 0) {
+          embers.splice(i, 1);
+          continue;
+        }
+
+        ctx.shadowColor = `hsla(${e.colorHue}, 100%, 75%, ${e.alpha})`;
+        ctx.shadowBlur = 8;
+        ctx.fillStyle = `hsla(${e.colorHue}, 100%, 80%, ${e.alpha})`;
+
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, e.size * (1 - progress * 0.4), 0, Math.PI * 2);
         ctx.fill();
       }
 
@@ -315,7 +402,7 @@ export const RedFluidCanvas: React.FC = () => {
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none z-0 w-full h-full"
       style={{
-        opacity: 0.92,
+        opacity: 0.95,
         mixBlendMode: 'screen',
         willChange: 'transform'
       }}

@@ -59,10 +59,10 @@ input[type="submit"] {
   letter-spacing: 0.03em;
 }
 
-/* Linear / Apple Pro Ultra-Sleek Glass Card (Charcoal & Brushed Titanium) */
+/* Linear / Apple Pro Ultra-Sleek Glass Card with Dynamic Pointer Spotlight */
 .luxury-card, .mercedes-card, .linear-card, .social-card {
   position: relative;
-  background: rgba(18, 18, 23, 0.75);
+  background: rgba(13, 14, 20, 0.78);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -71,28 +71,57 @@ input[type="submit"] {
     0 10px 30px -10px rgba(0, 0, 0, 0.8),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   border-radius: 1rem;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.luxury-card::before, .mercedes-card::before, .linear-card::before, .social-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    500px circle at var(--mouse-x, -500px) var(--mouse-y, -500px),
+    rgba(255, 46, 77, 0.08),
+    transparent 60%
+  );
+  pointer-events: none;
+  z-index: 1;
 }
 
 .luxury-card:hover, .mercedes-card:hover, .linear-card:hover {
-  border-color: rgba(225, 29, 72, 0.25);
-  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  border-color: rgba(225, 29, 72, 0.35);
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
   box-shadow: 
     0 14px 40px -10px rgba(0, 0, 0, 0.9),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    0 0 20px rgba(225, 29, 72, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 /* Hyper-Luxury Gold Vault Card */
 .gold-vault-card {
   position: relative;
-  background: linear-gradient(135deg, rgba(28, 22, 14, 0.75) 0%, rgba(14, 12, 9, 0.9) 100%);
+  background: linear-gradient(135deg, rgba(28, 22, 14, 0.78) 0%, rgba(14, 12, 9, 0.92) 100%);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(229, 185, 92, 0.2);
-  border-top: 1px solid rgba(229, 185, 92, 0.35);
+  border: 1px solid rgba(229, 185, 92, 0.25);
+  border-top: 1px solid rgba(229, 185, 92, 0.4);
   box-shadow: 
     0 10px 30px -10px rgba(0, 0, 0, 0.8),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   border-radius: 1rem;
+}
+
+.gold-vault-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    500px circle at var(--mouse-x, -500px) var(--mouse-y, -500px),
+    rgba(245, 158, 11, 0.1),
+    transparent 60%
+  );
+  pointer-events: none;
+  z-index: 1;
 }
 
 /* Precision Chamfered Metallic Dial Thumb */
