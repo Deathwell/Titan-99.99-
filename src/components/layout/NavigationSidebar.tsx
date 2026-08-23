@@ -47,7 +47,7 @@ export const NavigationSidebar: React.FC = () => {
   const navItems: NavItem[] = [
     { id: 'overview', label: 'Today', icon: Inbox, keycap: '1' },
     { id: 'hologram', label: 'Body Scanner', icon: Eye, keycap: '2', badge: 'AI LIVE', badgeColor: 'bg-rose-500/20 text-rose-300 border-rose-400/40' },
-    { id: 'quests', label: 'Quests & Badges', icon: CheckCircle2, keycap: '3', badge: pendingQuestsCount > 0 ? `${pendingQuestsCount}` : undefined, badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-400/40' },
+    { id: 'quests', label: 'Trophies & Badges', icon: Crown, keycap: '3' },
     { id: 'charts', label: 'Analytics & Profile', icon: BarChart3, keycap: '4' }
   ];
 

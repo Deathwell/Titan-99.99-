@@ -23,7 +23,7 @@ export const MobileBottomNav: React.FC = () => {
   const tabs: MobileTabItem[] = [
     { id: 'overview', label: 'Today', icon: Activity },
     { id: 'hologram', label: 'Scanner', icon: Eye, isSpecial: true },
-    { id: 'quests', label: 'Quests', icon: CheckSquare, badge: pendingQuestsCount > 0 ? `${pendingQuestsCount}` : undefined },
+    { id: 'quests', label: 'Trophies', icon: CheckSquare },
     { id: 'charts', label: 'Analytics', icon: TrendingUp },
   ];
 
