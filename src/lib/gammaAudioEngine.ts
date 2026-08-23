@@ -146,12 +146,15 @@ export class GammaAudioEngine {
       this.masterGain.gain.linearRampToValueAtTime(this.currentVolume, now + 0.3); // Instant, smooth 300ms fade
       this.masterGain.connect(this.ctx.destination);
 
-      // 1. Play Real Hans Zimmer Master Audio from RAM (0ms latency, pure music!)
+      // 1. Play Real Hans Zimmer Master Audio from RAM (Starts immediately at 14.5s where the iconic organ kicks in!)
+      const START_OFFSET = 14.5;
       this.currentSourceNode = this.ctx.createBufferSource();
       this.currentSourceNode.buffer = this.audioBuffer;
       this.currentSourceNode.loop = true;
+      this.currentSourceNode.loopStart = START_OFFSET;
+      this.currentSourceNode.loopEnd = this.audioBuffer.duration;
       this.currentSourceNode.connect(this.masterGain);
-      this.currentSourceNode.start(now);
+      this.currentSourceNode.start(now, START_OFFSET);
 
       // 2. Add subtle 40Hz sub-bass harmonic foundation beneath the church organ
       this.subGain = this.ctx.createGain();
@@ -218,6 +221,7 @@ export class GammaAudioEngine {
       this.fallbackAudio.loop = true;
     }
     this.fallbackAudio.volume = this.currentVolume;
+    this.fallbackAudio.currentTime = 14.5;
     this.fallbackAudio.play().catch(() => {});
     this.isPlaying = true;
     localStorage.setItem(STORAGE_KEY_MUTED, 'false');
