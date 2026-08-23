@@ -59,10 +59,10 @@ input[type="submit"] {
   letter-spacing: 0.03em;
 }
 
-/* Linear / Apple Pro Ultra-Sleek Glass Card with Dynamic Pointer Spotlight */
+/* Linear / Apple Pro Ultra-Sleek Glass Card (Charcoal & Brushed Titanium) */
 .luxury-card, .mercedes-card, .linear-card, .social-card {
   position: relative;
-  background: rgba(13, 14, 20, 0.78);
+  background: rgba(14, 14, 20, 0.78);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -72,20 +72,6 @@ input[type="submit"] {
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   border-radius: 1rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.luxury-card::before, .mercedes-card::before, .linear-card::before, .social-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: radial-gradient(
-    500px circle at var(--mouse-x, -500px) var(--mouse-y, -500px),
-    rgba(255, 46, 77, 0.08),
-    transparent 60%
-  );
-  pointer-events: none;
-  z-index: 1;
 }
 
 .luxury-card:hover, .mercedes-card:hover, .linear-card:hover {
@@ -108,20 +94,6 @@ input[type="submit"] {
     0 10px 30px -10px rgba(0, 0, 0, 0.8),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   border-radius: 1rem;
-}
-
-.gold-vault-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: radial-gradient(
-    500px circle at var(--mouse-x, -500px) var(--mouse-y, -500px),
-    rgba(245, 158, 11, 0.1),
-    transparent 60%
-  );
-  pointer-events: none;
-  z-index: 1;
 }
 
 /* Precision Chamfered Metallic Dial Thumb */
