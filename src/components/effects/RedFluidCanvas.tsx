@@ -23,6 +23,7 @@ interface Shockwave {
   radius: number;
   maxRadius: number;
   alpha: number;
+  ringWidth: number;
 }
 
 export const RedFluidCanvas: React.FC = () => {
@@ -55,22 +56,22 @@ export const RedFluidCanvas: React.FC = () => {
 
     const particles: Particle[] = [];
     const shockwaves: Shockwave[] = [];
-    const MAX_PARTICLES = isMobile ? 90 : 240;
+    const MAX_PARTICLES = isMobile ? 110 : 280;
 
     let lastPointerX = width / 2;
     let lastPointerY = height / 2;
     let hasPointer = false;
 
-    // Deep Velvet Dark Ambient Blobs (Zero white/fog, pure rich cabernet & ruby glow)
+    // Ambient floating filaments for gentle living background depth
     const blobCount = isMobile ? 2 : 4;
     const ambientBlobs = Array.from({ length: blobCount }).map((_, i) => ({
       x: Math.random() * width,
       y: Math.random() * height,
-      vx: (Math.random() - 0.5) * 0.25,
-      vy: (Math.random() - 0.5) * 0.25,
-      radius: (isMobile ? 140 : 220) + Math.random() * 120,
+      vx: (Math.random() - 0.5) * 0.22,
+      vy: (Math.random() - 0.5) * 0.22,
+      radius: (isMobile ? 130 : 200) + Math.random() * 100,
       hue: 348 + (i % 2 === 0 ? 0 : 8),
-      alpha: 0.022 + Math.random() * 0.015,
+      alpha: 0.02 + Math.random() * 0.012,
       pulse: Math.random() * Math.PI * 2
     }));
 
@@ -87,37 +88,39 @@ export const RedFluidCanvas: React.FC = () => {
 
       const speed = Math.sqrt(vx * vx + vy * vy);
       const angle = Math.random() * Math.PI * 2;
-      const dist = Math.random() * (isClick ? 22 : 10);
-      const pSpeed = (Math.random() * 1.5 + 0.4) * (isClick ? 3.0 : Math.min(speed * 0.35, 3.8));
+      const dist = Math.random() * (isClick ? 18 : 7);
+      const pSpeed = (Math.random() * 1.3 + 0.3) * (isClick ? 2.8 : Math.min(speed * 0.32, 3.4));
 
-      // Deep Velvet Crimson & Blood Ruby Hues (Never white/washed out)
-      const hue = 346 + Math.random() * 14; // 346 - 360 (Rich velvet crimson)
+      // Velocity-reactive bioluminescence: fast sweeps glow with neon ruby energy
+      const isFast = speed > 6.0 || isClick;
+      const hue = isFast ? 352 + Math.random() * 10 : 346 + Math.random() * 12;
       const sat = 96 + Math.random() * 4;
-      const light = 44 + Math.random() * 10; // 44 - 54 (Deep saturated blood red)
+      const light = isFast ? 50 + Math.random() * 8 : 42 + Math.random() * 8;
 
+      // Perfectly balanced volumetric scale: dense silky ribbons without oversized fog
       const size = isClick
-        ? Math.random() * 50 + 26
-        : Math.random() * 38 + 16 + Math.min(speed * 2.2, 36);
+        ? Math.random() * 38 + 20
+        : Math.random() * 26 + 12 + Math.min(speed * 1.6, 22);
 
       particles.push({
         x: x + Math.cos(angle) * dist,
         y: y + Math.sin(angle) * dist,
-        vx: vx * 0.22 + Math.cos(angle) * pSpeed,
-        vy: vy * 0.22 + Math.sin(angle) * pSpeed,
-        size: size * 0.22,
+        vx: vx * 0.2 + Math.cos(angle) * pSpeed,
+        vy: vy * 0.2 + Math.sin(angle) * pSpeed,
+        size: size * 0.3,
         maxSize: size,
         colorHue: hue,
         colorSat: sat,
         colorLight: light,
-        alpha: isClick ? 0.65 : 0.48,
-        decay: isClick ? 0.009 + Math.random() * 0.005 : 0.011 + Math.random() * 0.006,
-        spin: (Math.random() - 0.5) * 0.05,
+        alpha: isClick ? 0.62 : 0.44,
+        decay: isClick ? 0.011 + Math.random() * 0.005 : 0.014 + Math.random() * 0.006,
+        spin: (Math.random() - 0.5) * 0.07,
         angle: Math.random() * Math.PI * 2,
-        curl: (Math.random() - 0.5) * 0.08
+        curl: (Math.random() - 0.5) * 0.09
       });
     };
 
-    // Sub-Pixel Path Interpolation: Creates continuous unbroken liquid ribbon
+    // Sub-Pixel Path Interpolation: Creates continuous unbroken silky liquid ribbon
     const handleMove = (clientX: number, clientY: number) => {
       if (!hasPointer) {
         lastPointerX = clientX;
@@ -130,11 +133,12 @@ export const RedFluidCanvas: React.FC = () => {
       const dy = clientY - lastPointerY;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      if (dist > 1.5) {
-        const vx = dx * 0.8;
-        const vy = dy * 0.8;
+      if (dist > 1.2) {
+        const vx = dx * 0.75;
+        const vy = dy * 0.75;
 
-        const stepDist = isMobile ? 10 : 7;
+        // Smooth interpolation step
+        const stepDist = isMobile ? 8 : 6;
         const steps = Math.max(1, Math.floor(dist / stepDist));
 
         for (let s = 1; s <= steps; s++) {
@@ -175,24 +179,33 @@ export const RedFluidCanvas: React.FC = () => {
       lastPointerY = clientY;
       hasPointer = true;
 
-      // Burst of volumetric liquid particles on click/tap
+      // Burst of fluid particles on click/tap
       for (let i = 0; i < (isMobile ? 10 : 16); i++) {
         createSplat(
           clientX,
           clientY,
-          (Math.random() - 0.5) * 4.5,
-          (Math.random() - 0.5) * 4.5,
+          (Math.random() - 0.5) * 4.2,
+          (Math.random() - 0.5) * 4.2,
           true
         );
       }
 
-      // Smooth expanding shockwave pressure ripple
+      // Dual-ring expanding shockwave pressure ripple
       shockwaves.push({
         x: clientX,
         y: clientY,
-        radius: 8,
-        maxRadius: (isMobile ? 130 : 180) + Math.random() * 40,
-        alpha: 0.75
+        radius: 6,
+        maxRadius: (isMobile ? 120 : 170) + Math.random() * 40,
+        alpha: 0.8,
+        ringWidth: isMobile ? 2.0 : 2.5
+      });
+      shockwaves.push({
+        x: clientX,
+        y: clientY,
+        radius: 2,
+        maxRadius: (isMobile ? 80 : 110) + Math.random() * 25,
+        alpha: 0.5,
+        ringWidth: 1.5
       });
     };
 
@@ -202,24 +215,24 @@ export const RedFluidCanvas: React.FC = () => {
     window.addEventListener('touchstart', handlePointerDown, { passive: true });
 
     const render = () => {
-      // Inky Pitch-Black backdrop trail (Zero fog or milky residue)
-      ctx.fillStyle = 'rgba(4, 6, 10, 0.22)';
+      // Inky Pitch-Black dark backdrop trail (Pristine contrast)
+      ctx.fillStyle = 'rgba(4, 6, 10, 0.24)';
       ctx.fillRect(0, 0, width, height);
 
-      // 1. Render Deep Velvet Ambient Crimson Glows (Low opacity, high contrast)
+      // 1. Ambient Background Drifting Glows (Subtle, organic depth)
       for (let b = 0; b < ambientBlobs.length; b++) {
         const blob = ambientBlobs[b];
         blob.x += blob.vx;
         blob.y += blob.vy;
-        blob.pulse += 0.016;
+        blob.pulse += 0.015;
 
         if (blob.x < -blob.radius) blob.x = width + blob.radius;
         if (blob.x > width + blob.radius) blob.x = -blob.radius;
         if (blob.y < -blob.radius) blob.y = height + blob.radius;
         if (blob.y > height + blob.radius) blob.y = -blob.radius;
 
-        const currentRadius = blob.radius + Math.sin(blob.pulse) * 24;
-        const currentAlpha = blob.alpha + Math.sin(blob.pulse * 0.8) * 0.008;
+        const currentRadius = blob.radius + Math.sin(blob.pulse) * 22;
+        const currentAlpha = blob.alpha + Math.sin(blob.pulse * 0.8) * 0.006;
 
         const grad = ctx.createRadialGradient(
           blob.x,
@@ -230,7 +243,7 @@ export const RedFluidCanvas: React.FC = () => {
           currentRadius
         );
         grad.addColorStop(0, `hsla(${blob.hue}, 95%, 48%, ${currentAlpha})`);
-        grad.addColorStop(0.5, `hsla(${blob.hue}, 90%, 30%, ${currentAlpha * 0.35})`);
+        grad.addColorStop(0.5, `hsla(${blob.hue}, 90%, 28%, ${currentAlpha * 0.3})`);
         grad.addColorStop(1, 'transparent');
 
         ctx.fillStyle = grad;
@@ -245,35 +258,35 @@ export const RedFluidCanvas: React.FC = () => {
       // 2. Render Shockwave Pressure Rings
       for (let i = shockwaves.length - 1; i >= 0; i--) {
         const wave = shockwaves[i];
-        wave.radius += (wave.maxRadius - wave.radius) * 0.09;
-        wave.alpha -= 0.024;
+        wave.radius += (wave.maxRadius - wave.radius) * 0.095;
+        wave.alpha -= 0.026;
 
         if (wave.alpha <= 0 || wave.radius >= wave.maxRadius - 2) {
           shockwaves.splice(i, 1);
           continue;
         }
 
-        ctx.lineWidth = isMobile ? 2.0 : 2.5;
-        ctx.strokeStyle = `hsla(350, 100%, 60%, ${wave.alpha})`;
+        ctx.lineWidth = wave.ringWidth;
+        ctx.strokeStyle = `hsla(350, 100%, 62%, ${wave.alpha})`;
         ctx.beginPath();
         ctx.arc(wave.x, wave.y, wave.radius, 0, Math.PI * 2);
         ctx.stroke();
       }
 
-      // 3. Render Rich Volumetric Liquid Crimson Smoke Splats
+      // 3. Render Perfectly Balanced Volumetric Fluid Smoke Ribbons
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
 
-        // Vorticity curl physics
+        // Vorticity curl eddy physics
         p.vx += Math.cos(p.angle) * p.curl;
         p.vy += Math.sin(p.angle) * p.curl;
-        p.vx *= 0.95;
-        p.vy *= 0.95;
+        p.vx *= 0.94;
+        p.vy *= 0.94;
         p.x += p.vx;
         p.y += p.vy;
 
-        p.angle += p.spin;
-        p.size += (p.maxSize - p.size) * 0.12;
+        p.angle += p.spin * 1.5;
+        p.size += (p.maxSize - p.size) * 0.14;
         p.alpha -= p.decay;
 
         if (p.alpha <= 0 || p.size <= 0.5) {
@@ -281,7 +294,7 @@ export const RedFluidCanvas: React.FC = () => {
           continue;
         }
 
-        // 4-Stop Deep Saturated Volumetric Gradient (Pure velvet ruby smoke, zero white fog)
+        // Multi-Stop Volumetric Glow: Luminous Core -> Velvet Crimson -> Dark Cabernet
         const radGrad = ctx.createRadialGradient(
           p.x,
           p.y,
@@ -293,15 +306,15 @@ export const RedFluidCanvas: React.FC = () => {
 
         radGrad.addColorStop(
           0,
-          `hsla(${p.colorHue}, ${p.colorSat}%, ${p.colorLight + 6}%, ${p.alpha * 0.92})`
+          `hsla(${p.colorHue}, ${p.colorSat}%, ${p.colorLight + 8}%, ${p.alpha * 0.95})`
         );
         radGrad.addColorStop(
-          0.35,
+          0.3,
           `hsla(${p.colorHue}, ${p.colorSat}%, ${p.colorLight}%, ${p.alpha * 0.55})`
         );
         radGrad.addColorStop(
-          0.7,
-          `hsla(${p.colorHue - 6}, ${p.colorSat}%, ${p.colorLight - 14}%, ${p.alpha * 0.2})`
+          0.65,
+          `hsla(${p.colorHue - 6}, ${p.colorSat}%, ${p.colorLight - 14}%, ${p.alpha * 0.18})`
         );
         radGrad.addColorStop(1, 'transparent');
 
@@ -333,7 +346,7 @@ export const RedFluidCanvas: React.FC = () => {
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none z-0 w-full h-full"
       style={{
-        opacity: 0.94,
+        opacity: 0.95,
         mixBlendMode: 'screen',
         willChange: 'transform'
       }}
