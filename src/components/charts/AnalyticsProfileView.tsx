@@ -144,6 +144,8 @@ export const AnalyticsProfileView: React.FC = () => {
               <RadarMetricChart />
             </div>
           </div>
+          {/* 10-Year Destiny Forecast & Interlinked Sliders */}
+          <MonteCarloOracleView />
         </div>
       )}
 
