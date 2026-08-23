@@ -1,8 +1,9 @@
 // Instant Zero-Latency Hans Zimmer "Cornfield Chase" 40Hz Gamma Audio Engine
 // Pre-decodes MP3 into Web Audio RAM buffer for instant 0ms playback on first interaction
-// Zero white noise, zero buffering delay, gapless loop, pure Hans Zimmer master audio.
+// Default is ON (unmuted), drops directly at 23.5s peak theme.
 
 const CORNFIELD_CHASE_SRC = '/audio/interstellar-cornfield.mp3';
+const START_OFFSET_SECONDS = 23.5; // Starts directly at peak intensity
 const STORAGE_KEY_MUTED = 'titan_cornfield_muted';
 const STORAGE_KEY_VOLUME = 'titan_cornfield_volume';
 
@@ -33,10 +34,10 @@ export class GammaAudioEngine {
         this.currentVolume = parseFloat(storedVol) || 0.35;
       }
 
-      // Preload audio buffer immediately in the background on app start
+      // Preload audio buffer immediately into RAM on app load
       this.preloadAudio();
 
-      // Listen for first interaction anywhere on the website to auto-engage instant music
+      // Default is ON: Auto-engage on first interaction anywhere on the website
       const isExplicitlyMuted = localStorage.getItem(STORAGE_KEY_MUTED) === 'true';
       if (!isExplicitlyMuted) {
         this.setupAutoPlayOnFirstInteraction();
@@ -109,6 +110,7 @@ export class GammaAudioEngine {
       window.removeEventListener('click', handleFirstGesture);
       window.removeEventListener('keydown', handleFirstGesture);
       window.removeEventListener('touchstart', handleFirstGesture);
+      window.removeEventListener('mousemove', handleFirstGesture);
 
       if (!this.isPlaying && localStorage.getItem(STORAGE_KEY_MUTED) !== 'true') {
         this.start();
@@ -118,10 +120,11 @@ export class GammaAudioEngine {
     window.addEventListener('click', handleFirstGesture, { once: true, passive: true });
     window.addEventListener('keydown', handleFirstGesture, { once: true, passive: true });
     window.addEventListener('touchstart', handleFirstGesture, { once: true, passive: true });
+    window.addEventListener('mousemove', handleFirstGesture, { once: true, passive: true });
   }
 
   /**
-   * Starts playing Cornfield Chase immediately with zero noise & zero delay
+   * Starts playing Cornfield Chase immediately at 23.5s with zero noise & zero delay
    */
   public async start(): Promise<boolean> {
     if (this.isPlaying) return true;
@@ -143,18 +146,17 @@ export class GammaAudioEngine {
       // Master Gain for volume
       this.masterGain = this.ctx.createGain();
       this.masterGain.gain.setValueAtTime(0, now);
-      this.masterGain.gain.linearRampToValueAtTime(this.currentVolume, now + 0.3); // Instant, smooth 300ms fade
+      this.masterGain.gain.linearRampToValueAtTime(this.currentVolume, now + 0.25); // Instant 250ms smooth ramp
       this.masterGain.connect(this.ctx.destination);
 
-      // 1. Play Real Hans Zimmer Master Audio from RAM (Starts immediately at 21.5s peak organ crescendo!)
-      const START_OFFSET = 21.5;
+      // 1. Play Real Hans Zimmer Master Audio from RAM (Starts immediately at 23.5s peak crescendo!)
       this.currentSourceNode = this.ctx.createBufferSource();
       this.currentSourceNode.buffer = this.audioBuffer;
       this.currentSourceNode.loop = true;
-      this.currentSourceNode.loopStart = START_OFFSET;
+      this.currentSourceNode.loopStart = START_OFFSET_SECONDS;
       this.currentSourceNode.loopEnd = this.audioBuffer.duration;
       this.currentSourceNode.connect(this.masterGain);
-      this.currentSourceNode.start(now, START_OFFSET);
+      this.currentSourceNode.start(now, START_OFFSET_SECONDS);
 
       // 2. Add subtle 40Hz sub-bass harmonic foundation beneath the church organ
       this.subGain = this.ctx.createGain();
@@ -221,7 +223,7 @@ export class GammaAudioEngine {
       this.fallbackAudio.loop = true;
     }
     this.fallbackAudio.volume = this.currentVolume;
-    this.fallbackAudio.currentTime = 21.5;
+    this.fallbackAudio.currentTime = START_OFFSET_SECONDS;
     this.fallbackAudio.play().catch(() => {});
     this.isPlaying = true;
     localStorage.setItem(STORAGE_KEY_MUTED, 'false');
@@ -239,7 +241,7 @@ export class GammaAudioEngine {
       if (this.ctx && this.masterGain) {
         const now = this.ctx.currentTime;
         this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now);
-        this.masterGain.gain.linearRampToValueAtTime(0.0001, now + 0.3);
+        this.masterGain.gain.linearRampToValueAtTime(0.0001, now + 0.25);
       }
 
       if (this.fallbackAudio) {
@@ -270,7 +272,7 @@ export class GammaAudioEngine {
         this.isPlaying = false;
         localStorage.setItem(STORAGE_KEY_MUTED, 'true');
         this.notify();
-      }, 320);
+      }, 260);
     } catch (err) {
       this.isPlaying = false;
       this.notify();
