@@ -18,6 +18,7 @@ import { useTitan } from '../../context/TitanContext';
 import { CountUpNumber } from '../effects/CountUpNumber';
 import { DailyStoryReelModal } from '../modals/DailyStoryReelModal';
 import { MysteryLootModal, isMysteryDropClaimedToday } from '../modals/MysteryLootModal';
+import { GammaAudioControlPill } from '../audio/GammaAudioControlPill';
 
 export const HeaderHUD: React.FC = () => {
   const {
@@ -93,6 +94,9 @@ export const HeaderHUD: React.FC = () => {
                 <CountUpNumber end={profile.xp} decimals={0} suffix=" XP" />
               </span>
             </div>
+
+            {/* 40Hz Gamma Focus Audio Control Pill */}
+            <GammaAudioControlPill />
 
             {/* 3D Holographic ID Card */}
             <button
