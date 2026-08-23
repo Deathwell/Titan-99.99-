@@ -33,70 +33,259 @@ export interface ExerciseGuide {
 }
 
 export const EXERCISE_GUIDE_DB: Record<string, ExerciseGuide> = {
-  // 1. SPINE DECOMPRESSION & PARASYMPATHETIC RESET
-  'spine-decompression': {
-    id: 'spine-decompression',
-    name: 'Spine Decompression Hang + 4-7-8 Parasympathetic Reset',
-    aliases: ['spine decompression', 'decompression', 'parasympathetic', 'cooldown', '4-7-8', 'hang'],
-    category: 'Spinal Disc Imbibition & Vagus Nerve Recovery',
-    targetMuscles: ['Intervertebral Discs (L1–L5, T1–T12)', 'Psoas Major', 'Thoracolumbar Fascia'],
-    secondaryMuscles: ['Latissimus Dorsi (Passive Stretch)', 'Forearm Flexors', 'Diaphragm'],
-    coachAttribution: 'Dr. Andrew Huberman & Dr. Peter Attia',
+  // 1. CABLE LATERAL RAISE
+  'cable-lateral-raise': {
+    id: 'cable-lateral-raise',
+    name: 'Lean-Away Cable Lateral Raise (Scapular Plane)',
+    aliases: ['cable lateral raise', 'cable lateral', 'lean-away lateral raise', 'cable side delt'],
+    category: 'Lateral Deltoid Isolation (Continuous Tension Arc)',
+    targetMuscles: ['Lateral Deltoids (Shoulder Cap Silhouette)'],
+    secondaryMuscles: ['Anterior/Posterior Deltoids', 'Supraspinatus', 'Upper Trapezius'],
+    coachAttribution: 'Jeff Nippard (Evidence-Based Biomechanics)',
     difficulty: 'Beginner',
-    youtubeQuery: 'peter attia dead hang spine decompression benefits',
-    curatedVideoUrl: 'https://www.youtube.com/results?search_query=peter+attia+dead+hang+spinal+decompression',
-    videoChannelName: 'Dr. Peter Attia / Huberman Lab',
-    keyAngles: '180° Full Overhead Passive Hang • 4s Inhale : 7s Hold : 8s Exhale',
+    youtubeQuery: 'jeff nippard cable lateral raise science technique',
+    curatedVideoUrl: 'https://www.youtube.com/results?search_query=jeff+nippard+cable+lateral+raise+technique',
+    videoChannelName: 'Jeff Nippard / Scientific Lifting',
+    keyAngles: '15°–20° Lean Away • 30° Scapular Plane Arc • Cable at Wrist/Hip Height',
     movementPhases: [
       {
-        phaseName: '1. Passive Hang Grip & Release',
-        phaseTiming: 'Setup (0:00–1:00)',
-        description: 'Grip overhead pull-up bar, let feet hover or lightly rest on floor. Fully relax pelvic floor and shoulders.',
-        focusCue: 'Release all muscular tension in lower back, allow gravity to traction the spine.'
+        phaseName: '1. Lean-Away Anchor',
+        phaseTiming: 'Setup',
+        description: 'Set cable pulley at wrist height. Lean torso 15°–20° away from the machine to eliminate dead-zone at the bottom.',
+        focusCue: 'Constant tension right from the bottom of the movement.'
       },
       {
-        phaseName: '2. 4-7-8 Diaphragmatic Breath',
-        phaseTiming: 'Breath Cycles (1:00–3:00)',
-        description: 'Inhale through nose for 4 seconds, hold oxygen for 7 seconds, exhale slowly through mouth for 8 seconds.',
-        focusCue: 'Long slow exhale stimulates the vagus nerve to down-regulate heart rate and lower cortisol.'
+        phaseName: '2. Scapular Plane Raise',
+        phaseTiming: '1.0s Concentric',
+        description: 'Raise cable in the scapular plane (roughly 20°–30° forward from your sides), leading with elbows.',
+        focusCue: 'Push your fist outward toward the walls rather than lifting up.'
       },
       {
-        phaseName: '3. 90/90 Supine Pelvic Neutral',
-        phaseTiming: 'Restorative Floor (3:00–5:00)',
-        description: 'Lie flat on back with calves resting on a bench at 90° hip and knee angles.',
-        focusCue: 'Flatten lower back flush to floor, feel intervertebral discs hydrate with fluid.'
+        phaseName: '3. 1-Second Shoulder Peak',
+        phaseTiming: '1.0s Peak Squeeze',
+        description: 'Pause at shoulder height with pinky level with or slightly higher than thumb.',
+        focusCue: 'Depress traps; do not let shoulder blades shrug upward into ears.'
       },
       {
-        phaseName: '4. Parasympathetic Transition',
-        phaseTiming: 'Final Reset',
-        description: 'Slow standing transition, roll shoulders back, establish tall posture.',
-        focusCue: 'Feel 1 inch taller and fully decompressed after the workout.'
+        phaseName: '4. 2-Second Resisted Negative',
+        phaseTiming: '2.0s Eccentric',
+        description: 'Lower smoothly under control against the cable stack resistance.',
+        focusCue: 'Resist the weight pulling you back down to maximize mechanical damage.'
       }
     ],
     setupSteps: [
-      'Find an overhead bar or supportive doorframe where you can hang with relaxed shoulders.',
-      'Allow feet to remain lightly touching the floor if needed to remove excessive shoulder strain.',
-      'Relax abdominal wall and lumbar musculature completely.'
+      'Set the single cable pulley to wrist or knee height.',
+      'Grip the machine with non-working hand and lean torso 15°–20° away.',
+      'Hold handle with a slight micro-bend in the elbow.'
     ],
     executionSteps: [
-      'Hang passively for 45–60 seconds, feeling the space between your lumbar vertebrae expand.',
-      'Perform 4-7-8 box breathing: Inhale 4s through nose, hold 7s, exhale 8s through pursed lips.',
-      'Transition to the floor in a 90/90 supine posture (calves on a bench or chair).',
-      'Rest for 2–3 minutes to allow fluid to re-enter avascular spinal discs.'
+      'Raise arm outward in the scapular plane (30° forward of coronal plane).',
+      'Lead with your elbow, raising until your upper arm is parallel to the floor.',
+      'Hold the peak contraction for 1 second at the top.',
+      'Lower smoothly under a 2-second negative without resting at the bottom.'
     ],
     commonMistakes: [
-      'Engaging shoulder muscles or tensing the neck during the hang (must be completely passive).',
-      'Hyperventilating or taking shallow chest breaths instead of deep diaphragmatic breaths.',
-      'Jumping down aggressively from the bar (defeats spinal decompression).'
+      'Shrugging traps upward to heave the weight.',
+      'Raising straight out to the side in the coronal plane, which pinches the subacromial space.',
+      'Using momentum or swinging hips.'
     ],
     proFormCues: [
-      '💡 "Let gravity pull your pelvis down toward the center of the earth like a heavy pendulum."',
-      '💡 "The 8-second exhale tells your nervous system that the battle is over and recovery has begun."'
+      '💡 "Think about pushing the walls away from your sides rather than lifting the weight up."',
+      '💡 "Pour out a pitcher of water slightly with your wrist at the top of the raise."'
     ],
-    biomechanicsScience: 'Heavy lifting compresses spinal discs by 15–20%. Passive traction induces imbibition—drawing nutrient-rich synovial fluid back into disc matrices.'
+    biomechanicsScience: 'Cables provide continuous 100% resistance through the entire range of motion, whereas dumbbells produce almost 0% torque at the bottom.'
   },
 
-  // 2. INCLINE BENCH PRESS (30° CLAVICULAR ANGLE)
+  // 2. DUMBBELL LATERAL RAISE
+  'db-lateral-raise': {
+    id: 'db-lateral-raise',
+    name: 'Standing Dumbbell Lateral Raise (Pinkies High)',
+    aliases: ['standing dumbbell lateral raises', 'dumbbell lateral raise', 'db lateral raise', 'side raises'],
+    category: 'Shoulder Isolation & Silhouette Width',
+    targetMuscles: ['Lateral Deltoids (Medial Head)'],
+    secondaryMuscles: ['Supraspinatus', 'Anterior Deltoid', 'Trapezius'],
+    coachAttribution: 'Dr. Mike Israetel & Jeff Nippard',
+    difficulty: 'Beginner',
+    youtubeQuery: 'dr mike israetel dumbbell lateral raise form',
+    curatedVideoUrl: 'https://www.youtube.com/results?search_query=renaissance+periodization+dumbbell+lateral+raise',
+    videoChannelName: 'Renaissance Periodization / Dr. Mike Israetel',
+    keyAngles: '15° Slight Forward Torso Pitch • 30° Scapular Plane Path',
+    movementPhases: [
+      {
+        phaseName: '1. Torso Pitch & Grip',
+        phaseTiming: 'Setup',
+        description: 'Stand with feet shoulder-width, micro-bend in knees, torso pitched forward 15° at hips.',
+        focusCue: 'Neutral grip with dumbbells in front of thighs, not at sides.'
+      },
+      {
+        phaseName: '2. Elbow-Led Abduction',
+        phaseTiming: '1.0s Concentric',
+        description: 'Raise dumbbells upward and outward in the scapular plane, leading with elbows.',
+        focusCue: 'Keep knuckles pointed forward, pinkies level with index fingers.'
+      },
+      {
+        phaseName: '3. 1-Second Parallel Hold',
+        phaseTiming: '1.0s Iso-Hold',
+        description: 'Pause at shoulder height. Feel intense lateral cap contraction.',
+        focusCue: 'Do not raise above shoulder plane to avoid trap takeover.'
+      },
+      {
+        phaseName: '4. 2-Second Eccentric Control',
+        phaseTiming: '2.0s Eccentric',
+        description: 'Lower dumbbells smoothly, stopping just before thighs to maintain active tension.',
+        focusCue: 'Resist gravity all the way down.'
+      }
+    ],
+    setupSteps: [
+      'Select light dumbbells (hypertrophy is achieved through strict form, not heavy swinging).',
+      'Stand with a slight 15° forward torso pitch at hips.',
+      'Keep a soft micro-bend in your elbows.'
+    ],
+    executionSteps: [
+      'Sweep dumbbells outward and forward 30° in the scapular plane.',
+      'Raise until elbows reach shoulder level, pause for 1 second.',
+      'Lower weights with a strict 2-second negative.',
+      'Stop 2 inches before dumbbells touch thighs and immediately begin the next rep.'
+    ],
+    commonMistakes: [
+      'Swinging hips or knees to bounce the weight up.',
+      'Raising arms too high above shoulders (transfers load to upper traps).',
+      'Flaring thumbs upward (transfers load to anterior deltoid).'
+    ],
+    proFormCues: [
+      '💡 "Imagine scraping your knuckles against the walls on both sides of the room."',
+      '💡 "Keep your shoulder blades depressed like you are tucking them into your back pockets."'
+    ],
+    biomechanicsScience: 'Pitching the torso forward 15° perfectly aligns the lateral deltoid fibers with the downward line of gravity.'
+  },
+
+  // 3. INCLINE BICEP CURLS
+  'incline-bicep-curl': {
+    id: 'incline-bicep-curl',
+    name: 'Incline Dumbbell Biceps Curls (Deep Stretch Focus)',
+    aliases: ['incline dumbbell biceps curls', 'incline bicep curl', 'incline curls', 'incline db curls'],
+    category: 'Lengthened-State Biceps Hypertrophy',
+    targetMuscles: ['Biceps Brachii (Long Head Outer Peak)'],
+    secondaryMuscles: ['Brachialis', 'Brachioradialis', 'Coracobrachialis'],
+    coachAttribution: 'Dr. Mike Israetel & Jeff Nippard',
+    difficulty: 'Intermediate',
+    youtubeQuery: 'jeff nippard incline dumbbell curl science technique',
+    curatedVideoUrl: 'https://www.youtube.com/results?search_query=jeff+nippard+incline+dumbbell+curl+technique',
+    videoChannelName: 'Jeff Nippard / Renaissance Periodization',
+    keyAngles: '45°–60° Bench Incline • Shoulder in Full Extension Behind Torso',
+    movementPhases: [
+      {
+        phaseName: '1. Shoulder Extension Hang',
+        phaseTiming: 'Setup',
+        description: 'Sit back on 45° incline bench, let arms hang completely vertical behind your torso.',
+        focusCue: 'Pin elbows behind your ribcage and freeze them in place.'
+      },
+      {
+        phaseName: '2. Supinating Concentric Arc',
+        phaseTiming: '1.0s Concentric',
+        description: 'Curl dumbbells up while turning wrists outward (supinating) so pinkies turn toward ceiling.',
+        focusCue: 'Elbows must stay locked behind torso; do not swing them forward.'
+      },
+      {
+        phaseName: '3. 1-Second Biceps Squeeze',
+        phaseTiming: '1.0s Peak Squeeze',
+        description: 'Crush biceps peak hard at the top near shoulders.',
+        focusCue: 'Maximum supination at top.'
+      },
+      {
+        phaseName: '4. 3-Second Lengthened Negative',
+        phaseTiming: '3.0s Eccentric',
+        description: 'Lower weights under strict 3-second control into full passive elbow extension.',
+        focusCue: 'Feel profound passive stretch across the long head of the biceps.'
+      }
+    ],
+    setupSteps: [
+      'Adjust bench to a 45°–60° angle.',
+      'Sit back with head and shoulders firmly pressed against the pad.',
+      'Hold dumbbells with arms fully straight, hanging behind torso line.'
+    ],
+    executionSteps: [
+      'Curl dumbbells upward while supinating wrists (turn pinkies up toward ceiling).',
+      'Pause for 1 second at the top without allowing elbows to drift forward.',
+      'Lower weights with a strict 3-second negative all the way to complete arm lockout.',
+      'Pause for 1 second in the deep stretch before starting the next rep.'
+    ],
+    commonMistakes: [
+      'Swinging elbows forward to engage front deltoids (removes biceps tension).',
+      'Failing to reach full elbow extension at the bottom (misses stretch-mediated hypertrophy).',
+      'Lifting head off the bench pad.'
+    ],
+    proFormCues: [
+      '💡 "Freeze your elbows in space behind your ribcage like they are bolted to the bench."',
+      '💡 "Turn your pinky fingers toward your shoulders at the very top."'
+    ],
+    biomechanicsScience: 'Placing the shoulder in extension pre-stretches the long head of the biceps across both the shoulder and elbow joints, doubling titin-mediated growth.'
+  },
+
+  // 4. TRICEPS ROPE EXTENSION
+  'triceps-pressdown': {
+    id: 'triceps-pressdown',
+    name: 'Overhead Cable / Rope Triceps Extension',
+    aliases: ['triceps rope pressdown', 'overhead rope triceps extension', 'triceps pressdown', 'triceps extension', 'skull crusher'],
+    category: 'Lengthened Triceps Long Head Isolation',
+    targetMuscles: ['Triceps Brachii (Long Head & Lateral Head)'],
+    secondaryMuscles: ['Anconeus', 'Forearm Stabilizers'],
+    coachAttribution: 'Jeff Nippard & Dr. Mike Israetel',
+    difficulty: 'Beginner',
+    youtubeQuery: 'jeff nippard overhead triceps extension science form',
+    curatedVideoUrl: 'https://www.youtube.com/results?search_query=jeff+nippard+overhead+cable+triceps+extension',
+    videoChannelName: 'Jeff Nippard / Scientific Lifting',
+    keyAngles: 'Elbows Stacked Overhead • Full 90°+ Forearm Flexion at Stretch',
+    movementPhases: [
+      {
+        phaseName: '1. Overhead Cable Setup',
+        phaseTiming: 'Setup',
+        description: 'Set cable high or mid height, lean forward with split stance, elbows pointing forward.',
+        focusCue: 'Lock elbows next to your ears and keep them motionless.'
+      },
+      {
+        phaseName: '2. Deep Triceps Stretch',
+        phaseTiming: '3.0s Eccentric',
+        description: 'Allow hands to travel behind head until forearms touch biceps in deep stretch.',
+        focusCue: 'Feel intense elongation through the long head of the triceps.'
+      },
+      {
+        phaseName: '3. Explosive Lockout Drive',
+        phaseTiming: '1.0s Concentric',
+        description: 'Extend forearms forward and flare rope outward at full extension.',
+        focusCue: 'Lock elbows straight and spread the rope handles apart.'
+      },
+      {
+        phaseName: '4. 1-Second Peak Flex',
+        phaseTiming: '1.0s Squeeze',
+        description: 'Squeeze triceps horseshoe hard at full straight lockout.',
+        focusCue: 'Pure elbow extension without moving shoulder joints.'
+      }
+    ],
+    setupSteps: [
+      'Attach a rope to a cable pulley at chest or head height.',
+      'Take a split stance and pitch torso forward 30°–45°.',
+      'Bring elbows forward next to ears with arms bent behind head.'
+    ],
+    executionSteps: [
+      'Lower weights behind head until triceps are in a deep stretch (forearms past 90°).',
+      'Extend arms explosively straight forward along the line of the cable.',
+      'Spread the ends of the rope apart at full lockout to maximize peak contraction.',
+      'Lower smoothly under a 3-second negative.'
+    ],
+    commonMistakes: [
+      'Moving upper arms back and forth (uses lats instead of triceps).',
+      'Cutting the stretch short at 90 degrees.',
+      'Flaring elbows excessively wide.'
+    ],
+    proFormCues: [
+      '💡 "Only your forearms move; your upper arms are frozen pillars next to your head."',
+      '💡 "Rip the rope handles apart at full extension."'
+    ],
+    biomechanicsScience: 'The long head of the triceps originates on the scapula; overhead arm positioning stretches it to its optimal sarcomere operating length.'
+  },
+
+  // 5. INCLINE BENCH PRESS (30° CLAVICULAR ANGLE)
   'incline-bench-press': {
     id: 'incline-bench-press',
     name: 'Incline Bench Press (30° Clavicular Angle)',
@@ -159,7 +348,7 @@ export const EXERCISE_GUIDE_DB: Record<string, ExerciseGuide> = {
     biomechanicsScience: 'Kinesiology fiber mapping confirms a 30-degree incline maximizes upper pectoral fiber recruitment while reducing anterior shoulder joint sheer.'
   },
 
-  // 3. BARBELL HIP THRUST
+  // 6. BARBELL HIP THRUST
   'barbell-hip-thrust': {
     id: 'barbell-hip-thrust',
     name: 'Barbell Hip Thrust (2-Sec Top Lockout)',
@@ -222,7 +411,7 @@ export const EXERCISE_GUIDE_DB: Record<string, ExerciseGuide> = {
     biomechanicsScience: 'Electromyography (EMG) studies by Contreras show horizontal hip extension achieves 200% greater peak gluteus maximus activation than vertical squats.'
   },
 
-  // 4. ROMANIAN DEADLIFT (RDL)
+  // 7. ROMANIAN DEADLIFT (RDL)
   'romanian-deadlift': {
     id: 'romanian-deadlift',
     name: 'Romanian Deadlift (RDL) with Deep Stretch Focus',
@@ -285,7 +474,7 @@ export const EXERCISE_GUIDE_DB: Record<string, ExerciseGuide> = {
     biomechanicsScience: 'Loading the hamstring and glute fibers under tension in their lengthened state triggers stretch-mediated hypertrophy (titin kinase phosphorylation).'
   },
 
-  // 5. BULGARIAN SPLIT SQUAT
+  // 8. BULGARIAN SPLIT SQUAT
   'bulgarian-split-squat': {
     id: 'bulgarian-split-squat',
     name: 'Bulgarian Split Squat (30° Torso Forward Pitch)',
@@ -348,7 +537,7 @@ export const EXERCISE_GUIDE_DB: Record<string, ExerciseGuide> = {
     biomechanicsScience: 'A 30° forward torso lean increases the hip moment arm by 40%, channeling maximum mechanical tension directly into the gluteus maximus.'
   },
 
-  // 6. PISTOL SQUATS & GOBLET SQUATS
+  // 9. PISTOL SQUATS
   'pistol-squat': {
     id: 'pistol-squat',
     name: 'Pistol Squat / Single-Leg Box Squat',
@@ -411,7 +600,7 @@ export const EXERCISE_GUIDE_DB: Record<string, ExerciseGuide> = {
     biomechanicsScience: 'Unilateral single-leg squats double the effective relative load on the working leg while eliminating compressive spinal axial shear forces.'
   },
 
-  // 7. CHEST-SUPPORTED ROWS & LAT ROWS
+  // 10. CHEST-SUPPORTED ROW
   'chest-supported-row': {
     id: 'chest-supported-row',
     name: 'Chest-Supported Incline T-Bar / Cable Row',
@@ -474,7 +663,7 @@ export const EXERCISE_GUIDE_DB: Record<string, ExerciseGuide> = {
     biomechanicsScience: 'Supporting the chest eliminates spinal erector fatigue, allowing 100% neuromuscular output to be directed into the lats and rhomboids.'
   },
 
-  // 8. STRICT DEAD-HANG PULL-UPS & LAT PULLDOWNS
+  // 11. STRICT DEAD-HANG PULL-UPS
   'pull-up': {
     id: 'pull-up',
     name: 'Strict Dead-Hang Pull-Up / Lat Pulldown',
@@ -537,7 +726,7 @@ export const EXERCISE_GUIDE_DB: Record<string, ExerciseGuide> = {
     biomechanicsScience: 'Full dead-hang initiation recruits lower lat fibers at maximal passive stretch before motor unit firing.'
   },
 
-  // 9. DEFICIT PUSH-UPS & CLAP PUSH-UPS
+  // 12. DEFICIT PUSH-UPS
   'deficit-push-up': {
     id: 'deficit-push-up',
     name: 'Deficit Tempo Push-Up (3s Negative + Stretch Pause)',
@@ -600,133 +789,7 @@ export const EXERCISE_GUIDE_DB: Record<string, ExerciseGuide> = {
     biomechanicsScience: 'Deficit depth increases the active range of motion by 30%, triggering stretch-mediated hypertrophy without weights.'
   },
 
-  // 10. LATERAL RAISES & HIP ABDUCTIONS
-  'lateral-raise': {
-    id: 'lateral-raise',
-    name: 'Lean-Away Cable / DB Lateral Raise + Hip Abduction',
-    aliases: ['lateral raise', 'cable lateral raise', 'side delt raise', 'dumbbell lateral raise', 'standing dumbbell lateral raises', 'cable / db lean-away lateral raises', 'seated hip abductions', 'cable kickbacks'],
-    category: 'Shoulder Isolation & Aesthetic Silhouette',
-    targetMuscles: ['Lateral Deltoids (Shoulder Cap)', 'Gluteus Medius (Upper Shelf)'],
-    secondaryMuscles: ['Anterior/Posterior Deltoids', 'Supraspinatus', 'Trapezius'],
-    coachAttribution: 'Jeff Nippard & Lauren Simpson',
-    difficulty: 'Beginner',
-    youtubeQuery: 'jeff nippard cable lateral raise science technique',
-    curatedVideoUrl: 'https://www.youtube.com/results?search_query=jeff+nippard+cable+lateral+raise+technique',
-    videoChannelName: 'Jeff Nippard / Scientific Lifting',
-    keyAngles: '15°–20° Lean Away • 30° Scapular Plane Path • Lead with Elbows',
-    movementPhases: [
-      {
-        phaseName: '1. Lean-Away Anchor',
-        phaseTiming: 'Setup',
-        description: 'Hold cable at wrist height, lean torso 15° away from anchor, micro-bend in elbow.',
-        focusCue: 'Eliminates dead zone at bottom for 100% continuous tension.'
-      },
-      {
-        phaseName: '2. Scapular Plane Raise',
-        phaseTiming: '1.0s Concentric',
-        description: 'Raise weight 30° in front of coronal plane (scapular plane), leading with elbows.',
-        focusCue: 'Think about pushing the walls away rather than lifting weight up.'
-      },
-      {
-        phaseName: '3. 1-Second Shoulder Cap Squeeze',
-        phaseTiming: '1.0s Iso-Hold',
-        description: 'Hold at shoulder height with pinkies slightly above thumbs.',
-        focusCue: 'Lock shoulder blades down, do not let upper traps shrug up.'
-      },
-      {
-        phaseName: '4. Controlled 2-Second Lowering',
-        phaseTiming: '2.0s Eccentric',
-        description: 'Lower under strict control without dropping the tension.',
-        focusCue: 'Resist gravity on the descent to maximize titin damage.'
-      }
-    ],
-    setupSteps: [
-      'Hold dumbbell or cable handle at your side with handle set at wrist/hip height.',
-      'Lean your torso slightly away (15°–20°) from the anchor point or bench.',
-      'Keep a micro-bend in the elbows.'
-    ],
-    executionSteps: [
-      'Raise the weight outward in the scapular plane (roughly 20°–30° in front of your body line).',
-      'Lead with your elbows and keep pinkies slightly higher than thumbs at peak.',
-      'Raise until arm is parallel to floor (shoulder height), pause for 1 second.',
-      'Lower smoothly under a 2-second negative.'
-    ],
-    commonMistakes: [
-      'Shrugging traps upward to heave the weight up (use lighter weight).',
-      'Raising weights purely to the side in the coronal plane, which pinches the rotator cuff.',
-      'Swinging torso for momentum.'
-    ],
-    proFormCues: [
-      '💡 "Pour out a pitcher of water at the top of the raise."',
-      '💡 "Think about pushing the walls away to your sides rather than lifting the weight up."'
-    ],
-    biomechanicsScience: 'Raising in the scapular plane prevents subacromial friction while isolating lateral deltoid pennation angles.'
-  },
-
-  // 11. BICEPS CURLS & TRICEPS EXTENSIONS
-  'arms-isolation': {
-    id: 'arms-isolation',
-    name: 'Incline DB Biceps Curls + Overhead Triceps Extension',
-    aliases: ['biceps curls', 'triceps rope pressdown', 'incline dumbbell biceps curls', 'overhead rope triceps extension', 'arms', 'biceps', 'triceps'],
-    category: 'Upper Arm Lengthened Isolation',
-    targetMuscles: ['Biceps Brachii (Long Head)', 'Triceps Brachii (Long Head)'],
-    secondaryMuscles: ['Brachialis', 'Brachioradialis'],
-    coachAttribution: 'Dr. Mike Israetel & Jeff Nippard',
-    difficulty: 'Beginner',
-    youtubeQuery: 'jeff nippard science biceps triceps arm workout',
-    curatedVideoUrl: 'https://www.youtube.com/results?search_query=jeff+nippard+incline+dumbbell+curl+technique',
-    videoChannelName: 'Jeff Nippard / Renaissance Periodization',
-    keyAngles: '45° Bench Incline for Biceps • Elbows Locked Overhead for Triceps',
-    movementPhases: [
-      {
-        phaseName: '1. Incline Stretch Position',
-        phaseTiming: 'Setup',
-        description: 'Sit on 45° incline bench, arms hanging straight down behind torso for deep shoulder extension stretch.',
-        focusCue: 'Pin elbows in place behind torso.'
-      },
-      {
-        phaseName: '2. Supinated Biceps Curl',
-        phaseTiming: '1.0s Concentric',
-        description: 'Curl dumbbells upward while supinating wrists (turn pinkies up toward ceiling).',
-        focusCue: 'Keep elbows pinned behind torso, do not swing shoulders forward.'
-      },
-      {
-        phaseName: '3. 1-Second Peak Squeeze',
-        phaseTiming: '1.0s Peak Hold',
-        description: 'Squeeze biceps peak hard at shoulder height.',
-        focusCue: 'Full active contraction at top.'
-      },
-      {
-        phaseName: '4. 3-Second Deep Stretch Release',
-        phaseTiming: '3.0s Eccentric',
-        description: 'Lower weights under strict 3-second control into full elbow extension behind torso.',
-        focusCue: 'Feel profound passive stretch across the long head of the biceps.'
-      }
-    ],
-    setupSteps: [
-      'Set bench to a 45° incline and hold dumbbells with a neutral grip.',
-      'Allow arms to hang straight down with shoulders relaxed back into the pad.',
-      'Keep head resting against the bench to prevent cervical strain.'
-    ],
-    executionSteps: [
-      'Curl dumbbells upward, rotating wrists outward (supination) so palms face shoulders at the top.',
-      'Pause for 1 second at full contraction without moving your upper arms forward.',
-      'Lower the dumbbells with a controlled 3-second eccentric tempo until elbows reach full straight extension.',
-      'Transition directly to overhead triceps rope extensions for maximum antagonist arm blood flow.'
-    ],
-    commonMistakes: [
-      'Swinging the elbows forward to use anterior deltoid momentum.',
-      'Cutting the bottom range short without fully extending the arms.',
-      'Flaring elbows out to the sides on overhead triceps extensions.'
-    ],
-    proFormCues: [
-      '💡 "Keep your elbows frozen in space behind your ribs throughout the entire curl."',
-      '💡 "Turn your pinky fingers toward your ears at the top of the curl."'
-    ],
-    biomechanicsScience: 'Placing the shoulder in extension on an incline bench pre-stretches the biceps long head across two joints, inducing maximum sarcomere micro-tearing.'
-  },
-
-  // 12. PIKE HANDSTAND PUSH-UPS
+  // 13. PIKE HANDSTAND PUSH-UPS
   'pike-push-up': {
     id: 'pike-push-up',
     name: 'Pike Handstand Push-Up (Feet Elevated on Chair)',
@@ -789,7 +852,7 @@ export const EXERCISE_GUIDE_DB: Record<string, ExerciseGuide> = {
     biomechanicsScience: 'The diagonal tripod descent mirrors the natural scapulohumeral rhythm of overhead barbell pressing, eliminating impingement.'
   },
 
-  // 13. FARMER'S WALKS & LOADED CARRIES
+  // 14. FARMER'S WALKS
   'farmers-walk': {
     id: 'farmers-walk',
     name: 'Heavy Farmer\'s Walk / Loaded Carry (Attia Longevity Standard)',
@@ -852,7 +915,7 @@ export const EXERCISE_GUIDE_DB: Record<string, ExerciseGuide> = {
     biomechanicsScience: 'Grip strength and loaded carries are Dr. Peter Attia\'s #1 correlated biomarker for all-cause longevity and physical durability.'
   },
 
-  // 14. NORWEGIAN 4X4 & ZONE 2
+  // 15. NORWEGIAN 4X4
   'norwegian-4x4': {
     id: 'norwegian-4x4',
     name: 'Norwegian 4x4 VO2 Max Protocol',
@@ -914,7 +977,7 @@ export const EXERCISE_GUIDE_DB: Record<string, ExerciseGuide> = {
     biomechanicsScience: 'The 4x4 protocol is proven in clinical exercise trials to produce the largest measurable increases in VO2 max and left ventricular stroke volume.'
   },
 
-  // 15. DYNAMIC WARMUP & THORACIC MOBILITY
+  // 16. DYNAMIC WARMUP & THORACIC MOBILITY
   'warmup-mobility': {
     id: 'warmup-mobility',
     name: 'Dynamic Scapular Wall Slides + Hip 90/90 Opener & Dislocates',
@@ -974,23 +1037,100 @@ export const EXERCISE_GUIDE_DB: Record<string, ExerciseGuide> = {
       '💡 "Open your chest like a book on the thoracic reach."'
     ],
     biomechanicsScience: 'Dynamic multi-planar mobility elevates synovial joint temperature by 2°C, decreasing viscous friction by 40% prior to heavy loading.'
+  },
+
+  // 17. SPINE DECOMPRESSION & PARASYMPATHETIC RESET
+  'spine-decompression': {
+    id: 'spine-decompression',
+    name: 'Spine Decompression Hang + 4-7-8 Parasympathetic Reset',
+    aliases: ['spine decompression', 'decompression', 'parasympathetic', 'cooldown', '4-7-8', 'hang'],
+    category: 'Spinal Disc Imbibition & Vagus Nerve Recovery',
+    targetMuscles: ['Intervertebral Discs (L1–L5, T1–T12)', 'Psoas Major', 'Thoracolumbar Fascia'],
+    secondaryMuscles: ['Latissimus Dorsi (Passive Stretch)', 'Forearm Flexors', 'Diaphragm'],
+    coachAttribution: 'Dr. Andrew Huberman & Dr. Peter Attia',
+    difficulty: 'Beginner',
+    youtubeQuery: 'peter attia dead hang spine decompression benefits',
+    curatedVideoUrl: 'https://www.youtube.com/results?search_query=peter+attia+dead+hang+spinal+decompression',
+    videoChannelName: 'Dr. Peter Attia / Huberman Lab',
+    keyAngles: '180° Full Overhead Passive Hang • 4s Inhale : 7s Hold : 8s Exhale',
+    movementPhases: [
+      {
+        phaseName: '1. Passive Hang Grip & Release',
+        phaseTiming: 'Setup (0:00–1:00)',
+        description: 'Grip overhead pull-up bar, let feet hover or lightly rest on floor. Fully relax pelvic floor and shoulders.',
+        focusCue: 'Release all muscular tension in lower back, allow gravity to traction the spine.'
+      },
+      {
+        phaseName: '2. 4-7-8 Diaphragmatic Breath',
+        phaseTiming: 'Breath Cycles (1:00–3:00)',
+        description: 'Inhale through nose for 4 seconds, hold oxygen for 7 seconds, exhale slowly through mouth for 8 seconds.',
+        focusCue: 'Long slow exhale stimulates the vagus nerve to down-regulate heart rate and lower cortisol.'
+      },
+      {
+        phaseName: '3. 90/90 Supine Pelvic Neutral',
+        phaseTiming: 'Restorative Floor (3:00–5:00)',
+        description: 'Lie flat on back with calves resting on a bench at 90° hip and knee angles.',
+        focusCue: 'Flatten lower back flush to floor, feel intervertebral discs hydrate with fluid.'
+      },
+      {
+        phaseName: '4. Parasympathetic Transition',
+        phaseTiming: 'Final Reset',
+        description: 'Slow standing transition, roll shoulders back, establish tall posture.',
+        focusCue: 'Feel 1 inch taller and fully decompressed after the workout.'
+      }
+    ],
+    setupSteps: [
+      'Find an overhead bar or supportive doorframe where you can hang with relaxed shoulders.',
+      'Allow feet to remain lightly touching the floor if needed to remove excessive shoulder strain.',
+      'Relax abdominal wall and lumbar musculature completely.'
+    ],
+    executionSteps: [
+      'Hang passively for 45–60 seconds, feeling the space between your lumbar vertebrae expand.',
+      'Perform 4-7-8 box breathing: Inhale 4s through nose, hold 7s, exhale 8s through pursed lips.',
+      'Transition to the floor in a 90/90 supine posture (calves on a bench or chair).',
+      'Rest for 2–3 minutes to allow fluid to re-enter avascular spinal discs.'
+    ],
+    commonMistakes: [
+      'Engaging shoulder muscles or tensing the neck during the hang (must be completely passive).',
+      'Hyperventilating or taking shallow chest breaths instead of deep diaphragmatic breaths.',
+      'Jumping down aggressively from the bar (defeats spinal decompression).'
+    ],
+    proFormCues: [
+      '💡 "Let gravity pull your pelvis down toward the center of the earth like a heavy pendulum."',
+      '💡 "The 8-second exhale tells your nervous system that the battle is over and recovery has begun."'
+    ],
+    biomechanicsScience: 'Heavy lifting compresses spinal discs by 15–20%. Passive traction induces imbibition—drawing nutrient-rich synovial fluid back into disc matrices.'
   }
 };
 
 /**
- * Intelligent Matcher with Specificity Hierarchy and Word Boundary Matching
- * Prevents substring collisions like "decompression" matching "press"!
+ * Direct 100% Accurate Key Resolver with Zero Fuzzy Ambiguity
  */
-export function findExerciseGuide(exerciseName: string): ExerciseGuide {
-  const normalized = exerciseName.toLowerCase().trim();
+export function findExerciseGuide(guideKeyOrName: string): ExerciseGuide {
+  const normalized = guideKeyOrName.toLowerCase().trim();
 
-  // 1. Exact Key Match
+  // 1. Direct ID match
   if (EXERCISE_GUIDE_DB[normalized]) {
     return EXERCISE_GUIDE_DB[normalized];
   }
 
-  // 2. High-Priority Specific Phrases (Checked first before generic words!)
-  if (normalized.includes('decompression') || normalized.includes('4-7-8') || normalized.includes('parasympathetic') || normalized.includes('spine decompression')) {
+  // 2. High Specificity Disambiguation
+  if (normalized.includes('lateral raise') || normalized.includes('side delt')) {
+    if (normalized.includes('cable')) {
+      return EXERCISE_GUIDE_DB['cable-lateral-raise'];
+    }
+    return EXERCISE_GUIDE_DB['db-lateral-raise'];
+  }
+
+  if (normalized.includes('curl') || normalized.includes('bicep')) {
+    return EXERCISE_GUIDE_DB['incline-bicep-curl'];
+  }
+
+  if (normalized.includes('triceps') || normalized.includes('pressdown') || normalized.includes('extension')) {
+    return EXERCISE_GUIDE_DB['triceps-pressdown'];
+  }
+
+  if (normalized.includes('decompression') || normalized.includes('4-7-8') || normalized.includes('parasympathetic') || normalized.includes('spine')) {
     return EXERCISE_GUIDE_DB['spine-decompression'];
   }
 
@@ -998,24 +1138,16 @@ export function findExerciseGuide(exerciseName: string): ExerciseGuide {
     return EXERCISE_GUIDE_DB['norwegian-4x4'];
   }
 
-  if (normalized.includes('farmer') || normalized.includes('loaded carry') || normalized.includes('carry') || normalized.includes('death march')) {
+  if (normalized.includes('farmer') || normalized.includes('loaded carry') || normalized.includes('death march')) {
     return EXERCISE_GUIDE_DB['farmers-walk'];
   }
 
-  if (normalized.includes('wall slides') || normalized.includes('90/90') || normalized.includes('cat-cow') || normalized.includes('cat cow') || normalized.includes('dislocates') || normalized.includes('spiderman') || normalized.includes('jumping jacks')) {
+  if (normalized.includes('wall slides') || normalized.includes('90/90') || normalized.includes('cat-cow') || normalized.includes('cat cow') || normalized.includes('dislocates') || normalized.includes('spiderman') || normalized.includes('jumping jacks') || normalized.includes('warmup')) {
     return EXERCISE_GUIDE_DB['warmup-mobility'];
   }
 
   if (normalized.includes('pike') || normalized.includes('handstand')) {
     return EXERCISE_GUIDE_DB['pike-push-up'];
-  }
-
-  if (normalized.includes('biceps') || normalized.includes('triceps') || normalized.includes('curl') || normalized.includes('pressdown') || normalized.includes('death set')) {
-    return EXERCISE_GUIDE_DB['arms-isolation'];
-  }
-
-  if (normalized.includes('lateral raise') || normalized.includes('side delt') || normalized.includes('hip abduction') || normalized.includes('kickback')) {
-    return EXERCISE_GUIDE_DB['lateral-raise'];
   }
 
   if (normalized.includes('bulgarian') || normalized.includes('split squat')) {
@@ -1030,7 +1162,7 @@ export function findExerciseGuide(exerciseName: string): ExerciseGuide {
     return EXERCISE_GUIDE_DB['romanian-deadlift'];
   }
 
-  if (normalized.includes('pistol') || normalized.includes('goblet box') || normalized.includes('air squat') || normalized.includes('single leg squat')) {
+  if (normalized.includes('pistol') || normalized.includes('goblet box') || normalized.includes('air squat') || normalized.includes('single leg squat') || (normalized.includes('squat') && !normalized.includes('split'))) {
     return EXERCISE_GUIDE_DB['pistol-squat'];
   }
 
@@ -1046,21 +1178,16 @@ export function findExerciseGuide(exerciseName: string): ExerciseGuide {
     return EXERCISE_GUIDE_DB['deficit-push-up'];
   }
 
-  if (normalized.includes('bench') || (/\bpress\b/i.test(normalized) && !normalized.includes('decompression'))) {
+  if (normalized.includes('bench') || (/\bpress\b/i.test(normalized) && !normalized.includes('decompression') && !normalized.includes('pressdown'))) {
     return EXERCISE_GUIDE_DB['incline-bench-press'];
   }
 
-  if (normalized.includes('squat')) {
-    return EXERCISE_GUIDE_DB['pistol-squat'];
-  }
-
-  // 3. Alias Check
+  // 3. Aliases
   for (const guide of Object.values(EXERCISE_GUIDE_DB)) {
     if (guide.aliases.some(alias => normalized.includes(alias.toLowerCase()))) {
       return guide;
     }
   }
 
-  // Fallback to Warmup/Mobility
   return EXERCISE_GUIDE_DB['warmup-mobility'];
 }

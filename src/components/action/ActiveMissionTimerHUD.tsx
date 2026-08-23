@@ -256,7 +256,7 @@ export const ActiveMissionTimerHUD: React.FC<ActiveMissionTimerHUDProps> = ({
                           onClick={(e) => {
                             e.stopPropagation();
                             soundEngine.playClick(750);
-                            setActiveGuideExercise(step.name);
+                            setActiveGuideExercise(step.guideKey || step.name);
                           }}
                           className="px-1.5 py-0.5 rounded bg-cyan-950/60 text-cyan-300 border border-cyan-500/30 text-[9px] font-mono hover:bg-cyan-900/80"
                         >

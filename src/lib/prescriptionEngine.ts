@@ -36,6 +36,7 @@ export type GenderType = 'MALE' | 'FEMALE' | 'OTHER';
 export interface ExerciseStep {
   id: string;
   name: string;
+  guideKey: string; // 100% direct 1:1 key to ExerciseGuideDB
   targetMuscle: string;
   sets: number;
   reps: string;
@@ -91,7 +92,7 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
   const isFemale = gender === 'FEMALE';
   const isMale = gender === 'MALE';
 
-  // 1. AGE MODIFIERS (Adjusts warmup duration, joint angles & recovery without removing capability)
+  // 1. AGE MODIFIERS
   let warmupMinutes = 3;
   let ageBracketLabel = 'PEAK PRIME (15–29)';
   if (age >= 60) {
@@ -111,12 +112,6 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
   const cooldownMinutes = Math.max(3, Math.round(dur * 0.08));
   const workMinutes = Math.max(9, dur - warmupMinutes - cooldownMinutes);
 
-  // 2. INTENSITY TIER CONFIGURATIONS (Rest intervals & loading patterns based on real sports science!)
-  // - Beginner: Needs 90–120s rest on compounds for nervous system recovery without fatigue breakdown, 2-3 sets, RIR 3-4.
-  // - Intermediate: Needs 120–180s on heavy compounds (Nippard/Israetel) for maximal ATP-PC restoration, 3-4 sets, RIR 1-2.
-  // - Advanced: Needs 180–240s on max mechanical tension compounds + lengthened partials, 4-5 sets, RIR 0-1.
-  // - Superhero: High-density Spartan death sets (30–45s rest clusters or Norwegian 4x4 @ 95% HRmax), 5 sets, RIR 0 / RPE 10.
-  
   let title = '';
   let subtitle = '';
   let coachingSource = '';
@@ -136,13 +131,8 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
   const xpAward = Math.floor(dur * (intensity === 'SUPERHERO' ? 2.2 : intensity === 'ADVANCED' ? 1.8 : intensity === 'INTERMEDIATE' ? 1.5 : 1.2));
 
   // =========================================================================
-  // DYNAMIC PRESCRIPTION SELECTION BY INTENSITY, GENDER & EQUIPMENT
-  // =========================================================================
-
-  // -------------------------------------------------------------------------
   // TIER 1: BEGINNER (Form Mastery, Joint Armor, Submaximal Fatigue)
-  // Coaches: Firas Zahabi (Consistency) & Dr. Brad Schoenfeld (Volume Foundation)
-  // -------------------------------------------------------------------------
+  // =========================================================================
   if (intensity === 'BEGINNER') {
     coachingSource = isFemale 
       ? 'Lauren Simpson (WBFF Pro) & Dr. Brad Schoenfeld (Foundational Hypertrophy)'
@@ -165,7 +155,8 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
     // Warmup
     exerciseSteps.push({
       id: 'beg-warmup',
-      name: 'Cat-Cow + World\'s Greatest Stretch & Thoracic Opener',
+      name: 'Dynamic Mobility + Scapular Wall Slides & Hip 90/90 Opener',
+      guideKey: 'warmup-mobility',
       targetMuscle: 'Spine, Hip Capsule, Rotator Cuff',
       sets: 2,
       reps: '8 Reps / Side',
@@ -183,6 +174,7 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
         exerciseSteps.push({
           id: 'beg-f-1',
           name: 'Dumbbell Goblet Box Squat (Knees Tracking Outward)',
+          guideKey: 'pistol-squat',
           targetMuscle: 'Quadriceps, Gluteus Medius & Core Bracing',
           sets: 3,
           reps: '10–12 Reps',
@@ -197,6 +189,7 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
         exerciseSteps.push({
           id: 'beg-f-2',
           name: 'Dumbbell Romanian Deadlift (RDL) to Shin Depth',
+          guideKey: 'romanian-deadlift',
           targetMuscle: 'Hamstrings & Glute-Ham Tie-in',
           sets: 3,
           reps: '10–12 Reps',
@@ -212,6 +205,7 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
           exerciseSteps.push({
             id: 'beg-f-3',
             name: 'Chest-Supported Dumbbell Incline Row',
+            guideKey: 'chest-supported-row',
             targetMuscle: 'Rhomboids, Latissimus Dorsi & Posture',
             sets: 3,
             reps: '12 Reps',
@@ -228,6 +222,7 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
           exerciseSteps.push({
             id: 'beg-f-4',
             name: 'Standing Dumbbell Lateral Raises (Pinkies High)',
+            guideKey: 'db-lateral-raise',
             targetMuscle: 'Lateral Deltoid (Shoulder Cap)',
             sets: 3,
             reps: '12–15 Reps',
@@ -243,7 +238,8 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
         // Male Beginner Equipment
         exerciseSteps.push({
           id: 'beg-m-1',
-          name: 'Dumbbell Flat / 30° Incline Bench Press',
+          name: 'Dumbbell 30° Incline Bench Press (Clavicular Focus)',
+          guideKey: 'incline-bench-press',
           targetMuscle: 'Clavicular & Sternal Pectoralis Major',
           sets: 3,
           reps: '10–12 Reps',
@@ -257,7 +253,8 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
 
         exerciseSteps.push({
           id: 'beg-m-2',
-          name: 'Dumbbell Romanian Deadlift (RDL) or Trap Bar Lift',
+          name: 'Dumbbell Romanian Deadlift (RDL) to Shin Depth',
+          guideKey: 'romanian-deadlift',
           targetMuscle: 'Hamstrings, Gluteus Maximus & Lumbar Armor',
           sets: 3,
           reps: '10–12 Reps',
@@ -273,6 +270,7 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
           exerciseSteps.push({
             id: 'beg-m-3',
             name: 'Lat Pulldown (Neutral or Wide Grip)',
+            guideKey: 'pull-up',
             targetMuscle: 'Latissimus Dorsi & Teres Major (V-Taper)',
             sets: 3,
             reps: '10–12 Reps',
@@ -287,16 +285,32 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
 
         if (dur >= 60) {
           exerciseSteps.push({
-            id: 'beg-m-4',
-            name: 'Incline Dumbbell Biceps Curls + Triceps Rope Pressdown',
-            targetMuscle: 'Biceps Brachii & Triceps Lateral Head',
+            id: 'beg-m-4a',
+            name: 'Incline Dumbbell Biceps Curls (Deep Stretch Focus)',
+            guideKey: 'incline-bicep-curl',
+            targetMuscle: 'Biceps Brachii Long Head',
             sets: 3,
-            reps: '12 Reps Each',
+            reps: '12 Reps',
             restSeconds: 60,
             tempo: '2-1-1-0',
             intensityRirOrRpe: 'RIR 2',
-            coachingCue: 'Full stretch at bottom of curl, lock elbows at side during pressdown.',
-            sportsScienceRationale: 'Isolation work safely builds tendon tolerance in the elbow joint (Israetel).',
+            coachingCue: 'Full stretch at bottom of curl, keep elbows pinned behind torso line.',
+            sportsScienceRationale: 'Incline bench stretches long head over shoulder joint for maximal hypertrophy.',
+            category: 'ISOLATION_STRETCH'
+          });
+
+          exerciseSteps.push({
+            id: 'beg-m-4b',
+            name: 'Overhead Triceps Rope Extension (Lockout Focus)',
+            guideKey: 'triceps-pressdown',
+            targetMuscle: 'Triceps Brachii (Long Head)',
+            sets: 3,
+            reps: '12 Reps',
+            restSeconds: 60,
+            tempo: '2-1-1-0',
+            intensityRirOrRpe: 'RIR 2',
+            coachingCue: 'Spread rope handles apart at full lockout, elbows locked next to ears.',
+            sportsScienceRationale: 'Overhead position loads the triceps long head in its most lengthened position.',
             category: 'ISOLATION_STRETCH'
           });
         }
@@ -306,6 +320,7 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
       exerciseSteps.push({
         id: 'beg-bw-1',
         name: 'Incline Hands-Elevated Push-Ups (Bench/Desk)',
+        guideKey: 'deficit-push-up',
         targetMuscle: 'Pectoralis Major & Core Stability',
         sets: 3,
         reps: '10–12 Reps',
@@ -320,6 +335,7 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
       exerciseSteps.push({
         id: 'beg-bw-2',
         name: isFemale ? 'Glute Bridges with 2-Sec Top Squeeze' : 'Bodyweight Air Squats to Chair Tap',
+        guideKey: isFemale ? 'barbell-hip-thrust' : 'pistol-squat',
         targetMuscle: isFemale ? 'Gluteus Maximus & Hamstrings' : 'Quadriceps & Gluteal Stabilizers',
         sets: 3,
         reps: '12–15 Reps',
@@ -334,7 +350,8 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
       if (dur >= 45) {
         exerciseSteps.push({
           id: 'beg-bw-3',
-          name: 'Doorframe Isometric Lat Rows + Scapular Pull-Downs',
+          name: 'Doorframe Isometric Lat Rows',
+          guideKey: 'chest-supported-row',
           targetMuscle: 'Latissimus Dorsi & Rhomboids',
           sets: 3,
           reps: '10 Reps + 5s Hold',
@@ -349,10 +366,9 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
     }
   }
 
-  // -------------------------------------------------------------------------
+  // =========================================================================
   // TIER 2: INTERMEDIATE (Progressive Overload, 2-3 Min Rest, RIR 1-2)
-  // Coaches: Jeff Nippard (Biomechanics) & Dr. Andrew Huberman
-  // -------------------------------------------------------------------------
+  // =========================================================================
   else if (intensity === 'INTERMEDIATE') {
     coachingSource = isFemale
       ? 'Stephanie Sanzo (Strength Coach) & Dr. Brad Schoenfeld'
@@ -376,6 +392,7 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
     exerciseSteps.push({
       id: 'int-warmup',
       name: 'Dynamic Scapular Wall Slides + Hip 90/90 Opener + Banded Dislocates',
+      guideKey: 'warmup-mobility',
       targetMuscle: 'Rotator Cuff, Thoracic Mobility, Glute Medius',
       sets: 2,
       reps: '10 Reps / Drill',
@@ -389,14 +406,15 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
 
     if (hasEquipment) {
       if (isFemale) {
-        // Female Intermediate Equipment (Contreras & Schoenfeld)
+        // Female Intermediate Equipment
         exerciseSteps.push({
           id: 'int-f-1',
-          name: 'Barbell / Heavy Hip Thrust (2-Sec Top Lockout)',
+          name: 'Barbell Hip Thrust (2-Sec Top Lockout)',
+          guideKey: 'barbell-hip-thrust',
           targetMuscle: 'Gluteus Maximus (Peak Shortened Position)',
           sets: 4,
           reps: '10–12 Reps',
-          restSeconds: 150, // 2.5 minutes!
+          restSeconds: 150,
           tempo: '2-0-1-2 (2s Peak Squeeze)',
           intensityRirOrRpe: 'RIR 1–2 (Hard Working Sets)',
           coachingCue: 'Tuck chin to chest, drive through midfoot and heels, anterior pelvic tilt at lockout.',
@@ -406,11 +424,12 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
 
         exerciseSteps.push({
           id: 'int-f-2',
-          name: 'Barbell / Dumbbell Romanian Deadlift (Deep Stretch Focus)',
+          name: 'Barbell Romanian Deadlift (Deep Stretch Focus)',
+          guideKey: 'romanian-deadlift',
           targetMuscle: 'Hamstrings & Glute-Ham Tie-in (Lengthened State)',
           sets: 3,
           reps: '8–10 Reps',
-          restSeconds: 120, // 2 minutes
+          restSeconds: 120,
           tempo: '3-1-1-0 (3s Controlled Negative)',
           intensityRirOrRpe: 'RIR 1–2',
           coachingCue: 'Hips push straight back, dumbbells skim shins, feel extreme stretch in glutes and hamstrings.',
@@ -422,6 +441,7 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
           exerciseSteps.push({
             id: 'int-f-3',
             name: 'Bulgarian Split Squats (30° Forward Torso Lean)',
+            guideKey: 'bulgarian-split-squat',
             targetMuscle: 'Gluteus Maximus & Medius (Unilateral Overload)',
             sets: 3,
             reps: '10 Reps / Leg',
@@ -437,8 +457,9 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
         if (dur >= 60) {
           exerciseSteps.push({
             id: 'int-f-4',
-            name: 'Cable / DB Lean-Away Lateral Raises + Seated Hip Abductions',
-            targetMuscle: 'Lateral Deltoids & Gluteus Medius Upper Shelf',
+            name: 'Lean-Away Cable Lateral Raise (Scapular Plane)',
+            guideKey: 'cable-lateral-raise',
+            targetMuscle: 'Lateral Deltoids (Shoulder Cap Silhouette)',
             sets: 3,
             reps: '15 Reps',
             restSeconds: 60,
@@ -450,14 +471,15 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
           });
         }
       } else {
-        // Male Intermediate Equipment (Nippard & Israetel)
+        // Male Intermediate Equipment
         exerciseSteps.push({
           id: 'int-m-1',
-          name: 'Barbell / Heavy DB Incline Bench Press (30° Clavicular Angle)',
+          name: 'Barbell Incline Bench Press (30° Clavicular Angle)',
+          guideKey: 'incline-bench-press',
           targetMuscle: 'Clavicular Head of Pectoralis Major & Anterior Deltoid',
           sets: 4,
           reps: '8–10 Reps',
-          restSeconds: 150, // 2.5 minutes!
+          restSeconds: 150,
           tempo: '3-1-1-0 (3s Lowering, 1s Pause on Chest)',
           intensityRirOrRpe: 'RIR 1–2 (Hard Sets)',
           coachingCue: 'Retract scapulae, touch upper chest smoothly, drive upward and slightly backward over eyes.',
@@ -467,11 +489,12 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
 
         exerciseSteps.push({
           id: 'int-m-2',
-          name: 'Barbell Romanian Deadlift (RDL) or Trap Bar Deadlift',
+          name: 'Barbell Romanian Deadlift (RDL)',
+          guideKey: 'romanian-deadlift',
           targetMuscle: 'Hamstrings, Glutes & Erector Spinae',
           sets: 3,
           reps: '8–10 Reps',
-          restSeconds: 150, // 2.5 minutes!
+          restSeconds: 150,
           tempo: '3-1-1-0',
           intensityRirOrRpe: 'RIR 1–2',
           coachingCue: 'Brace core with 360° breath, hinge hips back until hamstrings are fully stretched.',
@@ -482,7 +505,8 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
         if (dur >= 45) {
           exerciseSteps.push({
             id: 'int-m-3',
-            name: 'Chest-Supported T-Bar / Seated Cable Row (Wide Elbows)',
+            name: 'Chest-Supported T-Bar / Cable Row (Wide Elbows)',
+            guideKey: 'chest-supported-row',
             targetMuscle: 'Latissimus Dorsi, Rhomboids & Rear Deltoids',
             sets: 3,
             reps: '10–12 Reps',
@@ -497,16 +521,32 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
 
         if (dur >= 60) {
           exerciseSteps.push({
-            id: 'int-m-4',
-            name: 'Cable Lateral Raise + Incline DB Biceps Curl Superset',
-            targetMuscle: 'Lateral Deltoids & Biceps Long Head',
+            id: 'int-m-4a',
+            name: 'Lean-Away Cable Lateral Raise (Scapular Plane)',
+            guideKey: 'cable-lateral-raise',
+            targetMuscle: 'Lateral Deltoids (Medial Head)',
             sets: 3,
             reps: '12–15 Reps',
             restSeconds: 60,
-            tempo: '2-1-1-0',
+            tempo: '2-0-1-1',
             intensityRirOrRpe: 'RIR 1',
             coachingCue: 'Set cable height at wrist level for continuous tension throughout range of motion.',
             sportsScienceRationale: 'Cable provides even resistance curve across the entire deltoid movement arc (Nippard).',
+            category: 'ISOLATION_STRETCH'
+          });
+
+          exerciseSteps.push({
+            id: 'int-m-4b',
+            name: 'Incline Dumbbell Biceps Curls (Deep Stretch Focus)',
+            guideKey: 'incline-bicep-curl',
+            targetMuscle: 'Biceps Long Head (Outer Peak)',
+            sets: 3,
+            reps: '10–12 Reps',
+            restSeconds: 60,
+            tempo: '2-1-1-0',
+            intensityRirOrRpe: 'RIR 1',
+            coachingCue: 'Elbows pinned behind torso, full stretch at bottom, supinate wrists at top.',
+            sportsScienceRationale: 'Incline bench stretches long head over shoulder joint for maximal hypertrophy.',
             category: 'ISOLATION_STRETCH'
           });
         }
@@ -515,7 +555,8 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
       // Bodyweight Intermediate
       exerciseSteps.push({
         id: 'int-bw-1',
-        name: 'Deficit / Feet-Elevated Tempo Push-Ups (3s Down, 1s Stretch)',
+        name: 'Deficit Tempo Push-Ups (3s Down, 1s Stretch)',
+        guideKey: 'deficit-push-up',
         targetMuscle: 'Pectoralis Major & Triceps',
         sets: 4,
         reps: '12–15 Reps',
@@ -530,8 +571,9 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
       exerciseSteps.push({
         id: 'int-bw-2',
         name: environment === 'OUTDOOR'
-          ? 'Park Pull-Up Bar Strict Dead-Hang Pull-Ups'
-          : 'Inverted Table/Doorframe Rows + Single-Leg Hip Thrusts',
+          ? 'Strict Dead-Hang Pull-Ups'
+          : 'Inverted Table Rows',
+        guideKey: 'pull-up',
         targetMuscle: 'Latissimus Dorsi, Biceps & Posterior Chain',
         sets: 3,
         reps: '8–10 Reps',
@@ -546,7 +588,8 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
       if (dur >= 45) {
         exerciseSteps.push({
           id: 'int-bw-3',
-          name: 'Bulgarian Split Squats (Rear Foot on Chair) + Frog Pumps',
+          name: 'Bulgarian Split Squats (Rear Foot on Chair)',
+          guideKey: 'bulgarian-split-squat',
           targetMuscle: 'Quadriceps, Gluteus Maximus & Medius',
           sets: 3,
           reps: '12 Reps / Leg',
@@ -561,10 +604,9 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
     }
   }
 
-  // -------------------------------------------------------------------------
+  // =========================================================================
   // TIER 3: ADVANCED (Max Mechanical Tension, 3–4 Min Rest, Lengthened Partials, RIR 0-1)
-  // Coaches: Dr. Mike Israetel (RP) & Bret Contreras PhD
-  // -------------------------------------------------------------------------
+  // =========================================================================
   else if (intensity === 'ADVANCED') {
     coachingSource = isFemale
       ? 'Bret Contreras PhD ("The Glute Guy") & Dr. Mike Israetel (Lengthened Partials)'
@@ -588,6 +630,7 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
     exerciseSteps.push({
       id: 'adv-warmup',
       name: 'Dynamic Scapular Wall Slides + Hip 90/90 + Banded Dislocates & Face-Pulls',
+      guideKey: 'warmup-mobility',
       targetMuscle: 'Rotator Cuff, Thoracic Mobility, Glute Medius',
       sets: 2,
       reps: '12 Reps',
@@ -601,14 +644,15 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
 
     if (hasEquipment) {
       if (isFemale) {
-        // Advanced Female (Contreras Glute Specialization)
+        // Advanced Female
         exerciseSteps.push({
           id: 'adv-f-1',
           name: 'Heavy Barbell Hip Thrust (2s Lockout + 3 Lengthened Partials)',
+          guideKey: 'barbell-hip-thrust',
           targetMuscle: 'Gluteus Maximus (Full Spectrum Mechanical Tension)',
           sets: 4,
           reps: '8–10 Reps + Partials',
-          restSeconds: 180, // 3 minutes!
+          restSeconds: 180,
           tempo: '2-0-1-2 (2s Peak Squeeze)',
           intensityRirOrRpe: 'RIR 0–1 (Near Failure)',
           coachingCue: 'Drive heavy weight with heels, full lockout with chin tucked, finish with 3 bottom-half pulses.',
@@ -619,10 +663,11 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
         exerciseSteps.push({
           id: 'adv-f-2',
           name: 'Deficit Romanian Deadlift (Standing on 2-Inch Platform)',
+          guideKey: 'romanian-deadlift',
           targetMuscle: 'Hamstrings & Glute-Ham Tie-in (Extreme Lengthened Stretch)',
           sets: 4,
           reps: '8–10 Reps',
-          restSeconds: 180, // 3 minutes!
+          restSeconds: 180,
           tempo: '3-1-1-0 (3s Controlled Negative)',
           intensityRirOrRpe: 'RIR 0–1',
           coachingCue: 'Sink into extreme stretch below toes, keep barbell pinned against shins, neutral spine.',
@@ -634,6 +679,7 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
           exerciseSteps.push({
             id: 'adv-f-3',
             name: 'Bulgarian Split Squats (Dumbbells in Hands + 30° Torso Pitch)',
+            guideKey: 'bulgarian-split-squat',
             targetMuscle: 'Gluteus Maximus & Medius (Unilateral Stretch)',
             sets: 3,
             reps: '10 Reps / Leg',
@@ -649,8 +695,9 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
         if (dur >= 60) {
           exerciseSteps.push({
             id: 'adv-f-4',
-            name: 'Cable Lean-Away Lateral Raise + Standing 30° Cable Kickbacks Superset',
-            targetMuscle: 'Lateral Deltoids & Gluteus Medius Upper Shelf',
+            name: 'Lean-Away Cable Lateral Raise (Scapular Plane)',
+            guideKey: 'cable-lateral-raise',
+            targetMuscle: 'Lateral Deltoids (Shoulder Cap Silhouette)',
             sets: 3,
             reps: '12–15 Reps',
             restSeconds: 60,
@@ -662,14 +709,15 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
           });
         }
       } else {
-        // Advanced Male (Israetel & Nippard Hypertrophy)
+        // Advanced Male
         exerciseSteps.push({
           id: 'adv-m-1',
-          name: 'Heavy Barbell / DB Incline Press (30° Angle + 2 Lengthened Partials)',
+          name: 'Heavy Incline Bench Press (30° Angle + 2 Lengthened Partials)',
+          guideKey: 'incline-bench-press',
           targetMuscle: 'Clavicular Upper Pectoralis & Anterior Deltoid',
           sets: 4,
           reps: '6–8 Reps + Partials',
-          restSeconds: 180, // 3 minutes!
+          restSeconds: 180,
           tempo: '3-1-1-0 (3s Lowering, 1s Stretch Pause)',
           intensityRirOrRpe: 'RIR 0–1 (Near Failure)',
           coachingCue: 'Lower weights under strict 3s tempo, pause on upper chest, explode up. Add 2 bottom partials on final set.',
@@ -680,10 +728,11 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
         exerciseSteps.push({
           id: 'adv-m-2',
           name: 'Heavy Barbell Romanian Deadlift (RDL) with 3s Eccentric Tempo',
+          guideKey: 'romanian-deadlift',
           targetMuscle: 'Hamstrings, Gluteus Maximus & Spinal Erectors',
           sets: 4,
           reps: '6–8 Reps',
-          restSeconds: 180, // 3 minutes!
+          restSeconds: 180,
           tempo: '3-1-1-0',
           intensityRirOrRpe: 'RIR 0–1',
           coachingCue: 'Brace with 360° intra-abdominal pressure, push hips back to maximum hamstring stretch.',
@@ -695,6 +744,7 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
           exerciseSteps.push({
             id: 'adv-m-3',
             name: 'Chest-Supported T-Bar Row (Wide Neutral Grip)',
+            guideKey: 'chest-supported-row',
             targetMuscle: 'Latissimus Dorsi, Rhomboids & Rear Delts',
             sets: 4,
             reps: '8–10 Reps',
@@ -709,11 +759,27 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
 
         if (dur >= 60) {
           exerciseSteps.push({
-            id: 'adv-m-4',
-            name: 'Cable Lateral Raise (Wrist Height) + Incline DB Curls (Deep Stretch)',
-            targetMuscle: 'Lateral Deltoids & Biceps Long Head',
+            id: 'adv-m-4a',
+            name: 'Lean-Away Cable Lateral Raise (Wrist Height)',
+            guideKey: 'cable-lateral-raise',
+            targetMuscle: 'Lateral Deltoids (Shoulder Cap)',
             sets: 3,
             reps: '12–15 Reps',
+            restSeconds: 60,
+            tempo: '2-0-1-1',
+            intensityRirOrRpe: 'RIR 0 (To Failure)',
+            coachingCue: 'Set cable height at wrist level for continuous tension throughout range of motion.',
+            sportsScienceRationale: 'Cable provides even resistance curve across the entire deltoid movement arc.',
+            category: 'ISOLATION_STRETCH'
+          });
+
+          exerciseSteps.push({
+            id: 'adv-m-4b',
+            name: 'Incline Dumbbell Biceps Curls (Deep Stretch Focus)',
+            guideKey: 'incline-bicep-curl',
+            targetMuscle: 'Biceps Long Head (Outer Peak)',
+            sets: 3,
+            reps: '10–12 Reps',
             restSeconds: 60,
             tempo: '2-1-1-0',
             intensityRirOrRpe: 'RIR 0 (To Failure)',
@@ -728,6 +794,7 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
       exerciseSteps.push({
         id: 'adv-bw-1',
         name: 'Deep Deficit Push-Ups (Hands Elevated 4 Inches + 3s Negative)',
+        guideKey: 'deficit-push-up',
         targetMuscle: 'Pectoralis Major (Deep Stretch Overload)',
         sets: 4,
         reps: '15–20 Reps',
@@ -743,7 +810,8 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
         id: 'adv-bw-2',
         name: environment === 'OUTDOOR'
           ? 'Strict Dead-Hang Weighted/Bodyweight Pull-Ups (Chest to Bar)'
-          : 'Pike Handstand Push-Ups (Feet Elevated on Chair) + Towel Rows',
+          : 'Pike Handstand Push-Ups (Feet Elevated on Chair)',
+        guideKey: environment === 'OUTDOOR' ? 'pull-up' : 'pike-push-up',
         targetMuscle: 'Latissimus Dorsi, Anterior Deltoids & Triceps',
         sets: 4,
         reps: '10–12 Reps',
@@ -758,7 +826,8 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
       if (dur >= 45) {
         exerciseSteps.push({
           id: 'adv-bw-3',
-          name: 'Pistol Squats (Single Leg to Box) / Deficit Bulgarian Split Squats',
+          name: 'Pistol Squats (Single Leg to Full Range)',
+          guideKey: 'pistol-squat',
           targetMuscle: 'Quadriceps, Gluteus Maximus & Ankle Stabilizers',
           sets: 3,
           reps: '8–10 Reps / Leg',
@@ -773,10 +842,9 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
     }
   }
 
-  // -------------------------------------------------------------------------
+  // =========================================================================
   // TIER 4: SUPERHERO (High-Density Spartan Threshold, RPE 9.5–10, Peak MRV)
-  // Coaches: David Goggins & Dr. Mike Israetel (Maximum Recoverable Volume)
-  // -------------------------------------------------------------------------
+  // =========================================================================
   else {
     coachingSource = 'David Goggins (Spartan Grit) & Dr. Mike Israetel (Max Recoverable Volume Siege)';
 
@@ -798,6 +866,7 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
     exerciseSteps.push({
       id: 'super-warmup',
       name: 'Explosive Jumping Jacks + Spiderman Lunge & Scapular Dislocates',
+      guideKey: 'warmup-mobility',
       targetMuscle: 'Full Body Cardiovascular & Synovial Primer',
       sets: 2,
       reps: '15 Reps / Flow',
@@ -815,6 +884,7 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
         exerciseSteps.push({
           id: 'sup-f-1',
           name: 'Heavy Barbell Hip Thrust Pyramid (Drop Set to Absolute Failure)',
+          guideKey: 'barbell-hip-thrust',
           targetMuscle: 'Gluteus Maximus (Maximal Tension & Metabolic Burn)',
           sets: 5,
           reps: '8 Reps Heavy $\\to$ Drop 30% Weight $\\to$ 10 Reps $\\to$ 5s Hold',
@@ -828,14 +898,15 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
 
         exerciseSteps.push({
           id: 'sup-f-2',
-          name: 'Heavy Deficit Romanian Deadlift + Bulgarian Split Squat Giant Set',
-          targetMuscle: 'Hamstrings, Glutes & Unilateral Stabilizers',
+          name: 'Heavy Deficit Romanian Deadlift (3s Negative)',
+          guideKey: 'romanian-deadlift',
+          targetMuscle: 'Hamstrings & Gluteus Maximus (Lengthened State)',
           sets: 4,
-          reps: '8 Heavy RDLs + 10 Split Squats / Leg (No Rest Between)',
+          reps: '8 Heavy RDLs (3s Negative)',
           restSeconds: 90,
           tempo: '3-1-1-0',
           intensityRirOrRpe: 'RIR 0',
-          coachingCue: 'Move immediately from RDLs to split squats. Maintain rigid spinal posture under fatigue.',
+          coachingCue: 'Maintain rigid spinal posture under fatigue. Shave legs with bar.',
           sportsScienceRationale: 'Giant set induces massive cellular swelling and titin stretch overload.',
           category: 'PRIMARY_COMPOUND'
         });
@@ -843,14 +914,15 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
         if (dur >= 45) {
           exerciseSteps.push({
             id: 'sup-f-3',
-            name: 'Heavy Incline DB Bench Press (30°) + Cable Lean-Away Lateral Raises',
-            targetMuscle: 'Clavicular Pecs, Lateral Deltoids & Hourglass Taper',
+            name: 'Lean-Away Cable Lateral Raise (Wrist Height)',
+            guideKey: 'cable-lateral-raise',
+            targetMuscle: 'Lateral Deltoids (Shoulder Cap Silhouette)',
             sets: 4,
-            reps: '10 Reps + 15 Reps Lateral Raise',
+            reps: '15 Reps (Burnout)',
             restSeconds: 60,
-            tempo: '2-1-1-0',
+            tempo: '2-0-1-1',
             intensityRirOrRpe: 'RIR 0',
-            coachingCue: 'Explode up on press, immediately grab cable for side delts with zero rest.',
+            coachingCue: 'Raise in scapular plane with zero torso swing.',
             sportsScienceRationale: 'Superset builds the upper frame to dramatically taper the waistline.',
             category: 'HYPERTROPHY_ACCESSORY'
           });
@@ -859,7 +931,8 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
         if (dur >= 60) {
           exerciseSteps.push({
             id: 'sup-f-4',
-            name: 'Heavy Kettlebell / Dumbbell Farmer\'s Walk (50m Death March)',
+            name: 'Heavy Farmer\'s Walk (50m Death March)',
+            guideKey: 'farmers-walk',
             targetMuscle: 'Grip Strength, Trapezius & Transverse Core Armor',
             sets: 3,
             reps: '50 Meters (Heavy)',
@@ -875,7 +948,8 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
         // Male Superhero
         exerciseSteps.push({
           id: 'sup-m-1',
-          name: 'Heavy Barbell Incline Bench Press (30°) + Rest-Pause Cluster to Failure',
+          name: 'Heavy Barbell Incline Bench Press (30° Clavicular Angle)',
+          guideKey: 'incline-bench-press',
           targetMuscle: 'Clavicular Pectoralis Major & Anterior Deltoids',
           sets: 5,
           reps: '6 Heavy Reps $\\to$ 15s Rest $\\to$ 3 Reps $\\to$ 15s Rest $\\to$ 2 Reps',
@@ -889,29 +963,46 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
 
         exerciseSteps.push({
           id: 'sup-m-2',
-          name: 'Heavy Barbell Romanian Deadlift (RDL) + Chest-Supported T-Bar Row Superset',
-          targetMuscle: 'Hamstrings, Glutes, Latissimus Dorsi & Upper Back',
+          name: 'Heavy Barbell Romanian Deadlift (RDL)',
+          guideKey: 'romanian-deadlift',
+          targetMuscle: 'Hamstrings, Glutes & Spinal Erectors',
           sets: 4,
-          reps: '6–8 Heavy RDLs + 10 Heavy Rows',
+          reps: '6–8 Heavy RDLs (3s Negative)',
           restSeconds: 90,
           tempo: '3-1-1-0',
           intensityRirOrRpe: 'RIR 0',
-          coachingCue: 'Hinge back with steel core, complete RDLs, step straight to T-bar row and pull to ribs.',
+          coachingCue: 'Hinge back with steel core, pull bar to shins.',
           sportsScienceRationale: 'High-density antagonist compound superset maximizes systemic anabolic signaling.',
           category: 'PRIMARY_COMPOUND'
         });
 
         if (dur >= 45) {
           exerciseSteps.push({
-            id: 'sup-m-3',
-            name: 'Dumbbell Incline Biceps Curls + Overhead Rope Triceps Extension Death Set',
-            targetMuscle: 'Biceps & Triceps (Long Head Stretch Overload)',
+            id: 'sup-m-3a',
+            name: 'Incline DB Biceps Curls (Deep Stretch Focus)',
+            guideKey: 'incline-bicep-curl',
+            targetMuscle: 'Biceps Long Head',
             sets: 4,
             reps: '10 Reps + Drop Set to Absolute Burnout',
             restSeconds: 45,
             tempo: '2-1-1-0',
             intensityRirOrRpe: 'RIR 0 (Burnout)',
-            coachingCue: 'No swinging, full stretch at the bottom of curl, lock elbows at side on extension.',
+            coachingCue: 'No swinging, full stretch at the bottom of curl, lock elbows behind torso.',
+            sportsScienceRationale: 'Metabolic fatigue induces maximum cellular swelling and fascia expansion.',
+            category: 'HYPERTROPHY_ACCESSORY'
+          });
+
+          exerciseSteps.push({
+            id: 'sup-m-3b',
+            name: 'Overhead Rope Triceps Extension (Death Set)',
+            guideKey: 'triceps-pressdown',
+            targetMuscle: 'Triceps Long Head',
+            sets: 4,
+            reps: '12 Reps + Drop Set',
+            restSeconds: 45,
+            tempo: '2-1-1-0',
+            intensityRirOrRpe: 'RIR 0 (Burnout)',
+            coachingCue: 'Lock elbows at side of head on extension.',
             sportsScienceRationale: 'Metabolic fatigue induces maximum cellular swelling and fascia expansion.',
             category: 'HYPERTROPHY_ACCESSORY'
           });
@@ -920,7 +1011,8 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
         if (dur >= 60) {
           exerciseSteps.push({
             id: 'sup-m-4',
-            name: 'Heavy Trap Bar / Dumbbell Farmer\'s Walk Carry (50m Maximum Load)',
+            name: 'Heavy Farmer\'s Walk Carry (50m Maximum Load)',
+            guideKey: 'farmers-walk',
             targetMuscle: 'Trapezius, Forearm Grip & Anti-Lateral Core',
             sets: 3,
             reps: '50 Meters (Bodyweight Equivalent Load)',
@@ -938,6 +1030,7 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
       exerciseSteps.push({
         id: 'sup-bw-1',
         name: 'Explosive Deficit Clap Push-Ups (Feet Elevated on Bench)',
+        guideKey: 'deficit-push-up',
         targetMuscle: 'Pectoralis Major & Fast-Twitch Motor Units',
         sets: 5,
         reps: '15–20 Explosive Reps',
@@ -952,15 +1045,16 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
       exerciseSteps.push({
         id: 'sup-bw-2',
         name: environment === 'OUTDOOR'
-          ? 'Strict Dead-Hang Pull-Ups + Park Dip Death Circuit'
-          : 'Pike Handstand Push-Ups + Table Inverted Rows (No Rest)',
+          ? 'Strict Dead-Hang Pull-Ups'
+          : 'Pike Handstand Push-Ups (Feet Elevated)',
+        guideKey: environment === 'OUTDOOR' ? 'pull-up' : 'pike-push-up',
         targetMuscle: 'Lats, Anterior Delts, Triceps & Upper Back',
         sets: 4,
-        reps: '10 Pull-Ups + 15 Dips (Continuous)',
+        reps: '10 Pull-Ups / 12 Pike Push-Ups',
         restSeconds: 45,
         tempo: '2-1-1-0',
         intensityRirOrRpe: 'RIR 0',
-        coachingCue: 'Move directly between movements. Maintain rigid core and full range of motion.',
+        coachingCue: 'Maintain rigid core and full range of motion.',
         sportsScienceRationale: 'Continuous compound mechanical loading without equipment.',
         category: 'PRIMARY_COMPOUND'
       });
@@ -968,10 +1062,11 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
       if (dur >= 45) {
         exerciseSteps.push({
           id: 'sup-bw-3',
-          name: 'Jumping Bulgarian Split Squats + 45s Wall-Sit Finisher',
+          name: 'Pistol Squats (Single Leg to Failure)',
+          guideKey: 'pistol-squat',
           targetMuscle: 'Quadriceps, Glutes & Lactate Acid Tolerance',
           sets: 3,
-          reps: '12 Reps / Leg + 45s Hold',
+          reps: '12 Reps / Leg',
           restSeconds: 45,
           tempo: 'Explosive Cadence',
           intensityRirOrRpe: 'RPE 10 (Lactate Burn)',
@@ -983,9 +1078,7 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
     }
   }
 
-  // -------------------------------------------------------------------------
-  // EXTENDED VO2 MAX & AEROBIC BASE BLOCKS (For Sessions >= 90m to 240m)
-  // -------------------------------------------------------------------------
+  // Extended VO2 Max Block (>= 90m)
   if (dur >= 90) {
     const aerobicMins = Math.min(45, Math.floor(dur * 0.25));
     exerciseSteps.push({
@@ -993,6 +1086,7 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
       name: intensity === 'SUPERHERO'
         ? 'Norwegian 4x4 VO2 Max Protocol (4 Mins @ 90–95% HRmax + 3 Mins Active Recovery × 4)'
         : 'Dr. Peter Attia Zone 2 Mitochondrial Base (Nasal Breathing Pace)',
+      guideKey: 'norwegian-4x4',
       targetMuscle: 'Myocardial Stroke Volume, Mitochondrial Density & Lactate Clearance',
       sets: intensity === 'SUPERHERO' ? 4 : 1,
       reps: `${aerobicMins} Minutes`,
@@ -1007,12 +1101,11 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
     });
   }
 
-  // -------------------------------------------------------------------------
-  // COOLDOWN & SPINAL DECOMPRESSION (Universal Parasympathetic Reset)
-  // -------------------------------------------------------------------------
+  // Cooldown & Spinal Decompression
   exerciseSteps.push({
     id: 'cool-final',
     name: 'Spine Decompression Hang + 4-7-8 Diaphragmatic Parasympathetic Reset',
+    guideKey: 'spine-decompression',
     targetMuscle: 'Intervertebral Discs, Psoas, Central Nervous System',
     sets: 1,
     reps: `${cooldownMinutes} Minutes`,

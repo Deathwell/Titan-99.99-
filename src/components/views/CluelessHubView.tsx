@@ -449,7 +449,7 @@ export const CluelessHubView: React.FC = () => {
             return (
               <div
                 key={step.id || idx}
-                onClick={(e) => handleOpenGuide(e, step.name)}
+                onClick={(e) => handleOpenGuide(e, step.guideKey || step.name)}
                 className="p-4 sm:p-5 rounded-2xl bg-[#0e0e14] border border-white/[0.08] hover:border-cyan-500/40 transition-all space-y-3 shadow-md cursor-pointer group hover:bg-[#11131c]"
               >
                 {/* Top Row: Number, Name, Form Guide Button, Category Badge, Sets & Reps */}
@@ -466,7 +466,7 @@ export const CluelessHubView: React.FC = () => {
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       type="button"
-                      onClick={(e) => handleOpenGuide(e, step.name)}
+                      onClick={(e) => handleOpenGuide(e, step.guideKey || step.name)}
                       className="px-2.5 py-1 rounded-lg bg-cyan-950/40 text-cyan-300 border border-cyan-500/30 text-[10px] font-mono font-bold hover:bg-cyan-900/60 transition-all flex items-center gap-1"
                     >
                       <BookOpen className="h-3 w-3" />
