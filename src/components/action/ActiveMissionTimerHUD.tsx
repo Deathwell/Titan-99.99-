@@ -251,7 +251,9 @@ export const ActiveMissionTimerHUD: React.FC<ActiveMissionTimerHUDProps> = ({
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-zinc-400 mt-1 font-mono">
                       <span className="text-cyan-300">{step.targetMuscle}</span>
                       <span>•</span>
-                      <span>{step.intensityRpe}</span>
+                      <span className="text-amber-300">{step.intensityRirOrRpe}</span>
+                      <span>•</span>
+                      <span>{step.tempo}</span>
                       {step.restSeconds > 0 && (
                         <>
                           <span>•</span>
@@ -260,7 +262,7 @@ export const ActiveMissionTimerHUD: React.FC<ActiveMissionTimerHUDProps> = ({
                       )}
                     </div>
                     <p className="text-[10px] text-zinc-400 mt-1 italic">
-                      💡 {step.cue}
+                      💡 {step.coachingCue}
                     </p>
                   </div>
                 </div>
