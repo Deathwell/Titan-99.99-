@@ -14,12 +14,13 @@ import {
   ChevronDown,
   Sparkles,
   Command,
-  Crown
+  Crown,
+  HelpCircle
 } from 'lucide-react';
 import { useTitan } from '../../context/TitanContext';
 
 interface NavItem {
-  id: 'overview' | 'hologram' | 'quests' | 'charts';
+  id: 'overview' | 'hologram' | 'clueless' | 'quests' | 'charts';
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   keycap: string;
@@ -47,18 +48,20 @@ export const NavigationSidebar: React.FC = () => {
   const navItems: NavItem[] = [
     { id: 'overview', label: 'Today', icon: Inbox, keycap: '1' },
     { id: 'hologram', label: 'Body Scanner', icon: Eye, keycap: '2', badge: 'AI LIVE', badgeColor: 'bg-rose-500/20 text-rose-300 border-rose-400/40' },
-    { id: 'quests', label: 'Trophies & Badges', icon: Crown, keycap: '3' },
-    { id: 'charts', label: 'Analytics & Profile', icon: BarChart3, keycap: '4' }
+    { id: 'clueless', label: 'Clueless?', icon: HelpCircle, keycap: '3', badge: 'ORACLE', badgeColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-400/40' },
+    { id: 'quests', label: 'Trophies & Badges', icon: Crown, keycap: '4' },
+    { id: 'charts', label: 'Analytics & Profile', icon: BarChart3, keycap: '5' }
   ];
 
-  // Listen for 1, 2, 3, 4 keyboard shortcuts
+  // Listen for 1, 2, 3, 4, 5 keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (['input', 'textarea'].includes((e.target as HTMLElement)?.tagName?.toLowerCase())) return;
       if (e.key === '1') setActiveTab('overview');
       else if (e.key === '2') setActiveTab('hologram');
-      else if (e.key === '3') setActiveTab('quests');
-      else if (e.key === '4') setActiveTab('charts');
+      else if (e.key === '3') setActiveTab('clueless');
+      else if (e.key === '4') setActiveTab('quests');
+      else if (e.key === '5') setActiveTab('charts');
     };
 
     window.addEventListener('keydown', handleKeyDown);

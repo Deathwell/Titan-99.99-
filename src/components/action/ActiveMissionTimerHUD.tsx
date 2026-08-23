@@ -8,7 +8,6 @@ import {
   Zap,
   Sparkles,
   Dumbbell,
-  LineChart,
   Clock,
   ChevronDown,
   ChevronUp,
@@ -71,9 +70,8 @@ export const ActiveMissionTimerHUD: React.FC<ActiveMissionTimerHUDProps> = ({
     soundEngine.playMilestoneFanfare();
     triggerGlobalConfetti();
 
-    // Register duration in shared context (automatically moves Home and Analytics sliders)
-    const taskType = prescription.domain === 'FITNESS' ? 'STRENGTH' : 'MODELING';
-    setDailyTaskDuration(taskType, prescription.durationMinutes);
+    // Register workout duration in shared context (automatically moves Home and Analytics sliders)
+    setDailyTaskDuration('STRENGTH', prescription.durationMinutes);
 
     setIsCompletedModalOpen(true);
   };
@@ -111,9 +109,6 @@ export const ActiveMissionTimerHUD: React.FC<ActiveMissionTimerHUDProps> = ({
     Math.max(0, ((totalDurationSeconds - secondsRemaining) / totalDurationSeconds) * 100)
   );
 
-  const xpEarned = Math.floor(prescription.durationMinutes * 1.5);
-  const isFitness = prescription.domain === 'FITNESS';
-
   return (
     <>
       {/* Floating Tactical HUD Dock */}
@@ -129,19 +124,15 @@ export const ActiveMissionTimerHUD: React.FC<ActiveMissionTimerHUDProps> = ({
         {/* HUD Header */}
         <div className="p-3.5 bg-gradient-to-r from-cyan-950/40 to-black/60 border-b border-white/[0.08] flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className={`p-2 rounded-xl border shrink-0 ${
-              isFitness
-                ? 'bg-rose-500/15 border-rose-500/30 text-rose-400'
-                : 'bg-amber-500/15 border-amber-500/30 text-amber-400'
-            }`}>
-              {isFitness ? <Dumbbell className="h-4 w-4" /> : <LineChart className="h-4 w-4" />}
+            <div className="p-2 rounded-xl border shrink-0 bg-rose-500/15 border-rose-500/30 text-rose-400">
+              <Dumbbell className="h-4 w-4" />
             </div>
             <div className="truncate">
               <div className="flex items-center gap-2">
                 <span className="px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 font-mono text-[9px] font-bold border border-cyan-500/30 uppercase tracking-widest animate-pulse">
                   {isPaused ? 'PAUSED' : 'LIVE PROTOCOL'}
                 </span>
-                <span className="text-[10px] font-mono text-zinc-400">+{xpEarned} XP Target</span>
+                <span className="text-[10px] font-mono text-zinc-400">+{prescription.xpAward} XP Target</span>
               </div>
               <h4 className="text-xs sm:text-sm font-bold text-white truncate mt-0.5 font-serif">
                 {prescription.title}
@@ -223,104 +214,58 @@ export const ActiveMissionTimerHUD: React.FC<ActiveMissionTimerHUDProps> = ({
             <div className="flex items-center justify-between text-[11px] text-zinc-400 font-mono">
               <span>EXERCISE PROTOCOL CHECKLIST:</span>
               <span className="text-cyan-300 font-bold">
-                {Object.values(completedSteps).filter(Boolean).length} /{' '}
-                {isFitness ? prescription.exerciseSteps?.length || 0 : prescription.financeSteps?.length || 0} Complete
+                {Object.values(completedSteps).filter(Boolean).length} / {prescription.exerciseSteps.length} Complete
               </span>
             </div>
 
-            {/* Fitness Steps */}
-            {isFitness &&
-              prescription.exerciseSteps?.map((step, idx) => {
-                const isDone = completedSteps[idx] || false;
-                return (
-                  <div
-                    key={idx}
-                    onClick={() => toggleStep(idx)}
-                    className={`p-3 rounded-xl border transition-all cursor-pointer select-none flex items-start gap-3 ${
-                      isDone
-                        ? 'bg-emerald-950/20 border-emerald-500/30 opacity-70'
-                        : 'bg-white/[0.03] border-white/[0.07] hover:border-white/20'
-                    }`}
-                  >
-                    <div className="mt-0.5 shrink-0">
-                      {isDone ? (
-                        <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                      ) : (
-                        <div className="h-4 w-4 rounded-full border border-zinc-500 flex items-center justify-center text-[9px] font-mono text-zinc-400">
-                          {idx + 1}
-                        </div>
+            {prescription.exerciseSteps.map((step, idx) => {
+              const isDone = completedSteps[idx] || false;
+              return (
+                <div
+                  key={idx}
+                  onClick={() => toggleStep(idx)}
+                  className={`p-3 rounded-xl border transition-all cursor-pointer select-none flex items-start gap-3 ${
+                    isDone
+                      ? 'bg-emerald-950/20 border-emerald-500/30 opacity-70'
+                      : 'bg-white/[0.03] border-white/[0.07] hover:border-white/20'
+                  }`}
+                >
+                  <div className="mt-0.5 shrink-0">
+                    {isDone ? (
+                      <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                    ) : (
+                      <div className="h-4 w-4 rounded-full border border-zinc-500 flex items-center justify-center text-[9px] font-mono text-zinc-400">
+                        {idx + 1}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-1">
+                      <span className={`text-xs font-bold leading-tight ${isDone ? 'line-through text-zinc-400' : 'text-white'}`}>
+                        {step.name}
+                      </span>
+                      <span className="text-[10px] font-mono text-rose-300 bg-rose-950/40 px-1.5 py-0.2 rounded border border-rose-500/20 shrink-0">
+                        {step.sets} × {step.reps}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-zinc-400 mt-1 font-mono">
+                      <span className="text-cyan-300">{step.targetMuscle}</span>
+                      <span>•</span>
+                      <span>{step.intensityRpe}</span>
+                      {step.restSeconds > 0 && (
+                        <>
+                          <span>•</span>
+                          <span>{step.restSeconds}s Rest</span>
+                        </>
                       )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-1">
-                        <span className={`text-xs font-bold leading-tight ${isDone ? 'line-through text-zinc-400' : 'text-white'}`}>
-                          {step.name}
-                        </span>
-                        <span className="text-[10px] font-mono text-rose-300 bg-rose-950/40 px-1.5 py-0.2 rounded border border-rose-500/20 shrink-0">
-                          {step.sets} × {step.reps}
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-zinc-400 mt-1 font-mono">
-                        <span className="text-cyan-300">{step.targetMuscle}</span>
-                        <span>•</span>
-                        <span>{step.intensityRpe}</span>
-                        {step.restSeconds > 0 && (
-                          <>
-                            <span>•</span>
-                            <span>{step.restSeconds}s Rest</span>
-                          </>
-                        )}
-                      </div>
-                      <p className="text-[10px] text-zinc-400 mt-1 italic">
-                        💡 {step.cue}
-                      </p>
-                    </div>
+                    <p className="text-[10px] text-zinc-400 mt-1 italic">
+                      💡 {step.cue}
+                    </p>
                   </div>
-                );
-              })}
-
-            {/* Finance Steps */}
-            {!isFitness &&
-              prescription.financeSteps?.map((step, idx) => {
-                const isDone = completedSteps[idx] || false;
-                return (
-                  <div
-                    key={idx}
-                    onClick={() => toggleStep(idx)}
-                    className={`p-3 rounded-xl border transition-all cursor-pointer select-none flex items-start gap-3 ${
-                      isDone
-                        ? 'bg-emerald-950/20 border-emerald-500/30 opacity-70'
-                        : 'bg-white/[0.03] border-white/[0.07] hover:border-white/20'
-                    }`}
-                  >
-                    <div className="mt-0.5 shrink-0">
-                      {isDone ? (
-                        <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                      ) : (
-                        <div className="h-4 w-4 rounded-full border border-zinc-500 flex items-center justify-center text-[9px] font-mono text-zinc-400">
-                          {idx + 1}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-1">
-                        <span className={`text-xs font-bold leading-tight ${isDone ? 'line-through text-zinc-400' : 'text-white'}`}>
-                          {step.topic}
-                        </span>
-                        <span className="text-[10px] font-mono text-amber-300 bg-amber-950/40 px-1.5 py-0.2 rounded border border-amber-500/20 shrink-0">
-                          {step.durationMinutes}m Drill
-                        </span>
-                      </div>
-                      <div className="text-[10px] text-zinc-400 mt-1 font-mono">
-                        Deliverable: <span className="text-white font-medium">{step.deliverable}</span>
-                      </div>
-                      <div className="p-1.5 rounded bg-black/60 border border-white/[0.06] text-[9.5px] font-mono text-cyan-300 mt-1">
-                        Formula: {step.keyFormulaOrSkill}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
@@ -334,7 +279,7 @@ export const ActiveMissionTimerHUD: React.FC<ActiveMissionTimerHUDProps> = ({
                 <AlertTriangle className="h-5 w-5" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-white font-serif">Abort Active Protocol?</h4>
+                <h4 className="text-sm font-bold text-white font-serif">Abort Active Workout?</h4>
                 <p className="text-[11px] text-zinc-400">Confirmation Required</p>
               </div>
             </div>
@@ -388,7 +333,7 @@ export const ActiveMissionTimerHUD: React.FC<ActiveMissionTimerHUDProps> = ({
             <div className="grid grid-cols-2 gap-2.5 py-1">
               <div className="p-3 rounded-xl bg-black/50 border border-white/[0.08]">
                 <span className="text-[10px] font-mono text-zinc-400 block uppercase">XP Earned</span>
-                <span className="text-lg font-bold font-mono text-amber-400">+{xpEarned} XP</span>
+                <span className="text-lg font-bold font-mono text-amber-400">+{prescription.xpAward} XP</span>
               </div>
               <div className="p-3 rounded-xl bg-black/50 border border-white/[0.08]">
                 <span className="text-[10px] font-mono text-zinc-400 block uppercase">Sliders Updated</span>

@@ -3,12 +3,13 @@ import {
   Activity,
   Eye,
   CheckSquare,
-  TrendingUp
+  TrendingUp,
+  HelpCircle
 } from 'lucide-react';
 import { useTitan } from '../../context/TitanContext';
 
 interface MobileTabItem {
-  id: 'overview' | 'hologram' | 'quests' | 'charts';
+  id: 'overview' | 'hologram' | 'clueless' | 'quests' | 'charts';
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   isSpecial?: boolean;
@@ -23,6 +24,7 @@ export const MobileBottomNav: React.FC = () => {
   const tabs: MobileTabItem[] = [
     { id: 'overview', label: 'Today', icon: Activity },
     { id: 'hologram', label: 'Scanner', icon: Eye, isSpecial: true },
+    { id: 'clueless', label: 'Clueless?', icon: HelpCircle },
     { id: 'quests', label: 'Trophies', icon: CheckSquare },
     { id: 'charts', label: 'Analytics', icon: TrendingUp },
   ];

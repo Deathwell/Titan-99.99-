@@ -5,6 +5,7 @@ import { MobileBottomNav } from './components/layout/MobileBottomNav';
 import { HeaderHUD } from './components/layout/HeaderHUD';
 import { OverviewDashboard } from './components/layout/OverviewDashboard';
 import { NeuralHologramScanner } from './components/hologram/NeuralHologramScanner';
+import { CluelessHubView } from './components/views/CluelessHubView';
 import { DailyQuests } from './components/quests/DailyQuests';
 import { AnalyticsProfileView } from './components/charts/AnalyticsProfileView';
 import { SettingsModal } from './components/modals/SettingsModal';
@@ -66,10 +67,11 @@ const DashboardContent: React.FC = () => {
         {/* Dynamic Inactivity Punishment Banner (If Triggered) */}
         <DecayPenaltyBanner />
 
-        {/* 4 Clean Primary Tab Canvases */}
+        {/* Clean Primary Tab Canvases */}
         <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-12 w-full">
           {activeTab === 'overview' && <OverviewDashboard />}
           {activeTab === 'hologram' && <NeuralHologramScanner />}
+          {activeTab === 'clueless' && <CluelessHubView />}
           {activeTab === 'quests' && <DailyQuests />}
           {activeTab === 'charts' && <AnalyticsProfileView />}
         </main>

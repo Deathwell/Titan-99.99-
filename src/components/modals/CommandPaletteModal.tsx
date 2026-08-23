@@ -17,7 +17,8 @@ import {
   Zap,
   Sparkles,
   Command,
-  Scale
+  Scale,
+  HelpCircle
 } from 'lucide-react';
 import { useTitan } from '../../context/TitanContext';
 import { soundEngine } from '../../lib/audio';
@@ -104,6 +105,19 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({ isOpen
       shortcut: '2'
     },
     {
+      id: 'nav-clueless',
+      category: 'NAVIGATION',
+      title: 'Clueless? • AI Workout Prescription & Timer',
+      subtitle: 'Specify Age, Gender, Equipment, Intensity & 15m–4h interval for optimum routine',
+      icon: HelpCircle,
+      iconColor: 'text-cyan-400',
+      action: () => {
+        setActiveTab('clueless');
+        onClose();
+      },
+      shortcut: '3'
+    },
+    {
       id: 'nav-quests',
       category: 'NAVIGATION',
       title: 'Daily Quests & Badge Wall',
@@ -114,7 +128,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({ isOpen
         setActiveTab('quests');
         onClose();
       },
-      shortcut: '3'
+      shortcut: '4'
     },
     {
       id: 'nav-charts',
@@ -127,7 +141,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({ isOpen
         setActiveTab('charts');
         onClose();
       },
-      shortcut: '4'
+      shortcut: '5'
     },
     {
       id: 'proto-workout-60',
