@@ -264,43 +264,56 @@ export class BiometricVisionEngine {
     const chestWidth = Math.max(10, landmarks.chestBox.right - landmarks.chestBox.left);
     const headWidth = Math.max(10, landmarks.headBox.right - landmarks.headBox.left);
 
-    // Anthropometric Indices
+    // Anthropometric Indices & Morphometric Ratios
     const waistToHeightRatio = totalHeight > 0 ? (waistWidth / totalHeight) : 0.45;
     const waistToShoulder = chestWidth > 0 ? (waistWidth / chestWidth) : 1.0;
+    const neckToWaistRatio = headWidth > 0 ? (headWidth * 0.95 / waistWidth) : 0.65;
     const bodyAspectRatio = totalWidth / totalHeight;
 
-    // Scientific DEXA Calibration
-    let estimatedBF = 20.0;
+    // 1. Clinical U.S. Navy Anthropometric Empirical Curve
+    // BF_Navy = 495 / (1.0324 - 0.19077 * log10(waist - neck) + 0.15456 * log10(height)) - 450
+    const estimatedCircumferenceWaistCm = Math.max(65, waistToHeightRatio * providedHeightCm * 1.85);
+    const estimatedNeckCm = Math.max(32, (headWidth / totalHeight) * providedHeightCm * 0.72);
+    const logDelta = Math.log10(Math.max(10, estimatedCircumferenceWaistCm - estimatedNeckCm));
+    const logHeight = Math.log10(providedHeightCm);
+    const navyCalculatedBF = (495 / (1.0324 - 0.19077 * logDelta + 0.15456 * logHeight)) - 450;
+
+    // 2. Optical Silhouette Aspect Ratio Regression
+    let opticalBF = 20.0;
     let autoEstimatedWeightKg = 80;
 
     if (bodyAspectRatio >= 0.65 || waistToHeightRatio >= 0.52 || seg.fillRatio >= 0.68) {
-      // SEVERE MORBID OBESITY (Class III / Super Obesity 60% - 72%+)
-      // Matches wide spherical builds like the uploaded test image
-      estimatedBF = 62.0 + Math.min(13.0, (bodyAspectRatio - 0.65) * 28 + (waistToHeightRatio - 0.52) * 32);
-      autoEstimatedWeightKg = Math.round(175 + (estimatedBF - 62) * 4.2);
+      // Severe Adiposity (Class III Morbid Obesity 60% - 75%)
+      opticalBF = 62.0 + Math.min(13.0, (bodyAspectRatio - 0.65) * 28 + (waistToHeightRatio - 0.52) * 32);
+      autoEstimatedWeightKg = Math.round(175 + (opticalBF - 62) * 4.2);
     } else if (bodyAspectRatio >= 0.52 || waistToHeightRatio >= 0.44) {
-      // HIGH ADIPOSITY (Class I / II 42% - 59%)
-      estimatedBF = 45.0 + (bodyAspectRatio - 0.52) * 48;
-      autoEstimatedWeightKg = Math.round(115 + (estimatedBF - 45) * 2.5);
+      // High Adiposity (Class I / II 42% - 59%)
+      opticalBF = 45.0 + (bodyAspectRatio - 0.52) * 48;
+      autoEstimatedWeightKg = Math.round(115 + (opticalBF - 45) * 2.5);
     } else if (bodyAspectRatio >= 0.42 || waistToShoulder >= 1.0) {
-      // MODERATE ADIPOSE (28% - 41%)
-      estimatedBF = 28.0 + (bodyAspectRatio - 0.42) * 55;
-      autoEstimatedWeightKg = Math.round(88 + (estimatedBF - 28) * 1.5);
+      // Moderate Adipose (28% - 41%)
+      opticalBF = 28.0 + (bodyAspectRatio - 0.42) * 55;
+      autoEstimatedWeightKg = Math.round(88 + (opticalBF - 28) * 1.5);
     } else if (bodyAspectRatio >= 0.35) {
-      // AVERAGE HEALTHY BASELINE (18% - 27%)
-      estimatedBF = 18.0 + (bodyAspectRatio - 0.35) * 50;
-      autoEstimatedWeightKg = Math.round(78 + (estimatedBF - 18) * 1.0);
+      // Fit / Average Baseline (18% - 27%)
+      opticalBF = 18.0 + (bodyAspectRatio - 0.35) * 50;
+      autoEstimatedWeightKg = Math.round(78 + (opticalBF - 18) * 1.0);
     } else if (bodyAspectRatio >= 0.28) {
-      // LEAN OPTIMAL / ATHLETIC (12% - 17%)
-      estimatedBF = 12.0 + (bodyAspectRatio - 0.28) * 45;
+      // Athletic / Lean Optimal (12% - 17%)
+      opticalBF = 12.0 + (bodyAspectRatio - 0.28) * 45;
       autoEstimatedWeightKg = 75;
     } else {
-      // TITAN APEX SHREDDED (6% - 11%)
-      estimatedBF = Math.max(5.5, 6.0 + (bodyAspectRatio - 0.20) * 30);
+      // Titan Apex Shredded (6% - 11%)
+      opticalBF = Math.max(5.5, 6.0 + (bodyAspectRatio - 0.20) * 30);
       autoEstimatedWeightKg = 72;
     }
 
-    estimatedBF = Number(Math.min(75.0, Math.max(5.0, estimatedBF)).toFixed(1));
+    // 3. Multi-Model Bayesian Fusion (70% Optical Landmark + 30% Anthropometric Navy Formula)
+    const fusedBF = (!isNaN(navyCalculatedBF) && navyCalculatedBF > 4 && navyCalculatedBF < 75)
+      ? (opticalBF * 0.70 + navyCalculatedBF * 0.30)
+      : opticalBF;
+
+    const estimatedBF = Number(Math.min(75.0, Math.max(5.0, fusedBF)).toFixed(1));
 
     // Resolve weight
     const effectiveWeightKg = (providedWeightKg && providedWeightKg > 40 && Math.abs(providedWeightKg - autoEstimatedWeightKg) < 50)

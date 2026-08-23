@@ -92,24 +92,23 @@ export function generateCustomPrescription(params: PrescriptionFilterParams): Ta
   const isFemale = gender === 'FEMALE';
   const isMale = gender === 'MALE';
 
-  // 1. AGE MODIFIERS
-  let warmupMinutes = 3;
-  let ageBracketLabel = 'PEAK PRIME (15–29)';
+  // 1. CONTINUOUS AGE-SYNOVIAL JOINT ELASTICITY CURVE
+  // W(age, dur) = clamp(0.08 + ((age - 15) / 60) * 0.10, 0.08, 0.20)
+  const ageFraction = Math.min(1.0, Math.max(0.0, (age - 15) / 60));
+  const warmupRatio = 0.08 + ageFraction * 0.10;
+  const warmupMinutes = Math.max(3, Math.round(dur * warmupRatio));
+
+  let ageBracketLabel = 'PHYSIOLOGICAL PRIME (15–29)';
   if (age >= 60) {
-    warmupMinutes = Math.max(6, Math.round(dur * 0.15));
     ageBracketLabel = 'CENTENARIAN LONGEVITY (60–75+)';
   } else if (age >= 45) {
-    warmupMinutes = Math.max(5, Math.round(dur * 0.12));
     ageBracketLabel = 'MASTERS PERFORMANCE (45–59)';
   } else if (age >= 30) {
-    warmupMinutes = Math.max(4, Math.round(dur * 0.10));
     ageBracketLabel = 'PRIME ATHLETE (30–44)';
-  } else {
-    warmupMinutes = Math.max(3, Math.round(dur * 0.08));
-    ageBracketLabel = 'PHYSIOLOGICAL PRIME (15–29)';
   }
 
-  const cooldownMinutes = Math.max(3, Math.round(dur * 0.08));
+  const cooldownRatio = 0.07 + ageFraction * 0.05;
+  const cooldownMinutes = Math.max(3, Math.round(dur * cooldownRatio));
   const workMinutes = Math.max(9, dur - warmupMinutes - cooldownMinutes);
 
   let title = '';
