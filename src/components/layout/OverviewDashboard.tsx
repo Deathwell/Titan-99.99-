@@ -237,9 +237,6 @@ export const OverviewDashboard: React.FC = () => {
       {/* 2. Inactivity Threat & Contender Overtake Radar */}
       <ThreatClockBanner />
 
-      {/* 2. Inactivity Threat & Contender Overtake Radar */}
-      <ThreatClockBanner />
-
       {/* 3. Daily Excellence Tasks with Darkening Progressive Sliders */}
       <div className="space-y-3.5">
         <div className="flex items-center justify-between px-0.5">
