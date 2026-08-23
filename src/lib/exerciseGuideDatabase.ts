@@ -1,7 +1,7 @@
 /**
  * Comprehensive Sports Science Exercise Guide Database with Curated Video Tutorials
  * Contains step-by-step form guides, biomechanical breakdowns, common mistakes,
- * pro coaching cues, and verified YouTube coaching video links.
+ * pro coaching cues, and verified YouTube coaching video links for every exercise in Titan.
  */
 
 export interface PhaseGuide {
@@ -33,134 +33,74 @@ export interface ExerciseGuide {
 }
 
 export const EXERCISE_GUIDE_DB: Record<string, ExerciseGuide> = {
-  'pistol-squat': {
-    id: 'pistol-squat',
-    name: 'Pistol Squat (Single-Leg Full Squat)',
-    aliases: ['pistol squat', 'single leg squat', 'pistols'],
-    category: 'Unilateral Quadriceps & Glute Compound',
-    targetMuscles: ['Quadriceps (Vastus Medialis/Lateralis)', 'Gluteus Maximus'],
-    secondaryMuscles: ['Ankle Stabilizers', 'Hip Flexors', 'Core Bracing'],
-    coachAttribution: 'Squat University & Calisthenics Movement',
-    difficulty: 'Advanced',
-    youtubeQuery: 'how to do pistol squats form squat university',
-    curatedVideoUrl: 'https://www.youtube.com/results?search_query=how+to+pistol+squat+form+squat+university',
-    videoChannelName: 'Squat University / Calisthenics Movement',
-    keyAngles: '90° Hip Flexion • Full Knee Flexion • Ankle Dorsiflexion 35°',
+  // 1. SPINE DECOMPRESSION & PARASYMPATHETIC RESET
+  'spine-decompression': {
+    id: 'spine-decompression',
+    name: 'Spine Decompression Hang + 4-7-8 Parasympathetic Reset',
+    aliases: ['spine decompression', 'decompression', 'parasympathetic', 'cooldown', '4-7-8', 'hang'],
+    category: 'Spinal Disc Imbibition & Vagus Nerve Recovery',
+    targetMuscles: ['Intervertebral Discs (L1–L5, T1–T12)', 'Psoas Major', 'Thoracolumbar Fascia'],
+    secondaryMuscles: ['Latissimus Dorsi (Passive Stretch)', 'Forearm Flexors', 'Diaphragm'],
+    coachAttribution: 'Dr. Andrew Huberman & Dr. Peter Attia',
+    difficulty: 'Beginner',
+    youtubeQuery: 'peter attia dead hang spine decompression benefits',
+    curatedVideoUrl: 'https://www.youtube.com/results?search_query=peter+attia+dead+hang+spinal+decompression',
+    videoChannelName: 'Dr. Peter Attia / Huberman Lab',
+    keyAngles: '180° Full Overhead Passive Hang • 4s Inhale : 7s Hold : 8s Exhale',
     movementPhases: [
       {
-        phaseName: '1. Rooting & Stance',
-        phaseTiming: 'Start',
-        description: 'Stand on one leg, elevate the non-working leg forward, screw the foot into the floor.',
-        focusCue: 'Tripod foot contact: big toe, pinky toe, and heel pinned to ground.'
+        phaseName: '1. Passive Hang Grip & Release',
+        phaseTiming: 'Setup (0:00–1:00)',
+        description: 'Grip overhead pull-up bar, let feet hover or lightly rest on floor. Fully relax pelvic floor and shoulders.',
+        focusCue: 'Release all muscular tension in lower back, allow gravity to traction the spine.'
       },
       {
-        phaseName: '2. 3-Second Controlled Negative',
-        phaseTiming: '3.0s Eccentric',
-        description: 'Hinge hips backward while bending knee smoothly. Reach arms forward for counterbalance.',
-        focusCue: 'Keep knee tracking directly in line with second toe, prevent knee valgus.'
+        phaseName: '2. 4-7-8 Diaphragmatic Breath',
+        phaseTiming: 'Breath Cycles (1:00–3:00)',
+        description: 'Inhale through nose for 4 seconds, hold oxygen for 7 seconds, exhale slowly through mouth for 8 seconds.',
+        focusCue: 'Long slow exhale stimulates the vagus nerve to down-regulate heart rate and lower cortisol.'
       },
       {
-        phaseName: '3. Deep Lengthened Stretch',
-        phaseTiming: '1.0s Stretch Pause',
-        description: 'Hamstring meets calf in the deepest position. Non-working leg stays elevated.',
-        focusCue: 'Maintain core tightness, avoid crashing into the bottom joint stop.'
+        phaseName: '3. 90/90 Supine Pelvic Neutral',
+        phaseTiming: 'Restorative Floor (3:00–5:00)',
+        description: 'Lie flat on back with calves resting on a bench at 90° hip and knee angles.',
+        focusCue: 'Flatten lower back flush to floor, feel intervertebral discs hydrate with fluid.'
       },
       {
-        phaseName: '4. Explosive Concentric Lockout',
-        phaseTiming: '1.0s Concentric',
-        description: 'Push the earth away through your midfoot to stand tall into full extension.',
-        focusCue: 'Drive chest up and extend hips forward to tall standing posture.'
+        phaseName: '4. Parasympathetic Transition',
+        phaseTiming: 'Final Reset',
+        description: 'Slow standing transition, roll shoulders back, establish tall posture.',
+        focusCue: 'Feel 1 inch taller and fully decompressed after the workout.'
       }
     ],
     setupSteps: [
-      'Stand upright on one leg with arms extended forward for counterbalance.',
-      'Extend the non-working leg straight out in front of you, parallel to the ground.',
-      'Root the working foot into the floor with 3 points of contact (heel, big toe, pinky toe).'
+      'Find an overhead bar or supportive doorframe where you can hang with relaxed shoulders.',
+      'Allow feet to remain lightly touching the floor if needed to remove excessive shoulder strain.',
+      'Relax abdominal wall and lumbar musculature completely.'
     ],
     executionSteps: [
-      'Initiate the descent by hinging the hips backward and flexing the working knee simultaneously.',
-      'Descend under a strict 3-second tempo until your hamstring touches your calf.',
-      'Pause for 1 second at the deep bottom position while maintaining an elevated non-working leg.',
-      'Drive aggressively through your midfoot and heel to return to a tall standing lockout.'
+      'Hang passively for 45–60 seconds, feeling the space between your lumbar vertebrae expand.',
+      'Perform 4-7-8 box breathing: Inhale 4s through nose, hold 7s, exhale 8s through pursed lips.',
+      'Transition to the floor in a 90/90 supine posture (calves on a bench or chair).',
+      'Rest for 2–3 minutes to allow fluid to re-enter avascular spinal discs.'
     ],
     commonMistakes: [
-      'Allowing the heel of the working foot to rise off the floor (indicates ankle mobility restriction).',
-      'Collapsing the knee inward (valgus collapse) due to weak glute medius stabilizers.',
-      'Rounding the lower back excessively at the bottom.'
+      'Engaging shoulder muscles or tensing the neck during the hang (must be completely passive).',
+      'Hyperventilating or taking shallow chest breaths instead of deep diaphragmatic breaths.',
+      'Jumping down aggressively from the bar (defeats spinal decompression).'
     ],
     proFormCues: [
-      '💡 "Screw your foot into the ground like you\'re corkscrewing a bottle."',
-      '💡 "Keep your arms and chest reaching forward to maintain your center of gravity over the midfoot."'
+      '💡 "Let gravity pull your pelvis down toward the center of the earth like a heavy pendulum."',
+      '💡 "The 8-second exhale tells your nervous system that the battle is over and recovery has begun."'
     ],
-    biomechanicsScience: 'Unilateral single-leg squats double the effective relative load on the working leg while eliminating compressive spinal axial shear forces.'
+    biomechanicsScience: 'Heavy lifting compresses spinal discs by 15–20%. Passive traction induces imbibition—drawing nutrient-rich synovial fluid back into disc matrices.'
   },
 
-  'barbell-hip-thrust': {
-    id: 'barbell-hip-thrust',
-    name: 'Barbell Hip Thrust (2-Sec Top Lockout)',
-    aliases: ['hip thrust', 'barbell hip thrust', 'kas glute bridge', 'glute thrust'],
-    category: 'Horizontal Posterior Chain Compound',
-    targetMuscles: ['Gluteus Maximus (Peak Shortened Position)'],
-    secondaryMuscles: ['Hamstrings', 'Adductor Magnus', 'Core Stabilizers'],
-    coachAttribution: 'Bret Contreras, PhD ("The Glute Guy")',
-    difficulty: 'Intermediate',
-    youtubeQuery: 'bret contreras barbell hip thrust form tutorial',
-    curatedVideoUrl: 'https://www.youtube.com/results?search_query=bret+contreras+barbell+hip+thrust+technique',
-    videoChannelName: 'Bret Contreras PhD / Glute Guy',
-    keyAngles: '90° Knee Angle at Top • Posterior Pelvic Tilt Lockout • Chin Tucked',
-    movementPhases: [
-      {
-        phaseName: '1. Bench & Bar Positioning',
-        phaseTiming: 'Setup',
-        description: 'Upper back against bench just below scapulae, padded bar placed on hip crease.',
-        focusCue: 'Feet flat, shoulder-width apart, toes flared 15° outward.'
-      },
-      {
-        phaseName: '2. Concentric Hip Drive',
-        phaseTiming: '1.0s Concentric',
-        description: 'Drive through heels, extending hips upward horizontally toward the ceiling.',
-        focusCue: 'Keep chin tucked to chest throughout the entire ascent.'
-      },
-      {
-        phaseName: '3. 2-Second Peak Lockout',
-        phaseTiming: '2.0s Iso-Hold',
-        description: 'Tuck tailbone forward (posterior pelvic tilt) and crush glutes at horizontal plane.',
-        focusCue: 'Shin is completely vertical (90°) at peak extension.'
-      },
-      {
-        phaseName: '4. Controlled Lowering',
-        phaseTiming: '2.0s Eccentric',
-        description: 'Lower bar smoothly without overarching lumbar spine.',
-        focusCue: 'Eyes stay locked forward on your knees, not looking up at ceiling.'
-      }
-    ],
-    setupSteps: [
-      'Sit on the floor with your upper back resting against a sturdy bench just below your shoulder blades.',
-      'Roll a padded barbell directly over your hips (use a thick foam pad).',
-      'Plant your feet flat on the floor, shoulder-width apart, with toes flared outward 15°.'
-    ],
-    executionSteps: [
-      'Tuck your chin firmly toward your chest and keep your gaze fixed forward at your knees.',
-      'Drive forcefully through your heels and midfoot, extending your hips upward toward the ceiling.',
-      'At the top lockout (knees at 90°), perform an anterior pelvic tilt (tuck tailbone) and squeeze glutes hard for 2 full seconds.',
-      'Lower the weight with a controlled 2-second negative without overarching your lower back.'
-    ],
-    commonMistakes: [
-      'Looking up at the ceiling or overarching the lumbar spine at lockout.',
-      'Placing feet too far forward (loads hamstrings) or too close (loads quads). Target 90° shin angle at top.',
-      'Failing to pause and squeeze at full horizontal hip extension.'
-    ],
-    proFormCues: [
-      '💡 "Tuck your chin to your chest like you\'re holding an orange under your neck throughout the entire set."',
-      '💡 "Crush a walnut between your glutes at the very top of the lockout."'
-    ],
-    biomechanicsScience: 'Electromyography (EMG) studies by Contreras show horizontal hip extension achieves 200% greater peak gluteus maximus activation than vertical squats.'
-  },
-
+  // 2. INCLINE BENCH PRESS (30° CLAVICULAR ANGLE)
   'incline-bench-press': {
     id: 'incline-bench-press',
     name: 'Incline Bench Press (30° Clavicular Angle)',
-    aliases: ['incline bench', 'incline dumbbell press', 'incline press', 'barbell incline press'],
+    aliases: ['incline bench', 'incline dumbbell press', 'incline press', 'barbell incline press', 'flat / 30° incline bench', 'heavy barbell incline bench', 'heavy incline db bench'],
     category: 'Upper Body Horizontal / Clavicular Press',
     targetMuscles: ['Clavicular Upper Pectoralis Major', 'Anterior Deltoids'],
     secondaryMuscles: ['Triceps Brachii', 'Serratus Anterior'],
@@ -219,10 +159,74 @@ export const EXERCISE_GUIDE_DB: Record<string, ExerciseGuide> = {
     biomechanicsScience: 'Kinesiology fiber mapping confirms a 30-degree incline maximizes upper pectoral fiber recruitment while reducing anterior shoulder joint sheer.'
   },
 
+  // 3. BARBELL HIP THRUST
+  'barbell-hip-thrust': {
+    id: 'barbell-hip-thrust',
+    name: 'Barbell Hip Thrust (2-Sec Top Lockout)',
+    aliases: ['hip thrust', 'barbell hip thrust', 'kas glute bridge', 'glute thrust', 'heavy barbell hip thrust', 'glute bridge'],
+    category: 'Horizontal Posterior Chain Compound',
+    targetMuscles: ['Gluteus Maximus (Peak Shortened Position)'],
+    secondaryMuscles: ['Hamstrings', 'Adductor Magnus', 'Core Stabilizers'],
+    coachAttribution: 'Bret Contreras, PhD ("The Glute Guy")',
+    difficulty: 'Intermediate',
+    youtubeQuery: 'bret contreras barbell hip thrust form tutorial',
+    curatedVideoUrl: 'https://www.youtube.com/results?search_query=bret+contreras+barbell+hip+thrust+technique',
+    videoChannelName: 'Bret Contreras PhD / Glute Guy',
+    keyAngles: '90° Knee Angle at Top • Posterior Pelvic Tilt Lockout • Chin Tucked',
+    movementPhases: [
+      {
+        phaseName: '1. Bench & Bar Positioning',
+        phaseTiming: 'Setup',
+        description: 'Upper back against bench just below scapulae, padded bar placed on hip crease.',
+        focusCue: 'Feet flat, shoulder-width apart, toes flared 15° outward.'
+      },
+      {
+        phaseName: '2. Concentric Hip Drive',
+        phaseTiming: '1.0s Concentric',
+        description: 'Drive through heels, extending hips upward horizontally toward the ceiling.',
+        focusCue: 'Keep chin tucked to chest throughout the entire ascent.'
+      },
+      {
+        phaseName: '3. 2-Second Peak Lockout',
+        phaseTiming: '2.0s Iso-Hold',
+        description: 'Tuck tailbone forward (posterior pelvic tilt) and crush glutes at horizontal plane.',
+        focusCue: 'Shin is completely vertical (90°) at peak extension.'
+      },
+      {
+        phaseName: '4. Controlled Lowering',
+        phaseTiming: '2.0s Eccentric',
+        description: 'Lower bar smoothly without overarching lumbar spine.',
+        focusCue: 'Eyes stay locked forward on your knees, not looking up at ceiling.'
+      }
+    ],
+    setupSteps: [
+      'Sit on the floor with your upper back resting against a sturdy bench just below your shoulder blades.',
+      'Roll a padded barbell directly over your hips (use a thick foam pad).',
+      'Plant your feet flat on the floor, shoulder-width apart, with toes flared outward 15°.'
+    ],
+    executionSteps: [
+      'Tuck your chin firmly toward your chest and keep your gaze fixed forward at your knees.',
+      'Drive forcefully through your heels and midfoot, extending your hips upward toward the ceiling.',
+      'At the top lockout (knees at 90°), perform an anterior pelvic tilt (tuck tailbone) and squeeze glutes hard for 2 full seconds.',
+      'Lower the weight with a controlled 2-second negative without overarching your lower back.'
+    ],
+    commonMistakes: [
+      'Looking up at the ceiling or overarching the lumbar spine at lockout.',
+      'Placing feet too far forward (loads hamstrings) or too close (loads quads). Target 90° shin angle at top.',
+      'Failing to pause and squeeze at full horizontal hip extension.'
+    ],
+    proFormCues: [
+      '💡 "Tuck your chin to your chest like you\'re holding an orange under your neck throughout the entire set."',
+      '💡 "Crush a walnut between your glutes at the very top of the lockout."'
+    ],
+    biomechanicsScience: 'Electromyography (EMG) studies by Contreras show horizontal hip extension achieves 200% greater peak gluteus maximus activation than vertical squats.'
+  },
+
+  // 4. ROMANIAN DEADLIFT (RDL)
   'romanian-deadlift': {
     id: 'romanian-deadlift',
     name: 'Romanian Deadlift (RDL) with Deep Stretch Focus',
-    aliases: ['rdl', 'romanian deadlift', 'dumbbell rdl', 'deficit rdl', 'barbell rdl'],
+    aliases: ['rdl', 'romanian deadlift', 'dumbbell rdl', 'deficit rdl', 'barbell rdl', 'heavy barbell romanian deadlift', 'heavy deficit romanian deadlift'],
     category: 'Hip-Hinge Posterior Chain Compound',
     targetMuscles: ['Hamstrings (Biceps Femoris/Semitendinosus)', 'Gluteus Maximus (Lengthened State)'],
     secondaryMuscles: ['Erector Spinae', 'Latissimus Dorsi', 'Forearm Grip'],
@@ -281,10 +285,11 @@ export const EXERCISE_GUIDE_DB: Record<string, ExerciseGuide> = {
     biomechanicsScience: 'Loading the hamstring and glute fibers under tension in their lengthened state triggers stretch-mediated hypertrophy (titin kinase phosphorylation).'
   },
 
+  // 5. BULGARIAN SPLIT SQUAT
   'bulgarian-split-squat': {
     id: 'bulgarian-split-squat',
     name: 'Bulgarian Split Squat (30° Torso Forward Pitch)',
-    aliases: ['bulgarian split squat', 'split squat', 'rear foot elevated split squat', 'rfess'],
+    aliases: ['bulgarian split squat', 'split squat', 'rear foot elevated split squat', 'rfess', 'jumping bulgarian split squats'],
     category: 'Unilateral Lower Body Compound',
     targetMuscles: ['Gluteus Maximus (Lengthened State)', 'Quadriceps'],
     secondaryMuscles: ['Gluteus Medius', 'Adductor Magnus', 'Core'],
@@ -343,10 +348,137 @@ export const EXERCISE_GUIDE_DB: Record<string, ExerciseGuide> = {
     biomechanicsScience: 'A 30° forward torso lean increases the hip moment arm by 40%, channeling maximum mechanical tension directly into the gluteus maximus.'
   },
 
+  // 6. PISTOL SQUATS & GOBLET SQUATS
+  'pistol-squat': {
+    id: 'pistol-squat',
+    name: 'Pistol Squat / Single-Leg Box Squat',
+    aliases: ['pistol squat', 'single leg squat', 'pistols', 'pistol squats', 'goblet box squat', 'air squats'],
+    category: 'Unilateral Quadriceps & Glute Compound',
+    targetMuscles: ['Quadriceps (Vastus Medialis/Lateralis)', 'Gluteus Maximus'],
+    secondaryMuscles: ['Ankle Stabilizers', 'Hip Flexors', 'Core Bracing'],
+    coachAttribution: 'Squat University & Calisthenics Movement',
+    difficulty: 'Advanced',
+    youtubeQuery: 'how to do pistol squats form squat university',
+    curatedVideoUrl: 'https://www.youtube.com/results?search_query=how+to+pistol+squat+form+squat+university',
+    videoChannelName: 'Squat University / Calisthenics Movement',
+    keyAngles: '90° Hip Flexion • Full Knee Flexion • Ankle Dorsiflexion 35°',
+    movementPhases: [
+      {
+        phaseName: '1. Rooting & Stance',
+        phaseTiming: 'Setup',
+        description: 'Stand on one leg, elevate the non-working leg forward, screw the foot into the floor.',
+        focusCue: 'Tripod foot contact: big toe, pinky toe, and heel pinned to ground.'
+      },
+      {
+        phaseName: '2. 3-Second Controlled Negative',
+        phaseTiming: '3.0s Eccentric',
+        description: 'Hinge hips backward while bending knee smoothly. Reach arms forward for counterbalance.',
+        focusCue: 'Keep knee tracking directly in line with second toe, prevent knee valgus.'
+      },
+      {
+        phaseName: '3. Deep Lengthened Stretch',
+        phaseTiming: '1.0s Stretch Pause',
+        description: 'Hamstring meets calf in the deepest position. Non-working leg stays elevated.',
+        focusCue: 'Maintain core tightness, avoid crashing into the bottom joint stop.'
+      },
+      {
+        phaseName: '4. Explosive Concentric Lockout',
+        phaseTiming: '1.0s Concentric',
+        description: 'Push the earth away through your midfoot to stand tall into full extension.',
+        focusCue: 'Drive chest up and extend hips forward to tall standing posture.'
+      }
+    ],
+    setupSteps: [
+      'Stand upright on one leg with arms extended forward for counterbalance.',
+      'Extend the non-working leg straight out in front of you, parallel to the ground.',
+      'Root the working foot into the floor with 3 points of contact (heel, big toe, pinky toe).'
+    ],
+    executionSteps: [
+      'Initiate the descent by hinging the hips backward and flexing the working knee simultaneously.',
+      'Descend under a strict 3-second tempo until your hamstring touches your calf.',
+      'Pause for 1 second at the deep bottom position while maintaining an elevated non-working leg.',
+      'Drive aggressively through your midfoot and heel to return to a tall standing lockout.'
+    ],
+    commonMistakes: [
+      'Allowing the heel of the working foot to rise off the floor (indicates ankle mobility restriction).',
+      'Collapsing the knee inward (valgus collapse) due to weak glute medius stabilizers.',
+      'Rounding the lower back excessively at the bottom.'
+    ],
+    proFormCues: [
+      '💡 "Screw your foot into the ground like you\'re corkscrewing a bottle."',
+      '💡 "Keep your arms and chest reaching forward to maintain your center of gravity over the midfoot."'
+    ],
+    biomechanicsScience: 'Unilateral single-leg squats double the effective relative load on the working leg while eliminating compressive spinal axial shear forces.'
+  },
+
+  // 7. CHEST-SUPPORTED ROWS & LAT ROWS
+  'chest-supported-row': {
+    id: 'chest-supported-row',
+    name: 'Chest-Supported Incline T-Bar / Cable Row',
+    aliases: ['chest-supported', 'incline row', 't-bar row', 'seated cable row', 'doorframe isometric lat rows', 'inverted rows', 'towel rows'],
+    category: 'Upper Back & Latissimus Dorsi Compound',
+    targetMuscles: ['Latissimus Dorsi', 'Rhomboids', 'Mid & Lower Trapezius', 'Rear Deltoids'],
+    secondaryMuscles: ['Brachialis', 'Biceps Brachii', 'Forearms'],
+    coachAttribution: 'Dr. Mike Israetel & Jeff Nippard',
+    difficulty: 'Intermediate',
+    youtubeQuery: 'dr mike israetel chest supported row technique',
+    curatedVideoUrl: 'https://www.youtube.com/results?search_query=renaissance+periodization+chest+supported+row',
+    videoChannelName: 'Renaissance Periodization / Dr. Mike Israetel',
+    keyAngles: '45° Bench Incline • 45° Elbow Flaring • Full Scapular Protraction/Retraction',
+    movementPhases: [
+      {
+        phaseName: '1. Chest Pad Anchor',
+        phaseTiming: 'Setup',
+        description: 'Lie prone with sternum resting against 30°–45° incline bench, arms fully elongated forward.',
+        focusCue: 'Pin feet into floor, keep lower back neutral.'
+      },
+      {
+        phaseName: '2. Scapular Drive & Row',
+        phaseTiming: '1.0s Concentric',
+        description: 'Drive elbows back at 45° angle, squeezing shoulder blades together tightly around spine.',
+        focusCue: 'Pull with your elbows, not your hands. Imagine crushing a tennis ball between shoulder blades.'
+      },
+      {
+        phaseName: '3. 1-Second Peak Contraction',
+        phaseTiming: '1.0s Squeeze',
+        description: 'Hold maximal upper back contraction at chest pad level.',
+        focusCue: 'Do not lift chest off the pad; keep all tension isolated in the upper back.'
+      },
+      {
+        phaseName: '4. 2-Second Lengthened Release',
+        phaseTiming: '2.0s Eccentric',
+        description: 'Lower weight slowly, allowing shoulder blades to protract and stretch lats fully.',
+        focusCue: 'Feel lats stretch around ribcage at the bottom dead-stop.'
+      }
+    ],
+    setupSteps: [
+      'Adjust bench to a 30°–45° incline and place dumbbells or barbell beneath the head of the bench.',
+      'Lie face down with your sternum supported by the pad and feet anchored into the floor.',
+      'Grip the handles with an overhand or neutral grip with arms fully extended.'
+    ],
+    executionSteps: [
+      'Initiate the movement by retracting your scapulae (pull shoulder blades together).',
+      'Drive elbows backward past your torso at roughly a 45° flare.',
+      'Squeeze shoulder blades hard together for 1 full second at the peak.',
+      'Lower under a controlled 2-second negative until arms are fully elongated.'
+    ],
+    commonMistakes: [
+      'Lifting chest off the pad (momentum cheating).',
+      'Pulling too high toward the throat (loads upper traps instead of lats and rhomboids).',
+      'Cutting the bottom range short without allowing full lat stretch.'
+    ],
+    proFormCues: [
+      '💡 "Drive your elbows into your back pockets and wrap your shoulder blades around your spine."',
+      '💡 "Glue your ribcage to the pad throughout the entire set."'
+    ],
+    biomechanicsScience: 'Supporting the chest eliminates spinal erector fatigue, allowing 100% neuromuscular output to be directed into the lats and rhomboids.'
+  },
+
+  // 8. STRICT DEAD-HANG PULL-UPS & LAT PULLDOWNS
   'pull-up': {
     id: 'pull-up',
-    name: 'Strict Dead-Hang Pull-Up',
-    aliases: ['pull-up', 'pull up', 'chin-up', 'dead hang pull up', 'lat pull-up'],
+    name: 'Strict Dead-Hang Pull-Up / Lat Pulldown',
+    aliases: ['pull-up', 'pull up', 'chin-up', 'dead hang pull up', 'lat pull-up', 'lat pulldown', 'park pull-up bar strict dead-hang pull-ups'],
     category: 'Vertical Pull Compound',
     targetMuscles: ['Latissimus Dorsi', 'Teres Major', 'Rhomboids'],
     secondaryMuscles: ['Biceps Brachii', 'Brachialis', 'Forearm Grip', 'Core'],
@@ -405,10 +537,11 @@ export const EXERCISE_GUIDE_DB: Record<string, ExerciseGuide> = {
     biomechanicsScience: 'Full dead-hang initiation recruits lower lat fibers at maximal passive stretch before motor unit firing.'
   },
 
+  // 9. DEFICIT PUSH-UPS & CLAP PUSH-UPS
   'deficit-push-up': {
     id: 'deficit-push-up',
     name: 'Deficit Tempo Push-Up (3s Negative + Stretch Pause)',
-    aliases: ['push-up', 'pushup', 'deficit push-up', 'deficit push up', 'clap push up'],
+    aliases: ['push-up', 'pushup', 'deficit push-up', 'deficit push up', 'clap push up', 'incline hands-elevated push-ups', 'deep deficit push-ups', 'explosive deficit clap push-ups'],
     category: 'Horizontal Bodyweight Push Compound',
     targetMuscles: ['Pectoralis Major (Deep Stretch Overload)'],
     secondaryMuscles: ['Triceps Brachii', 'Anterior Deltoids', 'Transverse Abdominis'],
@@ -467,12 +600,13 @@ export const EXERCISE_GUIDE_DB: Record<string, ExerciseGuide> = {
     biomechanicsScience: 'Deficit depth increases the active range of motion by 30%, triggering stretch-mediated hypertrophy without weights.'
   },
 
+  // 10. LATERAL RAISES & HIP ABDUCTIONS
   'lateral-raise': {
     id: 'lateral-raise',
-    name: 'Lean-Away Cable / Dumbbell Lateral Raise',
-    aliases: ['lateral raise', 'cable lateral raise', 'side delt raise', 'dumbbell lateral raise'],
+    name: 'Lean-Away Cable / DB Lateral Raise + Hip Abduction',
+    aliases: ['lateral raise', 'cable lateral raise', 'side delt raise', 'dumbbell lateral raise', 'standing dumbbell lateral raises', 'cable / db lean-away lateral raises', 'seated hip abductions', 'cable kickbacks'],
     category: 'Shoulder Isolation & Aesthetic Silhouette',
-    targetMuscles: ['Lateral Deltoids (Shoulder Cap)'],
+    targetMuscles: ['Lateral Deltoids (Shoulder Cap)', 'Gluteus Medius (Upper Shelf)'],
     secondaryMuscles: ['Anterior/Posterior Deltoids', 'Supraspinatus', 'Trapezius'],
     coachAttribution: 'Jeff Nippard & Lauren Simpson',
     difficulty: 'Beginner',
@@ -529,10 +663,137 @@ export const EXERCISE_GUIDE_DB: Record<string, ExerciseGuide> = {
     biomechanicsScience: 'Raising in the scapular plane prevents subacromial friction while isolating lateral deltoid pennation angles.'
   },
 
+  // 11. BICEPS CURLS & TRICEPS EXTENSIONS
+  'arms-isolation': {
+    id: 'arms-isolation',
+    name: 'Incline DB Biceps Curls + Overhead Triceps Extension',
+    aliases: ['biceps curls', 'triceps rope pressdown', 'incline dumbbell biceps curls', 'overhead rope triceps extension', 'arms', 'biceps', 'triceps'],
+    category: 'Upper Arm Lengthened Isolation',
+    targetMuscles: ['Biceps Brachii (Long Head)', 'Triceps Brachii (Long Head)'],
+    secondaryMuscles: ['Brachialis', 'Brachioradialis'],
+    coachAttribution: 'Dr. Mike Israetel & Jeff Nippard',
+    difficulty: 'Beginner',
+    youtubeQuery: 'jeff nippard science biceps triceps arm workout',
+    curatedVideoUrl: 'https://www.youtube.com/results?search_query=jeff+nippard+incline+dumbbell+curl+technique',
+    videoChannelName: 'Jeff Nippard / Renaissance Periodization',
+    keyAngles: '45° Bench Incline for Biceps • Elbows Locked Overhead for Triceps',
+    movementPhases: [
+      {
+        phaseName: '1. Incline Stretch Position',
+        phaseTiming: 'Setup',
+        description: 'Sit on 45° incline bench, arms hanging straight down behind torso for deep shoulder extension stretch.',
+        focusCue: 'Pin elbows in place behind torso.'
+      },
+      {
+        phaseName: '2. Supinated Biceps Curl',
+        phaseTiming: '1.0s Concentric',
+        description: 'Curl dumbbells upward while supinating wrists (turn pinkies up toward ceiling).',
+        focusCue: 'Keep elbows pinned behind torso, do not swing shoulders forward.'
+      },
+      {
+        phaseName: '3. 1-Second Peak Squeeze',
+        phaseTiming: '1.0s Peak Hold',
+        description: 'Squeeze biceps peak hard at shoulder height.',
+        focusCue: 'Full active contraction at top.'
+      },
+      {
+        phaseName: '4. 3-Second Deep Stretch Release',
+        phaseTiming: '3.0s Eccentric',
+        description: 'Lower weights under strict 3-second control into full elbow extension behind torso.',
+        focusCue: 'Feel profound passive stretch across the long head of the biceps.'
+      }
+    ],
+    setupSteps: [
+      'Set bench to a 45° incline and hold dumbbells with a neutral grip.',
+      'Allow arms to hang straight down with shoulders relaxed back into the pad.',
+      'Keep head resting against the bench to prevent cervical strain.'
+    ],
+    executionSteps: [
+      'Curl dumbbells upward, rotating wrists outward (supination) so palms face shoulders at the top.',
+      'Pause for 1 second at full contraction without moving your upper arms forward.',
+      'Lower the dumbbells with a controlled 3-second eccentric tempo until elbows reach full straight extension.',
+      'Transition directly to overhead triceps rope extensions for maximum antagonist arm blood flow.'
+    ],
+    commonMistakes: [
+      'Swinging the elbows forward to use anterior deltoid momentum.',
+      'Cutting the bottom range short without fully extending the arms.',
+      'Flaring elbows out to the sides on overhead triceps extensions.'
+    ],
+    proFormCues: [
+      '💡 "Keep your elbows frozen in space behind your ribs throughout the entire curl."',
+      '💡 "Turn your pinky fingers toward your ears at the top of the curl."'
+    ],
+    biomechanicsScience: 'Placing the shoulder in extension on an incline bench pre-stretches the biceps long head across two joints, inducing maximum sarcomere micro-tearing.'
+  },
+
+  // 12. PIKE HANDSTAND PUSH-UPS
+  'pike-push-up': {
+    id: 'pike-push-up',
+    name: 'Pike Handstand Push-Up (Feet Elevated on Chair)',
+    aliases: ['pike push-up', 'pike handstand push-up', 'handstand push-up', 'pike push ups'],
+    category: 'Vertical Bodyweight Overhead Press',
+    targetMuscles: ['Anterior & Lateral Deltoids', 'Clavicular Pectoralis Major', 'Triceps Brachii'],
+    secondaryMuscles: ['Trapezius', 'Serratus Anterior', 'Core'],
+    coachAttribution: 'Calisthenics Movement & Jeff Cavaliere MSPT',
+    difficulty: 'Advanced',
+    youtubeQuery: 'calisthenics movement pike push up form tutorial',
+    curatedVideoUrl: 'https://www.youtube.com/results?search_query=calisthenics+movement+pike+push+up+guide',
+    videoChannelName: 'Calisthenics Movement / Athlean-X',
+    keyAngles: '90° Inverted Hip Pike • Tripod Head Placement • 45° Elbow Path',
+    movementPhases: [
+      {
+        phaseName: '1. Inverted Pike Geometry',
+        phaseTiming: 'Setup',
+        description: 'Feet elevated on chair or box, hips stacked directly over shoulders and wrists in an inverted L-shape.',
+        focusCue: 'Push through palms and lock arms straight overhead.'
+      },
+      {
+        phaseName: '2. Tripod Descent',
+        phaseTiming: '3.0s Eccentric',
+        description: 'Lower crown of head forward in front of hands to form the top point of a triangle (tripod).',
+        focusCue: 'Tuck elbows at 45°; do not flare elbows sideways.'
+      },
+      {
+        phaseName: '3. 1-Second Hover Pause',
+        phaseTiming: '1.0s Pause',
+        description: 'Hover crown of head 1 inch off floor without resting weight on neck.',
+        focusCue: 'Active shoulder tension at deep stretch.'
+      },
+      {
+        phaseName: '4. Press Up & Push Through',
+        phaseTiming: '1.0s Concentric',
+        description: 'Press forcefully through palms, pushing head back through the window of your shoulders.',
+        focusCue: 'Push the earth away and elevate shoulder blades at top lockout.'
+      }
+    ],
+    setupSteps: [
+      'Place toes on an elevated bench, chair, or box.',
+      'Walk hands backward toward the bench until hips are stacked directly above shoulders (90° inverted pike).',
+      'Position hands slightly wider than shoulder-width with fingers spread wide.'
+    ],
+    executionSteps: [
+      'Lower head forward diagonally toward the floor, forming a tripod triangle with your hands.',
+      'Descend under a 3-second negative until crown of head lightly grazes the floor.',
+      'Pause for 1 second in the bottom loaded position.',
+      'Press upward and backward along the diagonal line, returning to the stacked vertical shoulder lockout.'
+    ],
+    commonMistakes: [
+      'Lowering head straight down between hands (damages rotator cuff; head must travel forward into tripod).',
+      'Allowing hips to sag down into a regular push-up plank.',
+      'Flaring elbows out to 90 degrees.'
+    ],
+    proFormCues: [
+      '💡 "Your head and hands form a triangle on the ground, with your head at the top point."',
+      '💡 "At the top, push your head through the window of your arms and shrug shoulders toward ears."'
+    ],
+    biomechanicsScience: 'The diagonal tripod descent mirrors the natural scapulohumeral rhythm of overhead barbell pressing, eliminating impingement.'
+  },
+
+  // 13. FARMER'S WALKS & LOADED CARRIES
   'farmers-walk': {
     id: 'farmers-walk',
     name: 'Heavy Farmer\'s Walk / Loaded Carry (Attia Longevity Standard)',
-    aliases: ['farmer\'s walk', 'farmers walk', 'loaded carry', 'trap bar carry'],
+    aliases: ['farmer\'s walk', 'farmers walk', 'loaded carry', 'trap bar carry', 'heavy kettlebell / dumbbell farmer\'s walk', 'heavy trap bar / dumbbell farmer\'s walk carry'],
     category: 'Full-Body Structural Armor & Grip Resilience',
     targetMuscles: ['Forearm Flexors / Crushing Grip', 'Trapezius', 'Transverse Abdominal Wall'],
     secondaryMuscles: ['Gluteus Medius', 'Quadriceps', 'Cardiovascular System'],
@@ -591,10 +852,11 @@ export const EXERCISE_GUIDE_DB: Record<string, ExerciseGuide> = {
     biomechanicsScience: 'Grip strength and loaded carries are Dr. Peter Attia\'s #1 correlated biomarker for all-cause longevity and physical durability.'
   },
 
+  // 14. NORWEGIAN 4X4 & ZONE 2
   'norwegian-4x4': {
     id: 'norwegian-4x4',
     name: 'Norwegian 4x4 VO2 Max Protocol',
-    aliases: ['norwegian 4x4', 'vo2 max protocol', 'zone 5 intervals', 'interval sprint'],
+    aliases: ['norwegian 4x4', 'vo2 max protocol', 'zone 5 intervals', 'interval sprint', 'zone 2', 'mitochondrial base'],
     category: 'High-Threshold Aerobic & Myocardial Output',
     targetMuscles: ['Myocardial Left Ventricle (Stroke Volume)', 'Mitochondrial Density'],
     secondaryMuscles: ['Cardiorespiratory System', 'Lactate Clearance Enzymes'],
@@ -652,100 +914,153 @@ export const EXERCISE_GUIDE_DB: Record<string, ExerciseGuide> = {
     biomechanicsScience: 'The 4x4 protocol is proven in clinical exercise trials to produce the largest measurable increases in VO2 max and left ventricular stroke volume.'
   },
 
-  'cat-cow-mobility': {
-    id: 'cat-cow-mobility',
-    name: 'Cat-Cow + World\'s Greatest Stretch & Thoracic Opener',
-    aliases: ['cat-cow', 'cat cow', 'world\'s greatest stretch', 'thoracic opener', 'warmup'],
+  // 15. DYNAMIC WARMUP & THORACIC MOBILITY
+  'warmup-mobility': {
+    id: 'warmup-mobility',
+    name: 'Dynamic Scapular Wall Slides + Hip 90/90 Opener & Dislocates',
+    aliases: ['cat-cow', 'cat cow', 'world\'s greatest stretch', 'thoracic opener', 'warmup', 'dynamic scapular wall slides', 'scapular wall slides', 'hip 90/90', 'banded dislocates', 'jumping jacks', 'spiderman lunge'],
     category: 'Dynamic Spinal & Joint Capsule Mobility',
     targetMuscles: ['Intervertebral Discs', 'Thoracic Spine', 'Hip Capsule', 'Rotator Cuff'],
     secondaryMuscles: ['Psoas', 'Hamstrings', 'Serratus Anterior'],
     coachAttribution: 'Jeff Cavaliere MSPT, CSCS & Dr. Andrew Huberman',
     difficulty: 'Beginner',
-    youtubeQuery: 'how to do cat cow stretch correctly athlean x',
-    curatedVideoUrl: 'https://www.youtube.com/results?search_query=athlean+x+cat+cow+stretch+tutorial',
-    videoChannelName: 'Athlean-X / Dr. Andrew Huberman',
-    keyAngles: 'Quadruped 90° Wrists/Knees • Vertebra by Vertebra Wave • Nasal Breath Match',
+    youtubeQuery: 'squat university 90 90 hip mobility drill form',
+    curatedVideoUrl: 'https://www.youtube.com/results?search_query=squat+university+90+90+hip+mobility+tutorial',
+    videoChannelName: 'Squat University / Athlean-X',
+    keyAngles: '90° Hip Internal/External Angles • Scapular Wall Contact • Full Diaphragmatic Breath',
     movementPhases: [
       {
-        phaseName: '1. Quadruped Alignment',
-        phaseTiming: 'Setup',
-        description: 'Hands directly beneath shoulders, knees directly beneath hips, neutral spine.',
-        focusCue: 'Spread fingers wide and grip the floor.'
+        phaseName: '1. Scapular Wall Slides',
+        phaseTiming: 'Drill 1 (10 Reps)',
+        description: 'Stand with upper back and elbows pinned against wall, slide hands overhead smoothly.',
+        focusCue: 'Maintain zero lower back arch; keep ribs pulled down.'
       },
       {
-        phaseName: '2. Inhale $\\to$ Cow Extension',
-        phaseTiming: '2.0s Inhale',
-        description: 'Inhale deep into belly, drop naval toward floor, gently lift sternum and gaze.',
-        focusCue: 'Smooth arch through the thoracic spine; avoid pinching lower back.'
+        phaseName: '2. Hip 90/90 Capsule Opener',
+        phaseTiming: 'Drill 2 (8 Reps / Side)',
+        description: 'Sit on floor with lead leg and trail leg bent at 90° angles, hinge torso over lead shin.',
+        focusCue: 'Feel deep rotational stretch in both hip capsules.'
       },
       {
-        phaseName: '3. Exhale $\\to$ Cat Flexion',
-        phaseTiming: '2.0s Exhale',
-        description: 'Exhale fully through mouth, tuck pelvis, push floor away, dome upper spine toward ceiling.',
-        focusCue: 'Feel individual vertebrae separate and decompress.'
+        phaseName: '3. Banded Dislocates & Face-Pulls',
+        phaseTiming: 'Drill 3 (10 Reps)',
+        description: 'Pass resistance band overhead and behind back with straight arms.',
+        focusCue: 'Smooth continuous arc to open pectorals and anterior delts.'
       },
       {
-        phaseName: '4. World\'s Greatest Stretch Lunge',
-        phaseTiming: 'Dynamic Transition',
-        description: 'Step right foot forward into deep lunge, rotate right arm to sky, follow hand with eyes.',
-        focusCue: 'Open thoracic chest cage and feel deep hip flexor release.'
+        phaseName: '4. Spiderman Lunge & Thoracic Sky Reach',
+        phaseTiming: 'Drill 4 (6 Reps / Side)',
+        description: 'Deep runner lunge with thoracic rotation reaching arm to ceiling.',
+        focusCue: 'Follow hand with eyes to open thoracic cage.'
       }
     ],
     setupSteps: [
-      'Start on hands and knees with wrists directly under shoulders and knees directly under hips.',
-      'Maintain a neutral spine and take a deep diaphragmatic breath in through your nose.'
+      'Find clear floor space and a wall or resistance band.',
+      'Perform drills in a fluid, unhurried cadence with deep nasal breathing.'
     ],
     executionSteps: [
-      'COW: Inhale, drop belly toward floor, arch spine smoothly, and look gently upward.',
-      'CAT: Exhale fully, round your spine toward the ceiling, tuck tailbone, and drop head between shoulders.',
-      'Transition into World\'s Greatest Stretch: Step right foot forward into a deep lunge, rotate right arm up toward ceiling.',
-      'Perform 8–10 fluid cycles per side without forcing any restricted range.'
+      'SCAPULAR WALL SLIDES: Pin elbows, wrists, and shoulder blades against wall. Slide hands upward.',
+      'HIP 90/90: Sit on floor with legs in 90/90 angles. Hinge chest over lead thigh, switch sides.',
+      'BAND DISLOCATES: Hold band wide, circle smoothly from waist over head to lower back.',
+      'SPIDERMAN REACH: Step into deep lunge, rotate upper torso and reach arm toward sky.'
     ],
     commonMistakes: [
-      'Moving too fast without connecting breath to spinal flexion and extension.',
-      'Cranking the neck aggressively in cow position.',
+      'Arching lower back off the wall during wall slides.',
+      'Rushing through hip rotations without pausing in the end-range stretch.',
       'Holding breath.'
     ],
     proFormCues: [
-      '💡 "Move through your spine vertebra by vertebra like a wave on water."',
-      '💡 "Fill your entire abdomen with oxygen on the expansion."'
+      '💡 "Move through your joint capsules like warm honey."',
+      '💡 "Open your chest like a book on the thoracic reach."'
     ],
-    biomechanicsScience: 'Hydrates avascular spinal discs through imbibition and primes synovial joint fluid for heavy compound loading.'
+    biomechanicsScience: 'Dynamic multi-planar mobility elevates synovial joint temperature by 2°C, decreasing viscous friction by 40% prior to heavy loading.'
   }
 };
 
 /**
- * Helper to match any exercise name string to its richest guide in the database
+ * Intelligent Matcher with Specificity Hierarchy and Word Boundary Matching
+ * Prevents substring collisions like "decompression" matching "press"!
  */
 export function findExerciseGuide(exerciseName: string): ExerciseGuide {
-  const normalized = exerciseName.toLowerCase();
+  const normalized = exerciseName.toLowerCase().trim();
 
-  // 1. Direct key match
-  for (const [key, guide] of Object.entries(EXERCISE_GUIDE_DB)) {
-    if (normalized.includes(key)) {
-      return guide;
-    }
+  // 1. Exact Key Match
+  if (EXERCISE_GUIDE_DB[normalized]) {
+    return EXERCISE_GUIDE_DB[normalized];
   }
 
-  // 2. Alias match
+  // 2. High-Priority Specific Phrases (Checked first before generic words!)
+  if (normalized.includes('decompression') || normalized.includes('4-7-8') || normalized.includes('parasympathetic') || normalized.includes('spine decompression')) {
+    return EXERCISE_GUIDE_DB['spine-decompression'];
+  }
+
+  if (normalized.includes('norwegian') || normalized.includes('vo2 max') || normalized.includes('zone 2') || normalized.includes('zone 5')) {
+    return EXERCISE_GUIDE_DB['norwegian-4x4'];
+  }
+
+  if (normalized.includes('farmer') || normalized.includes('loaded carry') || normalized.includes('carry') || normalized.includes('death march')) {
+    return EXERCISE_GUIDE_DB['farmers-walk'];
+  }
+
+  if (normalized.includes('wall slides') || normalized.includes('90/90') || normalized.includes('cat-cow') || normalized.includes('cat cow') || normalized.includes('dislocates') || normalized.includes('spiderman') || normalized.includes('jumping jacks')) {
+    return EXERCISE_GUIDE_DB['warmup-mobility'];
+  }
+
+  if (normalized.includes('pike') || normalized.includes('handstand')) {
+    return EXERCISE_GUIDE_DB['pike-push-up'];
+  }
+
+  if (normalized.includes('biceps') || normalized.includes('triceps') || normalized.includes('curl') || normalized.includes('pressdown') || normalized.includes('death set')) {
+    return EXERCISE_GUIDE_DB['arms-isolation'];
+  }
+
+  if (normalized.includes('lateral raise') || normalized.includes('side delt') || normalized.includes('hip abduction') || normalized.includes('kickback')) {
+    return EXERCISE_GUIDE_DB['lateral-raise'];
+  }
+
+  if (normalized.includes('bulgarian') || normalized.includes('split squat')) {
+    return EXERCISE_GUIDE_DB['bulgarian-split-squat'];
+  }
+
+  if (normalized.includes('hip thrust') || normalized.includes('glute bridge') || normalized.includes('frog pump')) {
+    return EXERCISE_GUIDE_DB['barbell-hip-thrust'];
+  }
+
+  if (normalized.includes('rdl') || normalized.includes('romanian deadlift') || (normalized.includes('deadlift') && !normalized.includes('hang'))) {
+    return EXERCISE_GUIDE_DB['romanian-deadlift'];
+  }
+
+  if (normalized.includes('pistol') || normalized.includes('goblet box') || normalized.includes('air squat') || normalized.includes('single leg squat')) {
+    return EXERCISE_GUIDE_DB['pistol-squat'];
+  }
+
+  if (normalized.includes('row') || normalized.includes('chest-supported') || normalized.includes('t-bar')) {
+    return EXERCISE_GUIDE_DB['chest-supported-row'];
+  }
+
+  if (normalized.includes('pull-up') || normalized.includes('pull up') || normalized.includes('pulldown') || normalized.includes('chin-up')) {
+    return EXERCISE_GUIDE_DB['pull-up'];
+  }
+
+  if (normalized.includes('push-up') || normalized.includes('pushup') || normalized.includes('clap push')) {
+    return EXERCISE_GUIDE_DB['deficit-push-up'];
+  }
+
+  if (normalized.includes('bench') || (/\bpress\b/i.test(normalized) && !normalized.includes('decompression'))) {
+    return EXERCISE_GUIDE_DB['incline-bench-press'];
+  }
+
+  if (normalized.includes('squat')) {
+    return EXERCISE_GUIDE_DB['pistol-squat'];
+  }
+
+  // 3. Alias Check
   for (const guide of Object.values(EXERCISE_GUIDE_DB)) {
     if (guide.aliases.some(alias => normalized.includes(alias.toLowerCase()))) {
       return guide;
     }
   }
 
-  // 3. Keyword fallbacks
-  if (normalized.includes('squat')) return EXERCISE_GUIDE_DB['pistol-squat'];
-  if (normalized.includes('thrust') || normalized.includes('glute')) return EXERCISE_GUIDE_DB['barbell-hip-thrust'];
-  if (normalized.includes('bench') || normalized.includes('press')) return EXERCISE_GUIDE_DB['incline-bench-press'];
-  if (normalized.includes('deadlift') || normalized.includes('rdl') || normalized.includes('hinge')) return EXERCISE_GUIDE_DB['romanian-deadlift'];
-  if (normalized.includes('split') || normalized.includes('lunge')) return EXERCISE_GUIDE_DB['bulgarian-split-squat'];
-  if (normalized.includes('pull') || normalized.includes('chin') || normalized.includes('row')) return EXERCISE_GUIDE_DB['pull-up'];
-  if (normalized.includes('push')) return EXERCISE_GUIDE_DB['deficit-push-up'];
-  if (normalized.includes('raise') || normalized.includes('delt')) return EXERCISE_GUIDE_DB['lateral-raise'];
-  if (normalized.includes('carry') || normalized.includes('walk') || normalized.includes('farmer')) return EXERCISE_GUIDE_DB['farmers-walk'];
-  if (normalized.includes('vo2') || normalized.includes('cardio') || normalized.includes('sprint') || normalized.includes('zone')) return EXERCISE_GUIDE_DB['norwegian-4x4'];
-
-  // Default fallback
-  return EXERCISE_GUIDE_DB['cat-cow-mobility'];
+  // Fallback to Warmup/Mobility
+  return EXERCISE_GUIDE_DB['warmup-mobility'];
 }
