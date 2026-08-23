@@ -1,9 +1,9 @@
 // Instant Zero-Latency Hans Zimmer "Cornfield Chase" 40Hz Gamma Audio Engine
-// Pre-decodes MP3 into Web Audio RAM buffer for instant 0ms playback on first interaction
-// Default is ON (unmuted), drops directly at 23.5s peak theme.
+// Pre-decodes MP3 into Web Audio RAM buffer for instant 0ms playback
+// Default is ON (unmuted) on page load, drops directly at 23.5s peak theme.
 
 const CORNFIELD_CHASE_SRC = '/audio/interstellar-cornfield.mp3';
-const START_OFFSET_SECONDS = 23.5; // Starts directly at peak intensity
+const START_OFFSET_SECONDS = 23.5; // Starts directly at peak crescendo
 const STORAGE_KEY_MUTED = 'titan_cornfield_muted';
 const STORAGE_KEY_VOLUME = 'titan_cornfield_volume';
 
@@ -37,9 +37,16 @@ export class GammaAudioEngine {
       // Preload audio buffer immediately into RAM on app load
       this.preloadAudio();
 
-      // Default is ON: Auto-engage on first interaction anywhere on the website
+      // Check if user explicitly muted previously
       const isExplicitlyMuted = localStorage.getItem(STORAGE_KEY_MUTED) === 'true';
+
       if (!isExplicitlyMuted) {
+        // 1. Try to start immediately on page load
+        setTimeout(() => {
+          this.start().catch(() => {});
+        }, 100);
+
+        // 2. Setup listeners for any first gesture to ensure 100% autoplay compliance
         this.setupAutoPlayOnFirstInteraction();
       }
     }
@@ -71,7 +78,7 @@ export class GammaAudioEngine {
       this.ctx = new AudioCtx();
     }
     if (this.ctx.state === 'suspended') {
-      this.ctx.resume();
+      this.ctx.resume().catch(() => {});
     }
     return true;
   }
@@ -100,27 +107,29 @@ export class GammaAudioEngine {
   }
 
   /**
-   * Automatically triggers music on the very first click or keypress anywhere on the page
+   * Automatically triggers music on any first user gesture (click, scroll, key, move, tap)
    */
-  private setupAutoPlayOnFirstInteraction() {
+  public setupAutoPlayOnFirstInteraction() {
     if (this.autoPlayInitialized || typeof window === 'undefined') return;
     this.autoPlayInitialized = true;
 
+    const events = ['click', 'pointerdown', 'keydown', 'touchstart', 'wheel', 'scroll', 'mousemove'];
+
     const handleFirstGesture = () => {
-      window.removeEventListener('click', handleFirstGesture);
-      window.removeEventListener('keydown', handleFirstGesture);
-      window.removeEventListener('touchstart', handleFirstGesture);
-      window.removeEventListener('mousemove', handleFirstGesture);
+      events.forEach(e => window.removeEventListener(e, handleFirstGesture));
+      events.forEach(e => document.removeEventListener(e, handleFirstGesture));
+
+      if (this.ctx && this.ctx.state === 'suspended') {
+        this.ctx.resume().catch(() => {});
+      }
 
       if (!this.isPlaying && localStorage.getItem(STORAGE_KEY_MUTED) !== 'true') {
         this.start();
       }
     };
 
-    window.addEventListener('click', handleFirstGesture, { once: true, passive: true });
-    window.addEventListener('keydown', handleFirstGesture, { once: true, passive: true });
-    window.addEventListener('touchstart', handleFirstGesture, { once: true, passive: true });
-    window.addEventListener('mousemove', handleFirstGesture, { once: true, passive: true });
+    events.forEach(e => window.addEventListener(e, handleFirstGesture, { once: true, passive: true }));
+    events.forEach(e => document.addEventListener(e, handleFirstGesture, { once: true, passive: true }));
   }
 
   /**
@@ -131,6 +140,10 @@ export class GammaAudioEngine {
     if (!this.initAudioContext() || !this.ctx) return false;
 
     try {
+      if (this.ctx.state === 'suspended') {
+        await this.ctx.resume();
+      }
+
       // Ensure buffer is ready
       if (!this.audioBuffer) {
         await this.preloadAudio();

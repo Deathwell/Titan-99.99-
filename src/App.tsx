@@ -22,6 +22,8 @@ import { WelcomeOnboardingModal } from './components/onboarding/WelcomeOnboardin
 import { DecayPenaltyBanner } from './components/layout/DecayPenaltyBanner';
 import { Shield } from 'lucide-react';
 
+import { gammaAudioEngine } from './lib/gammaAudioEngine';
+
 const DashboardContent: React.FC = () => {
   const {
     activeTab,
@@ -36,6 +38,10 @@ const DashboardContent: React.FC = () => {
     isCommandPaletteOpen,
     setIsCommandPaletteOpen
   } = useTitan();
+
+  React.useEffect(() => {
+    gammaAudioEngine.start().catch(() => {});
+  }, []);
 
   return (
     <div className="min-h-screen flex bg-[#04060a] text-slate-100 selection:bg-rose-500 selection:text-white">
