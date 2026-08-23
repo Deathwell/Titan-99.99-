@@ -95,14 +95,17 @@ interface TitanContextType {
   isVictoryModalOpen: boolean;
   openVictoryModal: () => void;
   closeVictoryModal: () => void;
+  isIdCardOpen: boolean;
+  setIsIdCardOpen: (open: boolean) => void;
+  openIdCardModal: () => void;
   isTribunalOpen: boolean;
   setIsTribunalOpen: (open: boolean) => void;
   openTribunalModal: () => void;
   applyTribunalVerdict: (category: ExcuseCategory, explanation: string, verdict: ExcuseVerdict) => void;
   isCommandPaletteOpen: boolean;
   setIsCommandPaletteOpen: (open: boolean) => void;
-  analyticsSubTab: 'CHARTS' | 'ALARMS' | 'CURRICULUM' | 'DOSSIER';
-  setAnalyticsSubTab: (tab: 'CHARTS' | 'ALARMS' | 'CURRICULUM' | 'DOSSIER') => void;
+  analyticsSubTab: 'CHARTS' | 'ALARMS' | 'CURRICULUM' | 'DOSSIER' | 'ORACLE';
+  setAnalyticsSubTab: (tab: 'CHARTS' | 'ALARMS' | 'CURRICULUM' | 'DOSSIER' | 'ORACLE') => void;
   openAlarmsTab: () => void;
   activeQuizTopic: SyllabusTopic | null;
   setActiveQuizTopic: (topic: SyllabusTopic | null) => void;
@@ -190,11 +193,17 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const [isMobilePushSetupOpen, setIsMobilePushSetupOpen] = useState(false);
   const [isVictoryModalOpen, setIsVictoryModalOpen] = useState(false);
+  const [isIdCardOpen, setIsIdCardOpen] = useState(false);
   const [isTribunalOpen, setIsTribunalOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
-  const [analyticsSubTab, setAnalyticsSubTab] = useState<'CHARTS' | 'ALARMS' | 'CURRICULUM' | 'DOSSIER'>('CHARTS');
+  const [analyticsSubTab, setAnalyticsSubTab] = useState<'CHARTS' | 'ALARMS' | 'CURRICULUM' | 'DOSSIER' | 'ORACLE'>('CHARTS');
   const [activeQuizTopic, setActiveQuizTopic] = useState<SyllabusTopic | null>(null);
   const [activeDecayAlert, setActiveDecayAlert] = useState<DecayPenaltyEvent | null>(null);
+
+  const openIdCardModal = () => {
+    setIsIdCardOpen(true);
+    soundEngine.playClick(850);
+  };
 
   const openTribunalModal = () => {
     setIsTribunalOpen(true);
@@ -1487,6 +1496,9 @@ export const TitanProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         isVictoryModalOpen,
         openVictoryModal,
         closeVictoryModal,
+        isIdCardOpen,
+        setIsIdCardOpen,
+        openIdCardModal,
         isTribunalOpen,
         setIsTribunalOpen,
         openTribunalModal,

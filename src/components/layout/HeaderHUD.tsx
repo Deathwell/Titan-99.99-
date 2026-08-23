@@ -29,7 +29,8 @@ export const HeaderHUD: React.FC = () => {
     alarms,
     openAlarmsTab,
     setIsSyncModalOpen,
-    setIsSettingsOpen
+    setIsSettingsOpen,
+    openIdCardModal
   } = useTitan();
 
   const activeAlarmsCount = alarms.filter(a => a.isEnabled).length;
@@ -43,9 +44,9 @@ export const HeaderHUD: React.FC = () => {
 
   const tabLabels: Record<string, string> = {
     overview: 'Today',
-    hologram: 'Body Scanner',
-    quests: 'Quests & Badges',
-    charts: 'Analytics & Profile'
+    hologram: 'Neural Morph',
+    quests: 'Quests',
+    charts: 'Analytics & Models'
   };
 
   useEffect(() => {
@@ -92,6 +93,16 @@ export const HeaderHUD: React.FC = () => {
                 <CountUpNumber end={profile.xp} decimals={0} suffix=" XP" />
               </span>
             </div>
+
+            {/* 3D Holographic ID Card */}
+            <button
+              onClick={openIdCardModal}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-cyan-500/30 bg-cyan-950/40 hover:bg-cyan-900/60 text-cyan-300 text-xs font-semibold transition-all shadow-sm"
+              title="3D Holographic Operator ID Card"
+            >
+              <Award className="h-3.5 w-3.5 text-cyan-400" />
+              <span className="hidden sm:inline text-[11px] font-mono">3D ID</span>
+            </button>
 
             {/* Tactical Alarms Button */}
             <button

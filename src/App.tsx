@@ -16,6 +16,7 @@ import { ActiveAlarmModal } from './components/modals/ActiveAlarmModal';
 import { CommandPaletteModal } from './components/modals/CommandPaletteModal';
 import { MobilePushSetupModal } from './components/modals/MobilePushSetupModal';
 import { ExcuseJudgmentModal } from './components/modals/ExcuseJudgmentModal';
+import { HolographicIdCardModal } from './components/modals/HolographicIdCardModal';
 import { ConfettiCanvas } from './components/effects/ConfettiCanvas';
 import { WelcomeOnboardingModal } from './components/onboarding/WelcomeOnboardingModal';
 import { DecayPenaltyBanner } from './components/layout/DecayPenaltyBanner';
@@ -28,6 +29,8 @@ const DashboardContent: React.FC = () => {
     setIsSyncModalOpen,
     isMobilePushSetupOpen,
     setIsMobilePushSetupOpen,
+    isIdCardOpen,
+    setIsIdCardOpen,
     isTribunalOpen,
     setIsTribunalOpen,
     isCommandPaletteOpen,
@@ -88,6 +91,7 @@ const DashboardContent: React.FC = () => {
       <DeviceSyncModal isOpen={isSyncModalOpen} onClose={() => setIsSyncModalOpen(false)} />
       <MobilePushSetupModal isOpen={isMobilePushSetupOpen} onClose={() => setIsMobilePushSetupOpen(false)} />
       <ExcuseJudgmentModal isOpen={isTribunalOpen} onClose={() => setIsTribunalOpen(false)} />
+      <HolographicIdCardModal isOpen={isIdCardOpen} onClose={() => setIsIdCardOpen(false)} />
       <QuizModal />
       <VictoryRewardModal />
       <ActiveAlarmModal />
