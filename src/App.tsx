@@ -18,6 +18,7 @@ import { MobilePushSetupModal } from './components/modals/MobilePushSetupModal';
 import { ExcuseJudgmentModal } from './components/modals/ExcuseJudgmentModal';
 import { HolographicIdCardModal } from './components/modals/HolographicIdCardModal';
 import { ConfettiCanvas } from './components/effects/ConfettiCanvas';
+import { RedFluidCanvas } from './components/effects/RedFluidCanvas';
 import { WelcomeOnboardingModal } from './components/onboarding/WelcomeOnboardingModal';
 import { DecayPenaltyBanner } from './components/layout/DecayPenaltyBanner';
 import { Shield } from 'lucide-react';
@@ -44,7 +45,10 @@ const DashboardContent: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen flex bg-[#04060a] text-slate-100 selection:bg-rose-500 selection:text-white">
+    <div className="min-h-screen flex bg-[#06070b] text-slate-100 selection:bg-rose-500 selection:text-white relative">
+      {/* Addictive Interactive Red Liquid / Gaseous Plasma Background */}
+      <RedFluidCanvas />
+
       {/* 30-Second First-Time Onboarding for New Users */}
       <WelcomeOnboardingModal />
 
