@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   X,
   BookOpen,
@@ -10,7 +10,12 @@ import {
   Award,
   Zap,
   Target,
-  ArrowRight
+  ArrowRight,
+  ExternalLink,
+  Play,
+  Flame,
+  Compass,
+  Clock
 } from 'lucide-react';
 import { ExerciseGuide, findExerciseGuide } from '../../lib/exerciseGuideDatabase';
 import { soundEngine } from '../../lib/audio';
@@ -22,114 +27,16 @@ interface ExerciseGuideModalProps {
 
 export const ExerciseGuideModal: React.FC<ExerciseGuideModalProps> = ({ exerciseName, onClose }) => {
   const guide = findExerciseGuide(exerciseName);
+  const [activePhaseIndex, setActivePhaseIndex] = useState<number>(0);
 
   const handleClose = () => {
     soundEngine.playClick(600);
     onClose();
   };
 
-  // Render dynamic SVG illustration based on exercise biomechanical category
-  const renderIllustration = () => {
-    switch (guide.illustrationType) {
-      case 'squat':
-      case 'lunge':
-        return (
-          <svg className="w-full h-44" viewBox="0 0 300 160" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="300" height="160" rx="16" fill="#090a10" />
-            <line x1="20" y1="140" x2="280" y2="140" stroke="#22d3ee" strokeWidth="2" strokeDasharray="4 4" opacity="0.4" />
-            {/* Floor base */}
-            <circle cx="150" cy="40" r="14" fill="#06b6d4" fillOpacity="0.2" stroke="#22d3ee" strokeWidth="2" />
-            {/* Torso */}
-            <line x1="150" y1="54" x2="140" y2="90" stroke="#22d3ee" strokeWidth="6" strokeLinecap="round" />
-            {/* Working Leg in Deep 90° Squat/Pistol */}
-            <line x1="140" y1="90" x2="110" y2="110" stroke="#f43f5e" strokeWidth="7" strokeLinecap="round" />
-            <line x1="110" y1="110" x2="120" y2="140" stroke="#f43f5e" strokeWidth="7" strokeLinecap="round" />
-            {/* Extended Leg */}
-            <line x1="140" y1="90" x2="210" y2="105" stroke="#38bdf8" strokeWidth="5" strokeLinecap="round" />
-            {/* Arms Extended Counterbalance */}
-            <line x1="150" y1="65" x2="200" y2="70" stroke="#22d3ee" strokeWidth="4" strokeLinecap="round" />
-            {/* Tension Highlights */}
-            <circle cx="125" cy="100" r="6" fill="#f43f5e" className="animate-ping" opacity="0.75" />
-            <text x="20" y="28" fill="#a1a1aa" fontSize="10" fontFamily="monospace">PHASE: 3S ECCENTRIC DEEP STRETCH</text>
-            <text x="210" y="130" fill="#22d3ee" fontSize="10" fontFamily="monospace" fontWeight="bold">TENSION: 100% GLUTE/QUAD</text>
-          </svg>
-        );
-
-      case 'thrust':
-        return (
-          <svg className="w-full h-44" viewBox="0 0 300 160" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="300" height="160" rx="16" fill="#090a10" />
-            <line x1="20" y1="140" x2="280" y2="140" stroke="#22d3ee" strokeWidth="2" strokeDasharray="4 4" opacity="0.4" />
-            {/* Bench Pad */}
-            <rect x="50" y="80" width="30" height="60" rx="4" fill="#27272a" stroke="#52525b" strokeWidth="1.5" />
-            {/* Head & Upper Back */}
-            <circle cx="85" cy="70" r="12" fill="#06b6d4" fillOpacity="0.2" stroke="#22d3ee" strokeWidth="2" />
-            {/* Torso in Full Horizontal Lockout */}
-            <line x1="85" y1="82" x2="160" y2="82" stroke="#f43f5e" strokeWidth="7" strokeLinecap="round" />
-            {/* Padded Barbell over Pelvis */}
-            <circle cx="160" cy="76" r="10" fill="#f59e0b" stroke="#fbbf24" strokeWidth="2" />
-            <line x1="160" y1="60" x2="160" y2="100" stroke="#f59e0b" strokeWidth="3" />
-            {/* Legs at 90° Angle */}
-            <line x1="160" y1="82" x2="160" y2="140" stroke="#38bdf8" strokeWidth="6" strokeLinecap="round" />
-            {/* Squeeze Indicator */}
-            <circle cx="130" cy="82" r="6" fill="#f43f5e" className="animate-ping" opacity="0.8" />
-            <text x="20" y="28" fill="#a1a1aa" fontSize="10" fontFamily="monospace">PHASE: 2-SEC HORIZONTAL LOCKOUT</text>
-            <text x="175" y="60" fill="#f43f5e" fontSize="10" fontFamily="monospace" fontWeight="bold">MAX GLUTE EMG: 200%</text>
-          </svg>
-        );
-
-      case 'press':
-        return (
-          <svg className="w-full h-44" viewBox="0 0 300 160" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="300" height="160" rx="16" fill="#090a10" />
-            {/* Incline 30° Bench Line */}
-            <line x1="70" y1="130" x2="150" y2="70" stroke="#3f3f46" strokeWidth="6" strokeLinecap="round" />
-            {/* Head & Torso */}
-            <circle cx="155" cy="65" r="12" fill="#06b6d4" fillOpacity="0.2" stroke="#22d3ee" strokeWidth="2" />
-            <line x1="150" y1="75" x2="100" y2="115" stroke="#22d3ee" strokeWidth="6" strokeLinecap="round" />
-            {/* Arms Pressing at 30° Clavicular Angle */}
-            <line x1="135" y1="85" x2="175" y2="40" stroke="#f43f5e" strokeWidth="6" strokeLinecap="round" />
-            {/* Barbell / Dumbbell */}
-            <line x1="160" y1="30" x2="190" y2="50" stroke="#f59e0b" strokeWidth="5" strokeLinecap="round" />
-            <circle cx="135" cy="85" r="5" fill="#f43f5e" className="animate-ping" opacity="0.8" />
-            <text x="20" y="28" fill="#a1a1aa" fontSize="10" fontFamily="monospace">LINE OF DRIVE: 30° CLAVICULAR ANGLE</text>
-            <text x="175" y="125" fill="#22d3ee" fontSize="10" fontFamily="monospace" fontWeight="bold">ROTATOR CUFF SAFE</text>
-          </svg>
-        );
-
-      case 'hinge':
-        return (
-          <svg className="w-full h-44" viewBox="0 0 300 160" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="300" height="160" rx="16" fill="#090a10" />
-            <line x1="20" y1="140" x2="280" y2="140" stroke="#22d3ee" strokeWidth="2" strokeDasharray="4 4" opacity="0.4" />
-            {/* Pelvis Hinging Back */}
-            <circle cx="100" cy="70" r="12" fill="#06b6d4" fillOpacity="0.2" stroke="#22d3ee" strokeWidth="2" />
-            {/* Flat Spine Torso */}
-            <line x1="100" y1="70" x2="160" y2="85" stroke="#22d3ee" strokeWidth="6" strokeLinecap="round" />
-            {/* Legs with Soft 15° Knee Bend */}
-            <line x1="100" y1="70" x2="120" y2="105" stroke="#f43f5e" strokeWidth="6" strokeLinecap="round" />
-            <line x1="120" y1="105" x2="125" y2="140" stroke="#f43f5e" strokeWidth="6" strokeLinecap="round" />
-            {/* Arms Skimming Shin */}
-            <line x1="160" y1="85" x2="150" y2="125" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
-            <circle cx="150" cy="125" r="8" fill="#f59e0b" stroke="#fbbf24" strokeWidth="2" />
-            <circle cx="110" cy="85" r="6" fill="#f43f5e" className="animate-ping" opacity="0.8" />
-            <text x="20" y="28" fill="#a1a1aa" fontSize="10" fontFamily="monospace">PHASE: POSTERIOR PELVIC HINGE</text>
-            <text x="180" y="115" fill="#f43f5e" fontSize="10" fontFamily="monospace" fontWeight="bold">HAMSTRING STRETCH</text>
-          </svg>
-        );
-
-      default:
-        return (
-          <svg className="w-full h-44" viewBox="0 0 300 160" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="300" height="160" rx="16" fill="#090a10" />
-            <circle cx="150" cy="80" r="40" fill="#06b6d4" fillOpacity="0.1" stroke="#22d3ee" strokeWidth="1.5" strokeDasharray="4 4" className="animate-spin" />
-            <circle cx="150" cy="80" r="20" fill="#06b6d4" fillOpacity="0.2" stroke="#22d3ee" strokeWidth="2" />
-            <Activity className="h-8 w-8 text-cyan-300 absolute" style={{ transform: 'translate(134px, 64px)' }} />
-            <text x="20" y="28" fill="#a1a1aa" fontSize="10" fontFamily="monospace">KINETIC KINESIOLOGY VISUALIZER</text>
-            <text x="100" y="140" fill="#22d3ee" fontSize="10" fontFamily="monospace" fontWeight="bold">OPTIMUM MOTOR RECRUITMENT</text>
-          </svg>
-        );
-    }
+  const handleOpenYoutube = () => {
+    soundEngine.playClick(900);
+    window.open(guide.curatedVideoUrl, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -141,7 +48,7 @@ export const ExerciseGuideModal: React.FC<ExerciseGuideModalProps> = ({ exercise
           <div>
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-0.5 rounded bg-cyan-500/15 text-cyan-300 font-mono text-[9.5px] font-bold border border-cyan-500/30 uppercase tracking-widest">
-                EXERCISE FORM & BIOMECHANICS
+                TITAN KINESIOLOGY & FORM MANUAL
               </span>
               <span className="px-2 py-0.5 rounded bg-white/[0.05] text-zinc-400 font-mono text-[9.5px] border border-white/[0.08]">
                 {guide.category}
@@ -150,8 +57,9 @@ export const ExerciseGuideModal: React.FC<ExerciseGuideModalProps> = ({ exercise
             <h2 className="text-xl sm:text-2xl font-bold text-white font-serif mt-1 tracking-tight">
               {guide.name}
             </h2>
-            <p className="text-xs text-cyan-400/90 font-mono mt-0.5">
-              Coached by: <strong>{guide.coachAttribution}</strong>
+            <p className="text-xs text-cyan-400/90 font-mono mt-0.5 flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
+              <span>Scientific Framework: <strong>{guide.coachAttribution}</strong></span>
             </p>
           </div>
 
@@ -166,16 +74,97 @@ export const ExerciseGuideModal: React.FC<ExerciseGuideModalProps> = ({ exercise
         {/* Scrollable Content Body */}
         <div className="p-5 sm:p-6 overflow-y-auto custom-scrollbar space-y-6 flex-1">
           
-          {/* Visual SVG Form Illustration */}
-          <div className="rounded-2xl overflow-hidden border border-white/[0.08] shadow-inner bg-black/60">
-            {renderIllustration()}
+          {/* 1. YOUTUBE VIDEO TUTORIAL HERO CARD */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-red-950/40 via-[#12080a] to-[#0c0d14] border-2 border-red-500/40 shadow-[0_0_30px_rgba(239,68,68,0.2)] flex flex-wrap items-center justify-between gap-4">
+            <div className="space-y-1 max-w-md">
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded bg-red-600/20 text-red-400 font-mono text-[9.5px] font-bold border border-red-500/30 uppercase tracking-widest flex items-center gap-1">
+                  <Play className="h-2.5 w-2.5 fill-red-400" />
+                  <span>VERIFIED VIDEO TUTORIAL</span>
+                </span>
+                <span className="text-xs text-zinc-400 font-mono">{guide.videoChannelName}</span>
+              </div>
+              <h3 className="text-sm sm:text-base font-bold text-white">
+                Watch High-Definition Masterclass
+              </h3>
+              <p className="text-xs text-zinc-400 leading-relaxed">
+                Watch professional biomechanical form breakdown, angle analysis, and rep execution on YouTube.
+              </p>
+            </div>
+
+            <button
+              onClick={handleOpenYoutube}
+              className="px-5 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-extrabold text-xs shadow-[0_0_20px_rgba(239,68,68,0.4)] flex items-center gap-2 transition-all active:scale-95 shrink-0"
+            >
+              <Play className="h-4 w-4 fill-white" />
+              <span>WATCH ON YOUTUBE</span>
+              <ExternalLink className="h-3.5 w-3.5 opacity-80" />
+            </button>
           </div>
 
-          {/* Muscle Anatomy Targeting Map */}
+          {/* 2. KINETIC MOVEMENT PHASES (Interactive 4-Phase System) */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-mono font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
+                <Compass className="h-3.5 w-3.5 text-cyan-400" />
+                <span>4-PHASE BIOMECHANICAL MOTION BLUEPRINT</span>
+              </h4>
+              <span className="text-[10.5px] font-mono text-cyan-400 font-semibold">
+                {guide.keyAngles}
+              </span>
+            </div>
+
+            {/* Phase Selector Tabs */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {guide.movementPhases.map((phase, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => {
+                    soundEngine.playClick(850);
+                    setActivePhaseIndex(idx);
+                  }}
+                  className={`p-2.5 rounded-xl border text-left transition-all ${
+                    activePhaseIndex === idx
+                      ? 'bg-cyan-950/50 border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.25)] ring-1 ring-cyan-400/50'
+                      : 'bg-[#11131c] border-white/[0.06] text-zinc-400 hover:border-white/20'
+                  }`}
+                >
+                  <span className="text-[10px] font-mono text-cyan-300 font-bold block">
+                    {phase.phaseTiming}
+                  </span>
+                  <span className={`text-xs font-bold block truncate mt-0.5 ${activePhaseIndex === idx ? 'text-white' : 'text-zinc-300'}`}>
+                    {phase.phaseName}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Active Phase Detail Display */}
+            <div className="p-4 rounded-2xl bg-[#11131c] border border-cyan-500/30 space-y-2">
+              <div className="flex items-center justify-between border-b border-white/[0.06] pb-2">
+                <span className="text-xs font-bold text-white font-serif">
+                  {guide.movementPhases[activePhaseIndex].phaseName}
+                </span>
+                <span className="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 font-mono text-[10px] font-bold border border-cyan-500/30">
+                  {guide.movementPhases[activePhaseIndex].phaseTiming}
+                </span>
+              </div>
+              <p className="text-xs text-zinc-300 leading-relaxed">
+                {guide.movementPhases[activePhaseIndex].description}
+              </p>
+              <div className="p-2.5 rounded-xl bg-black/40 border border-white/[0.04] text-xs text-amber-300/90 font-mono flex items-center gap-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                <span><strong>Kinetic Focus: </strong>{guide.movementPhases[activePhaseIndex].focusCue}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* 3. MUSCLE ANATOMY TARGETING */}
           <div className="p-4 rounded-2xl bg-black/40 border border-white/[0.06] space-y-2">
             <h4 className="text-xs font-mono font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
               <Target className="h-3.5 w-3.5 text-cyan-400" />
-              <span>ANATOMICAL TARGETING</span>
+              <span>ANATOMICAL TARGETING MAP</span>
             </h4>
             <div className="flex flex-wrap items-center gap-2 pt-1">
               <span className="text-xs text-zinc-400 font-mono">Primary:</span>
@@ -193,7 +182,7 @@ export const ExerciseGuideModal: React.FC<ExerciseGuideModalProps> = ({ exercise
             </div>
           </div>
 
-          {/* Step-by-Step Execution Guide */}
+          {/* 4. STEP-BY-STEP EXECUTION WALKTHROUGH */}
           <div className="space-y-3">
             <h4 className="text-xs font-mono font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
               <Layers className="h-3.5 w-3.5 text-cyan-400" />
@@ -225,7 +214,7 @@ export const ExerciseGuideModal: React.FC<ExerciseGuideModalProps> = ({ exercise
             </div>
           </div>
 
-          {/* Pro Coaching Cues (💡) */}
+          {/* 5. PRO COACHING CUES (💡) */}
           <div className="p-4 rounded-2xl bg-amber-950/20 border border-amber-500/30 space-y-2">
             <h4 className="text-xs font-mono font-bold text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
               <Sparkles className="h-3.5 w-3.5 text-amber-400" />
@@ -238,7 +227,7 @@ export const ExerciseGuideModal: React.FC<ExerciseGuideModalProps> = ({ exercise
             </div>
           </div>
 
-          {/* Common Mistakes to Avoid (⚠️) */}
+          {/* 6. COMMON MISTAKES TO AVOID (⚠️) */}
           <div className="p-4 rounded-2xl bg-rose-950/20 border border-rose-500/30 space-y-2">
             <h4 className="text-xs font-mono font-bold text-rose-300 uppercase tracking-wider flex items-center gap-1.5">
               <AlertTriangle className="h-3.5 w-3.5 text-rose-400" />
@@ -254,7 +243,7 @@ export const ExerciseGuideModal: React.FC<ExerciseGuideModalProps> = ({ exercise
             </ul>
           </div>
 
-          {/* Biomechanics & Sports Science Rationale (🔬) */}
+          {/* 7. BIOMECHANICS & SPORTS SCIENCE PROOF (🔬) */}
           <div className="p-4 rounded-2xl bg-cyan-950/20 border border-cyan-500/30 space-y-1.5 text-xs text-cyan-200/90 font-mono">
             <span className="text-cyan-300 font-bold">🔬 KINESIOLOGY & BIOMECHANICS PROOF: </span>
             <span>{guide.biomechanicsScience}</span>
@@ -262,13 +251,21 @@ export const ExerciseGuideModal: React.FC<ExerciseGuideModalProps> = ({ exercise
         </div>
 
         {/* Footer */}
-        <div className="p-4 bg-[#0a0b10] border-t border-white/[0.08] flex items-center justify-between gap-3 shrink-0">
-          <span className="text-xs font-mono text-zinc-400">Titan Form & Physiology Encyclopedia</span>
+        <div className="p-4 bg-[#0a0b10] border-t border-white/[0.08] flex flex-wrap items-center justify-between gap-3 shrink-0">
+          <button
+            onClick={handleOpenYoutube}
+            className="text-xs font-mono text-red-400 hover:text-red-300 flex items-center gap-1.5 transition-colors"
+          >
+            <Play className="h-3.5 w-3.5 fill-red-400" />
+            <span>Search "{guide.name}" on YouTube</span>
+            <ExternalLink className="h-3 w-3" />
+          </button>
+
           <button
             onClick={handleClose}
             className="px-6 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs shadow-lg transition-all active:scale-95"
           >
-            Got It, Close Guide
+            Got It, Close Manual
           </button>
         </div>
       </div>
