@@ -86,14 +86,23 @@ const REWARD_OPTIONS: RewardOption[] = [
 ];
 
 export const VictoryRewardModal: React.FC = () => {
-  const { isVictoryModalOpen, closeVictoryModal, claimNightlyReward, todayRewardClaim } = useTitan();
+  const { isVictoryModalOpen, closeVictoryModal, claimNightlyReward, todayRewardClaim, workoutLogs, financeLogs } = useTitan();
 
   const [selectedKey, setSelectedKey] = useState<NightlyRewardKey>(todayRewardClaim?.rewardKey || 'GAMING');
   const [customNote, setCustomNote] = useState<string>(todayRewardClaim?.customNote || '');
 
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayWorkout = workoutLogs.find(w => w.timestamp.startsWith(todayStr));
+  const todayFinance = financeLogs.find(f => f.timestamp.startsWith(todayStr));
+
+  const workoutMinutes = todayWorkout?.durationMinutes || 0;
+  const financeMinutes = todayFinance?.durationMinutes || 0;
+  const isMaxedOut = workoutMinutes >= 240 && financeMinutes >= 240;
+
   if (!isVictoryModalOpen) return null;
 
   const handleClaim = () => {
+    if (!isMaxedOut) return;
     claimNightlyReward(selectedKey, selectedKey === 'CUSTOM' ? customNote : undefined);
     closeVictoryModal();
   };

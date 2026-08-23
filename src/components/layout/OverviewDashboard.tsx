@@ -586,8 +586,8 @@ export const OverviewDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. Guilt-Free Nightly Victory Reward Selector */}
-      {completedCount >= 2 || (workoutMinutes > 0 && financeMinutes > 0) ? (
+      {/* 3. Guilt-Free Nightly Victory Reward Selector (Requires 4h Workout + 4h Finance MAX) */}
+      {workoutMinutes >= 240 && financeMinutes >= 240 ? (
         <div
           onClick={openVictoryModal}
           className="p-4 rounded-2xl border-2 border-purple-500/60 bg-gradient-to-r from-purple-950/80 via-indigo-950/80 to-purple-950/80 shadow-[0_0_25px_rgba(168,85,247,0.25)] cursor-pointer transition-all flex flex-wrap items-center justify-between gap-4 group active:scale-[0.99]"
@@ -599,10 +599,10 @@ export const OverviewDashboard: React.FC = () => {
             <div>
               <div className="flex items-center gap-2">
                 <span className="px-2 py-0.5 rounded bg-purple-900 text-purple-200 text-[10px] font-mono font-bold tracking-wider border border-purple-400">
-                  {todayRewardClaim ? 'GUILT-FREE REWARD ACTIVE' : '100% PROTOCOL COMPLETE'}
+                  {todayRewardClaim ? 'GUILT-FREE REWARD ACTIVE' : '4H + 4H MAX CONQUEST REACHED'}
                 </span>
                 <span className="text-emerald-300 text-xs font-bold flex items-center gap-1 font-mono">
-                  <Sparkles className="h-3.5 w-3.5 text-emerald-400 animate-spin" /> REWARD UNLOCKED
+                  <Sparkles className="h-3.5 w-3.5 text-emerald-400 animate-spin" /> 100% MAX REWARD UNLOCKED
                 </span>
               </div>
               <h4 className="text-sm sm:text-base font-extrabold text-white mt-1">
@@ -613,7 +613,7 @@ export const OverviewDashboard: React.FC = () => {
               <p className="text-[11px] text-purple-200 mt-0.5">
                 {todayRewardClaim
                   ? 'Guilt-free indulgence active for tonight. Relax with zero procrastination anxiety!'
-                  : 'You paid the price of discipline today. Choose your unrestricted celebration.'}
+                  : 'Both Workout (4h MAX) and Finance (4h MAX) completed! Claim your reward.'}
               </p>
             </div>
           </div>
@@ -630,30 +630,54 @@ export const OverviewDashboard: React.FC = () => {
           </button>
         </div>
       ) : (
-        <div
-          onClick={openVictoryModal}
-          className="p-3.5 rounded-2xl border border-white/[0.08] bg-[#0c0d14]/70 hover:border-purple-500/30 cursor-pointer transition-all flex items-center justify-between group active:scale-[0.99]"
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-white/[0.03] text-zinc-500 border border-white/[0.06] group-hover:text-purple-400 transition-colors">
-              <Lock className="h-4 w-4" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-zinc-300">
-                  Guilt-Free Nightly Reward ({completedCount}/3 Completed)
-                </span>
-                <span className="text-[9px] font-mono text-zinc-500">
-                  LOCKED UNTIL DAILY LOGS COMPLETE
-                </span>
+        <div className="p-4 rounded-2xl border border-white/[0.08] bg-[#0c0d14]/70 transition-all space-y-2.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-white/[0.03] text-zinc-500 border border-white/[0.06]">
+                <Lock className="h-4 w-4 text-zinc-500" />
               </div>
-              <p className="text-[10px] text-zinc-400 mt-0.5">
-                Slide workout & finance minutes above to unlock Gaming, Media Binge, or Feast Cheat Meals.
-              </p>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-zinc-300">
+                    Guilt-Free Nightly Reward
+                  </span>
+                  <span className="text-[9px] font-mono text-rose-400 px-1.5 py-0.2 rounded bg-rose-950/50 border border-rose-500/20 font-bold">
+                    LOCKED (REQUIRES 4H & 4H MAX)
+                  </span>
+                </div>
+                <p className="text-[11px] text-zinc-400 mt-0.5">
+                  Slide both Workout to <strong className="text-white">4h MAX</strong> ({workoutMinutes}/240m) & Finance to <strong className="text-white">4h MAX</strong> ({financeMinutes}/240m) to unlock.
+                </p>
+              </div>
             </div>
+
+            <span className="text-[10px] font-mono text-zinc-400 font-bold">
+              {Math.round(((workoutMinutes + financeMinutes) / 480) * 100)}% to Unlock
+            </span>
           </div>
 
-          <ChevronRight className="h-4 w-4 text-zinc-500 group-hover:text-purple-400 group-hover:translate-x-0.5 transition-all" />
+          {/* Dual Progress Bars */}
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <div className="space-y-1">
+              <div className="flex justify-between text-[9px] font-mono text-zinc-500">
+                <span>Workout: {Math.floor(workoutMinutes / 60)}h {workoutMinutes % 60}m / 4h</span>
+                <span className={workoutMinutes >= 240 ? 'text-emerald-400 font-bold' : ''}>{workoutMinutes >= 240 ? 'MAX ✓' : ''}</span>
+              </div>
+              <div className="w-full bg-white/[0.05] h-1.5 rounded-full overflow-hidden">
+                <div className="bg-rose-500 h-full transition-all duration-300" style={{ width: `${Math.min(100, (workoutMinutes / 240) * 100)}%` }} />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <div className="flex justify-between text-[9px] font-mono text-zinc-500">
+                <span>Finance: {Math.floor(financeMinutes / 60)}h {financeMinutes % 60}m / 4h</span>
+                <span className={financeMinutes >= 240 ? 'text-amber-400 font-bold' : ''}>{financeMinutes >= 240 ? 'MAX ✓' : ''}</span>
+              </div>
+              <div className="w-full bg-white/[0.05] h-1.5 rounded-full overflow-hidden">
+                <div className="bg-amber-500 h-full transition-all duration-300" style={{ width: `${Math.min(100, (financeMinutes / 240) * 100)}%` }} />
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

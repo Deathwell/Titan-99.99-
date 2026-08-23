@@ -41,20 +41,19 @@ export const DailyQuests: React.FC = () => {
   const workoutMinutes = todayWorkout?.durationMinutes || 0;
   const financeMinutes = todayFinance?.durationMinutes || 0;
 
-  // Auto-sync status: Quests automatically reflect slider values!
-  const isPhysiqueSatisfied = workoutMinutes > 0;
-  const isFinanceSatisfied = financeMinutes > 0;
+  const isPhysiqueSatisfied = workoutMinutes >= 240;
+  const isFinanceSatisfied = financeMinutes >= 240;
 
   const isQuestDone = (questId: string, category: 'PHYSIQUE' | 'FINANCE' | 'SYSTEM', baseCompleted: boolean) => {
-    if (category === 'PHYSIQUE') return isPhysiqueSatisfied || baseCompleted;
-    if (category === 'FINANCE') return isFinanceSatisfied || baseCompleted;
+    if (category === 'PHYSIQUE') return workoutMinutes > 0 || baseCompleted;
+    if (category === 'FINANCE') return financeMinutes > 0 || baseCompleted;
     return baseCompleted;
   };
 
   const completedCount = quests.filter(q => isQuestDone(q.id, q.category, q.completed)).length;
   const totalCount = quests.length;
   const completionRate = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-  const allCompleted = isPhysiqueSatisfied && isFinanceSatisfied;
+  const allCompleted = workoutMinutes >= 240 && financeMinutes >= 240;
 
   const filteredQuests = quests.filter(q => {
     const done = isQuestDone(q.id, q.category, q.completed);
