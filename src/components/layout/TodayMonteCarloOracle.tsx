@@ -2,12 +2,11 @@ import React, { useState, useMemo } from 'react';
 import {
   Sparkles,
   Zap,
-  Award,
+  Target,
   HeartPulse,
-  DollarSign,
   TrendingUp,
-  ChevronDown,
-  ChevronUp
+  HelpCircle,
+  Clock
 } from 'lucide-react';
 import { useTitan } from '../../context/TitanContext';
 import { monteCarloEngine, MonteCarloConfig } from '../../lib/monteCarloEngine';
@@ -54,10 +53,10 @@ export const TodayMonteCarloOracle: React.FC<TodayMonteCarloOracleProps> = ({
     capitalMultiplierMax
   } = simulation;
 
-  // Sleek Low-Profile Sparkline Geometry
+  // Chart Geometry
   const chartWidth = 640;
-  const chartHeight = 85;
-  const padding = { top: 10, right: 15, bottom: 20, left: 45 };
+  const chartHeight = 90;
+  const padding = { top: 12, right: 15, bottom: 22, left: 75 };
 
   const innerWidth = chartWidth - padding.left - padding.right;
   const innerHeight = chartHeight - padding.top - padding.bottom;
@@ -87,47 +86,48 @@ export const TodayMonteCarloOracle: React.FC<TodayMonteCarloOracleProps> = ({
     hoveredIndex !== null ? timeline[hoveredIndex] : timeline[timeline.length - 1];
 
   const isHighProbability = probabilityOfTop01Percent >= 70;
+  const isPaceActive = workoutMinutes > 0 || financeMinutes > 0;
 
   return (
-    <div className="luxury-card p-3.5 sm:p-4 bg-[#0e0e14]/80 border border-white/[0.08] space-y-3 select-none transition-all font-sans">
-      {/* Top Header Bar: Lowkey, Executive & Clear */}
-      <div className="flex flex-wrap items-center justify-between gap-2.5">
-        <div className="flex items-center gap-2.5">
-          <div className="p-1.5 rounded-lg bg-cyan-500/15 text-cyan-400 border border-cyan-500/25">
+    <div className="luxury-card p-4 sm:p-5 bg-[#0e0e14]/85 border border-white/[0.08] space-y-3.5 select-none transition-all font-sans">
+      {/* Top Header Bar: Clean, Human-Friendly & Crystal Clear */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.06] pb-3">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-gradient-to-tr from-cyan-500/20 to-blue-600/20 text-cyan-300 border border-cyan-500/30 shadow-sm">
             <Sparkles className="h-4 w-4 animate-pulse" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-white tracking-tight">
-                10,000 Monte Carlo Simulation
-              </span>
+              <h3 className="text-xs sm:text-sm font-bold text-white tracking-tight font-serif">
+                10-Year Destiny & Rank Forecast
+              </h3>
               <span className="text-[9px] font-mono text-emerald-400 font-semibold flex items-center gap-1">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                LIVE SYNCED
+                LIVE FORECAST
               </span>
             </div>
-            <span className="text-[10px] text-zinc-400 block font-mono">
-              Live probability projected from today's slider commitments
-            </span>
+            <p className="text-[11px] text-zinc-400 mt-0.5">
+              Simulating where your daily workout & finance consistency will take you over time.
+            </p>
           </div>
         </div>
 
-        {/* Right Probability & Horizon Controls */}
-        <div className="flex items-center gap-2">
-          {/* Probability Pill */}
-          <div className={`px-2.5 py-1 rounded-lg border text-xs font-bold font-mono flex items-center gap-1.5 ${
+        {/* Right: Chance of Becoming Top 0.01% & Horizon Tabs */}
+        <div className="flex items-center gap-2.5">
+          {/* Chance Badge */}
+          <div className={`px-3 py-1.5 rounded-xl border text-xs font-medium flex items-center gap-1.5 ${
             isHighProbability
-              ? 'bg-emerald-950/40 border-emerald-500/30 text-emerald-300'
+              ? 'bg-emerald-950/40 border-emerald-500/35 text-emerald-300'
               : 'bg-amber-950/40 border-amber-500/30 text-amber-300'
           }`}>
-            <span>Top 0.01%:</span>
-            <span className={isHighProbability ? 'text-emerald-400 text-sm' : 'text-amber-400 text-sm'}>
+            <span className="text-[10px] text-zinc-300">Chance of Top 0.01%:</span>
+            <span className={`font-bold font-mono text-sm ${isHighProbability ? 'text-emerald-400' : 'text-amber-400'}`}>
               {probabilityOfTop01Percent}%
             </span>
           </div>
 
-          {/* Horizon Selector */}
-          <div className="flex items-center p-0.5 rounded-lg bg-black/50 border border-white/10 text-[10px] font-mono">
+          {/* Timeframe Selector */}
+          <div className="flex items-center p-0.5 rounded-lg bg-black/60 border border-white/10 text-[10px] font-mono">
             {[1, 3, 5, 10].map(yr => (
               <button
                 key={yr}
@@ -135,11 +135,12 @@ export const TodayMonteCarloOracle: React.FC<TodayMonteCarloOracleProps> = ({
                   setHorizonYears(yr);
                   soundEngine.playClick(800);
                 }}
-                className={`px-2 py-0.5 rounded font-bold transition-all ${
+                className={`px-2.5 py-1 rounded font-bold transition-all ${
                   horizonYears === yr
                     ? 'bg-cyan-600 text-white shadow-sm'
                     : 'text-zinc-400 hover:text-white'
                 }`}
+                title={`View ${yr} Year Forecast`}
               >
                 {yr}Y
               </button>
@@ -148,56 +149,76 @@ export const TodayMonteCarloOracle: React.FC<TodayMonteCarloOracleProps> = ({
         </div>
       </div>
 
-      {/* 3 Compact KPI Readouts */}
-      <div className="grid grid-cols-3 gap-2 text-xs font-mono">
-        <div className="p-2 rounded-lg bg-black/40 border border-white/[0.05]">
-          <span className="text-[9px] text-zinc-400 block truncate">TARGET BREACH</span>
-          <span className="text-white font-bold block truncate">
-            {timeToTop01PercentDate || 'Pace Slower'}
-          </span>
-          <span className="text-[9px] text-cyan-400 block truncate">
-            {timeToTop01PercentDays ? `${timeToTop01PercentDays}d` : '>45m/d needed'}
-          </span>
-        </div>
-
-        <div className="p-2 rounded-lg bg-black/40 border border-white/[0.05]">
-          <span className="text-[9px] text-zinc-400 block truncate">VELOCITY SPEED</span>
-          <span className="text-amber-300 font-bold block truncate">
-            {velocityMultiplier}x Baseline
-          </span>
-          <span className="text-[9px] text-zinc-400 block truncate">
-            {capitalMultiplierMax}x Alpha
+      {/* 3 Plain-English Metric Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+        {/* Card 1: Arrival Date */}
+        <div className="p-3 rounded-xl bg-black/40 border border-white/[0.06] space-y-1">
+          <div className="flex items-center gap-1.5 text-zinc-400 text-[10px] font-mono uppercase">
+            <Target className="h-3.5 w-3.5 text-cyan-400" />
+            <span>Target Arrival Date</span>
+          </div>
+          <div className="text-sm sm:text-base font-bold text-white font-mono">
+            {timeToTop01PercentDate || 'Pace Needs Boost'}
+          </div>
+          <span className="text-[10px] text-cyan-300/80 block">
+            {timeToTop01PercentDays
+              ? `Estimated in ${Math.round((timeToTop01PercentDays / 365) * 10) / 10} years`
+              : 'Requires >45m daily habit'}
           </span>
         </div>
 
-        <div className="p-2 rounded-lg bg-black/40 border border-white/[0.05]">
-          <span className="text-[9px] text-zinc-400 block truncate">MORTALITY DEFENSE</span>
-          <span className="text-emerald-400 font-bold block truncate">
-            -{mortalityRiskReductionMax}% Hazard
+        {/* Card 2: Climb Speed */}
+        <div className="p-3 rounded-xl bg-black/40 border border-white/[0.06] space-y-1">
+          <div className="flex items-center gap-1.5 text-zinc-400 text-[10px] font-mono uppercase">
+            <Zap className="h-3.5 w-3.5 text-amber-400" />
+            <span>Daily Climb Speed</span>
+          </div>
+          <div className="text-sm sm:text-base font-bold text-amber-300 font-mono">
+            {velocityMultiplier}x Faster Than Avg
+          </div>
+          <span className="text-[10px] text-zinc-400 block">
+            {isPaceActive ? 'Outranking ~8.2M people/mo' : 'Stalled — Move sliders above'}
           </span>
-          <span className="text-[9px] text-zinc-400 block truncate">
-            Cardio Shielded
+        </div>
+
+        {/* Card 3: Health & Longevity */}
+        <div className="p-3 rounded-xl bg-black/40 border border-white/[0.06] space-y-1">
+          <div className="flex items-center gap-1.5 text-zinc-400 text-[10px] font-mono uppercase">
+            <HeartPulse className="h-3.5 w-3.5 text-emerald-400" />
+            <span>Health & Longevity</span>
+          </div>
+          <div className="text-sm sm:text-base font-bold text-emerald-400 font-mono">
+            +{mortalityRiskReductionMax}% Defense Boost
+          </div>
+          <span className="text-[10px] text-zinc-400 block">
+            Lower biological aging risk
           </span>
         </div>
       </div>
 
-      {/* Low-Profile Mini Stochastic Sparkline Ribbon */}
-      <div className="rounded-lg bg-black/50 border border-white/[0.06] p-2 space-y-1">
-        <div className="flex items-center justify-between text-[9px] font-mono text-zinc-400">
-          <span className="flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
-            <span>P50 Expected Median</span>
-            <span className="text-zinc-600">•</span>
-            <span className="h-1.5 w-1.5 rounded-full bg-rose-500/40" />
-            <span>P10–P90 Range</span>
-          </span>
+      {/* Human-Readable Trajectory Graph */}
+      <div className="rounded-xl bg-black/55 border border-white/[0.06] p-3 space-y-1.5">
+        {/* Simple Legend */}
+        <div className="flex items-center justify-between text-[10px] font-mono text-zinc-400">
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_6px_#06b6d4]" />
+              <span className="text-zinc-300 font-medium">Your Expected Path</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-rose-500/40" />
+              <span className="text-zinc-400">Best / Worst Case Range</span>
+            </span>
+          </div>
+
           {hoveredPoint && (
-            <span className="text-cyan-300 font-semibold">
-              {hoveredPoint.dateStr}: Rank #{hoveredPoint.p50Rank.toLocaleString('en-US')}
+            <span className="text-cyan-300 font-bold hidden xs:inline">
+              {hoveredPoint.dateStr}: Projected Rank #{hoveredPoint.p50Rank.toLocaleString('en-US')}
             </span>
           )}
         </div>
 
+        {/* Visual Forecast Chart */}
         <div className="relative w-full overflow-hidden">
           <svg
             viewBox={`0 0 ${chartWidth} ${chartHeight}`}
@@ -205,22 +226,22 @@ export const TodayMonteCarloOracle: React.FC<TodayMonteCarloOracleProps> = ({
             onMouseLeave={() => setHoveredIndex(null)}
           >
             <defs>
-              <linearGradient id="todayAreaGradMini" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.2" />
-                <stop offset="50%" stopColor="#ec4899" stopOpacity="0.15" />
-                <stop offset="100%" stopColor="#e11d48" stopOpacity="0.25" />
+              <linearGradient id="humanAreaGrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.22" />
+                <stop offset="50%" stopColor="#ec4899" stopOpacity="0.16" />
+                <stop offset="100%" stopColor="#e11d48" stopOpacity="0.28" />
               </linearGradient>
-              <linearGradient id="todayLineGradMini" x1="0" y1="0" x2="1" y2="0">
+              <linearGradient id="humanLineGrad" x1="0" y1="0" x2="1" y2="0">
                 <stop offset="0%" stopColor="#06b6d4" />
                 <stop offset="50%" stopColor="#f43f5e" />
                 <stop offset="100%" stopColor="#fbbf24" />
               </linearGradient>
             </defs>
 
-            {/* Horizontal Reference Lines */}
+            {/* Clear Horizontal Destination Lines */}
             {[
-              { rank: 8_150_000, label: 'Top 0.1%' },
-              { rank: 8_150_000_000, label: '8.15B' }
+              { rank: 8_150_000, label: 'Top 0.01% Elite', color: '#06b6d4' },
+              { rank: 8_150_000_000, label: 'Average Person', color: '#71717a' }
             ].map(grid => {
               const y = getY(grid.rank);
               return (
@@ -230,16 +251,17 @@ export const TodayMonteCarloOracle: React.FC<TodayMonteCarloOracleProps> = ({
                     y1={y}
                     x2={chartWidth - padding.right}
                     y2={y}
-                    stroke="rgba(255,255,255,0.06)"
-                    strokeDasharray="3 3"
+                    stroke="rgba(255,255,255,0.08)"
+                    strokeDasharray="4 4"
                   />
                   <text
                     x={padding.left - 6}
                     y={y + 3}
                     textAnchor="end"
-                    fill="#71717a"
-                    fontSize="8"
-                    fontFamily="monospace"
+                    fill={grid.color}
+                    fontSize="9"
+                    fontWeight="600"
+                    fontFamily="sans-serif"
                   >
                     {grid.label}
                   </text>
@@ -247,16 +269,16 @@ export const TodayMonteCarloOracle: React.FC<TodayMonteCarloOracleProps> = ({
               );
             })}
 
-            {/* Shaded Area */}
-            <polygon points={areaPolygon} fill="url(#todayAreaGradMini)" />
+            {/* Shaded 10,000-Path Variance Ribbon */}
+            <polygon points={areaPolygon} fill="url(#humanAreaGrad)" />
 
-            {/* P10 / P90 Outlines */}
+            {/* P10 / P90 Subtle Boundaries */}
             <polyline
               points={p10Points}
               fill="none"
               stroke="#06b6d4"
               strokeWidth="1"
-              strokeDasharray="2 2"
+              strokeDasharray="3 3"
               strokeOpacity="0.5"
             />
             <polyline
@@ -264,21 +286,21 @@ export const TodayMonteCarloOracle: React.FC<TodayMonteCarloOracleProps> = ({
               fill="none"
               stroke="#e11d48"
               strokeWidth="1"
-              strokeDasharray="2 2"
+              strokeDasharray="3 3"
               strokeOpacity="0.4"
             />
 
-            {/* P50 Median Line */}
+            {/* Primary Expected Growth Path */}
             <polyline
               points={p50Points}
               fill="none"
-              stroke="url(#todayLineGradMini)"
-              strokeWidth="2.2"
+              stroke="url(#humanLineGrad)"
+              strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
 
-            {/* Hover Crosshair */}
+            {/* Hover Interaction Crosshair & Tooltip */}
             {hoveredIndex !== null && (
               <g>
                 <line
@@ -293,10 +315,10 @@ export const TodayMonteCarloOracle: React.FC<TodayMonteCarloOracleProps> = ({
                 <circle
                   cx={getX(hoveredIndex)}
                   cy={getY(timeline[hoveredIndex].p50Rank)}
-                  r="4"
+                  r="4.5"
                   fill="#06b6d4"
                   stroke="#ffffff"
-                  strokeWidth="1.5"
+                  strokeWidth="2"
                 />
               </g>
             )}
@@ -318,6 +340,12 @@ export const TodayMonteCarloOracle: React.FC<TodayMonteCarloOracleProps> = ({
               />
             ))}
           </svg>
+        </div>
+
+        {/* Helpful Micro-Guidance */}
+        <div className="pt-1 flex items-center justify-between text-[10px] text-zinc-400">
+          <span>💡 Slide Workout & Finance higher to see your rank trajectory climb faster.</span>
+          <span className="font-mono text-zinc-500 hidden sm:inline">Based on 10,000 mathematical simulations</span>
         </div>
       </div>
     </div>
