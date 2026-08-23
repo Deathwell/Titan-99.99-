@@ -462,7 +462,7 @@ export function calculateCompositeState(
     ? `1 in ${(oneInN / 1_000).toFixed(1)}k humans`
     : `1 in ${oneInN} humans`;
 
-  const globalRankFormatted = `#${globalRank.toLocaleString()}`;
+  const globalRankFormatted = `#${globalRank.toLocaleString('en-US')}`;
 
   // Gap to Top 0.1% Club (99.9th percentile)
   const gapToTopPointOneZ = Math.max(0, APEX_999_Z_THRESHOLD - zGlobal);

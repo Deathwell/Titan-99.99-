@@ -333,74 +333,127 @@ export const OverviewDashboard: React.FC = () => {
   const claimedDropToday = isMysteryDropClaimedToday();
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto select-none font-sans py-2">
-      {/* 1. Luxurious Charcoal & Crimson Telemetry Header */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-[#ff2e4d] animate-pulse" />
-            <span className="text-[10px] font-bold tracking-widest text-[#ff2e4d] uppercase font-mono">
-              OPERATOR ACTIVE
-            </span>
-          </div>
-
-          {/* Top Right XP Earned Today & Streak Badges */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-300 font-semibold text-xs backdrop-blur-md">
-              <Zap className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
-              <span className="font-mono font-bold">
-                <CountUpNumber end={todayTotalXP} decimals={0} prefix="+" suffix=" XP Today" />
-              </span>
-            </div>
-
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/25 text-rose-300 font-semibold text-xs backdrop-blur-md">
-              <Flame className="h-3.5 w-3.5 text-rose-400 fill-rose-400" />
-              <span className="font-mono">{profile.streakDays}d Streak</span>
-            </div>
-          </div>
+    <div className="space-y-6 max-w-4xl mx-auto select-none font-sans px-2 sm:px-4 py-2">
+      {/* 1. Top Telemetry Bar */}
+      <div className="flex items-center justify-between px-1">
+        <div className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-[#ff2e4d] animate-pulse" />
+          <span className="text-[11px] font-bold tracking-widest text-[#ff2e4d] uppercase font-mono">
+            OPERATOR ACTIVE
+          </span>
+          <span className="text-zinc-600 hidden sm:inline">•</span>
+          <span className="text-[11px] text-zinc-500 font-mono hidden sm:inline uppercase">
+            Global Population: 8.15B Humans
+          </span>
         </div>
 
-        {/* Hero Rank Display */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-2 border-b border-white/[0.08]">
-          <div>
-            <span className="text-xs text-zinc-400 font-medium block">
-              {greeting}, <strong className="text-white font-semibold">{profile.callsign || 'Operator'}</strong>
+        {/* Top Right XP Earned Today & Streak Badges */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-300 font-semibold text-xs backdrop-blur-md">
+            <Zap className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
+            <span className="font-mono font-bold">
+              <CountUpNumber end={todayTotalXP} decimals={0} prefix="+" suffix=" XP Today" />
             </span>
-            <div className="text-3xl sm:text-5xl font-black text-white tracking-tight mt-1 flex items-baseline gap-3 flex-wrap">
-              <span>TOP</span>
-              <span className="text-metallic-crimson">
-                <CountUpNumber end={topPercent} decimals={topPercent < 1 ? 2 : 1} suffix="%" />
-              </span>
-              <span className="text-xs sm:text-sm font-mono font-bold text-zinc-400">
-                ({composite.oneInNFormatted})
-              </span>
-            </div>
           </div>
 
-          {/* Key Metric Indicators (Exact Global Rank & Defeated Count out of 8.15B Humans) */}
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span className="px-3 py-1 rounded-lg bg-rose-950/50 text-rose-300 border border-rose-500/30 font-mono shadow-sm">
-              Global Rank <strong className="text-white">{composite.globalRankFormatted}</strong> / 8.15B
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/25 text-rose-300 font-semibold text-xs backdrop-blur-md">
+            <Flame className="h-3.5 w-3.5 text-rose-400 fill-rose-400" />
+            <span className="font-mono font-bold">{profile.streakDays}d Streak</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. Spacious Imperial Hero Showcase Card */}
+      <div className="luxury-card p-6 sm:p-8 relative overflow-hidden bg-[#0c0c11]/90 border border-white/[0.08] shadow-2xl backdrop-blur-2xl">
+        {/* Subtle Ambient Aurora */}
+        <div className="pointer-events-none absolute -left-24 -top-24 h-64 w-64 rounded-full bg-rose-500/10 blur-3xl" />
+        <div className="pointer-events-none absolute -right-24 -bottom-24 h-64 w-64 rounded-full bg-amber-500/10 blur-3xl" />
+
+        <div className="relative space-y-6">
+          {/* Header Greeting & Callsign */}
+          <div>
+            <span className="text-xs text-zinc-400 font-mono tracking-wider uppercase block">
+              {greeting}, operative
             </span>
-            <span className="px-3 py-1 rounded-lg bg-white/[0.04] text-zinc-300 border border-white/[0.08] font-mono">
-              <strong className="text-white"><CountUpNumber end={composite.humansDefeated / 1000000} decimals={1} suffix="M" /></strong> Defeated
-            </span>
-            <span className="px-3 py-1 rounded-lg bg-white/[0.04] text-zinc-300 border border-white/[0.08] font-medium">
-              Tier {profile.level} Operator
-            </span>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-white tracking-tight mt-0.5">
+              {profile.callsign || 'Operator'}
+            </h1>
+          </div>
+
+          {/* Main Percentile Display & Sub-Headline */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center pt-2 border-t border-white/[0.06]">
+            {/* Left: Giant Serif Percentile Display */}
+            <div className="lg:col-span-5 space-y-1">
+              <span className="text-[10px] font-mono font-bold tracking-widest text-zinc-400 uppercase">
+                CURRENT PERCENTILE STANDING
+              </span>
+              <div className="flex items-baseline gap-3">
+                <span className="text-2xl sm:text-3xl font-serif text-zinc-400 font-light uppercase">
+                  TOP
+                </span>
+                <span className="text-5xl sm:text-6xl lg:text-7xl font-serif font-bold tracking-tight bg-gradient-to-r from-white via-rose-100 to-rose-400 bg-clip-text text-transparent drop-shadow-md">
+                  <CountUpNumber end={topPercent} decimals={topPercent < 1 ? 2 : 1} suffix="%" />
+                </span>
+              </div>
+              <p className="text-xs text-zinc-400 font-sans mt-1">
+                Outranking over <strong className="text-white font-mono">{(composite.humansDefeated / 1_000_000).toFixed(1)}M</strong> humans on Earth.
+              </p>
+            </div>
+
+            {/* Right: Clean 3-Metric Telemetry Bento Grid */}
+            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* Stat 1: Global Rank */}
+              <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.07] hover:border-white/15 transition-all">
+                <span className="text-[10px] font-mono text-zinc-500 uppercase block">
+                  GLOBAL RANK
+                </span>
+                <div className="text-base sm:text-lg font-bold font-mono text-white mt-1">
+                  {composite.globalRankFormatted}
+                </div>
+                <span className="text-[10px] text-zinc-400 mt-0.5 block">
+                  Out of 8.15B Humans
+                </span>
+              </div>
+
+              {/* Stat 2: Humans Defeated */}
+              <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.07] hover:border-white/15 transition-all">
+                <span className="text-[10px] font-mono text-zinc-500 uppercase block">
+                  DEFEATED
+                </span>
+                <div className="text-base sm:text-lg font-bold font-mono text-rose-300 mt-1">
+                  <CountUpNumber end={composite.humansDefeated / 1_000_000} decimals={1} suffix="M" />
+                </div>
+                <span className="text-[10px] text-zinc-400 mt-0.5 block">
+                  Planetary Population
+                </span>
+              </div>
+
+              {/* Stat 3: Operator Tier */}
+              <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.07] hover:border-white/15 transition-all">
+                <span className="text-[10px] font-mono text-zinc-500 uppercase block">
+                  OPERATOR LEVEL
+                </span>
+                <div className="text-base sm:text-lg font-bold font-mono text-amber-300 mt-1">
+                  Tier {profile.level}
+                </div>
+                <span className="text-[10px] text-zinc-400 mt-0.5 block">
+                  Ascendant Rank
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Road to 99.9%+ (Top 0.1% Club) Target Telemetry */}
-      <div className={`p-3.5 rounded-xl border font-sans text-xs transition-all ${
+      <div className={`p-4 sm:p-5 rounded-2xl border font-sans text-xs transition-all ${
         composite.isApexTopPointOne
           ? 'bg-rose-950/40 border-rose-500/60 shadow-[0_0_25px_rgba(255,46,77,0.25)]'
           : 'bg-[#101015]/90 border-white/[0.08]'
       }`}>
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <div className="flex items-center gap-2.5">
-            <div className={`p-2 rounded-lg border ${
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-3">
+            <div className={`p-2.5 rounded-xl border shrink-0 ${
               composite.isApexTopPointOne
                 ? 'bg-rose-500/25 border-rose-500 text-rose-300 animate-pulse'
                 : 'bg-white/[0.05] border-white/10 text-rose-400'
@@ -408,12 +461,12 @@ export const OverviewDashboard: React.FC = () => {
               <Sparkles className="h-4 w-4" />
             </div>
             <div>
-              <span className="font-bold text-white block">
+              <span className="font-bold text-white text-sm block">
                 {composite.isApexTopPointOne
                   ? '👑 APEX 99.9%+ STATUS ACHIEVED'
                   : '🎯 MISSION OBJECTIVE: BREACH TOP 0.1% GLOBALLY (99.9%+)'}
               </span>
-              <span className="text-[11px] text-zinc-400">
+              <span className="text-xs text-zinc-400 mt-0.5 block">
                 {composite.isApexTopPointOne
                   ? 'You are officially in the top 1 in 1,000 humans on the planet across dual-domain fitness & finance.'
                   : `Currently ${composite.percentileGlobal.toFixed(2)}th percentile vs 8.15B humans. Z-Score Distance to Top 0.1%: +${composite.gapToTopPointOneZ.toFixed(2)}σ`}
@@ -421,9 +474,9 @@ export const OverviewDashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="text-right font-mono">
+          <div className="text-left sm:text-right font-mono">
             <span className="text-[10px] text-zinc-500 uppercase block">TITAN TARGET THRESHOLD</span>
-            <span className="text-xs font-black text-rose-400">TOP 0.10% (#8.15M RANK)</span>
+            <span className="text-xs font-bold text-rose-400">TOP 0.10% (#8.15M RANK)</span>
           </div>
         </div>
       </div>
