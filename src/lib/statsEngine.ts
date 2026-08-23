@@ -496,22 +496,25 @@ export function calculateCompositeState(
 export function generateBellCurveData(userZ: number, pointsCount = 80): Array<{
   z: number;
   pdf: number;
+  percentile: number;
   userMarker?: number;
   highlight?: boolean;
 }> {
   const minZ = -4.0;
   const maxZ = 4.0;
   const step = (maxZ - minZ) / (pointsCount - 1);
-  const points: Array<{ z: number; pdf: number; userMarker?: number; highlight?: boolean }> = [];
+  const points: Array<{ z: number; pdf: number; percentile: number; userMarker?: number; highlight?: boolean }> = [];
 
   for (let i = 0; i < pointsCount; i++) {
     const z = Number((minZ + i * step).toFixed(2));
     const pdf = standardNormalPDF(z);
+    const percentile = zScoreToPercentile(z);
     const isClose = Math.abs(z - userZ) < step / 1.8;
 
     points.push({
       z,
       pdf,
+      percentile,
       userMarker: isClose ? pdf : undefined,
       highlight: z <= userZ
     });
