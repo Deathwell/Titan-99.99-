@@ -1,25 +1,20 @@
 import React, { useState, useMemo } from 'react';
 import {
-  Sparkles,
   Dumbbell,
   Play,
-  CheckCircle2,
   Clock,
   Zap,
   Flame,
-  Shield,
-  Activity,
-  TreePine,
   Building,
-  Target,
-  BookOpen,
+  TreePine,
+  Activity,
   Sliders,
   ChevronRight,
-  Info,
-  Calendar,
-  Layers,
-  Award,
-  HelpCircle
+  BookOpen,
+  Sparkles,
+  CheckCircle2,
+  HelpCircle,
+  Timer
 } from 'lucide-react';
 import { useTitan } from '../../context/TitanContext';
 import {
@@ -34,7 +29,7 @@ import { soundEngine } from '../../lib/audio';
 import { ActiveMissionTimerHUD } from '../action/ActiveMissionTimerHUD';
 import { ExerciseGuideModal } from '../modals/ExerciseGuideModal';
 
-const DURATION_PRESETS = [15, 30, 45, 60, 75, 90, 105, 120, 150, 180, 240];
+const DURATION_PRESETS = [15, 30, 45, 60, 75, 90, 120, 180, 240];
 
 export const CluelessHubView: React.FC = () => {
   const { profile } = useTitan();
@@ -54,7 +49,7 @@ export const CluelessHubView: React.FC = () => {
   // Form Guide Modal State
   const [guideExerciseName, setGuideExerciseName] = useState<string | null>(null);
 
-  // Generate dynamic recommendation in 0ms
+  // Generate dynamic recommendation instantly
   const prescription = useMemo(() => {
     return generateCustomPrescription({
       age,
@@ -77,80 +72,41 @@ export const CluelessHubView: React.FC = () => {
     setIsConfirmingStart(false);
   };
 
-  const handleOpenGuide = (e: React.MouseEvent, exerciseName: string) => {
+  const handleOpenGuide = (e: React.MouseEvent, guideKeyOrName: string) => {
     e.stopPropagation();
     soundEngine.playClick(800);
-    setGuideExerciseName(exerciseName);
-  };
-
-  const getCategoryBadge = (category: string) => {
-    switch (category) {
-      case 'WARMUP':
-        return { label: 'Warmup & Activation', color: 'bg-amber-500/10 text-amber-300 border-amber-500/30' };
-      case 'PRIMARY_COMPOUND':
-        return { label: 'Primary Compound', color: 'bg-rose-500/15 text-rose-300 border-rose-500/30' };
-      case 'HYPERTROPHY_ACCESSORY':
-        return { label: 'Hypertrophy Accessory', color: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30' };
-      case 'ISOLATION_STRETCH':
-        return { label: 'Lengthened Isolation', color: 'bg-purple-500/15 text-purple-300 border-purple-500/30' };
-      case 'METABOLIC_FINISHER':
-        return { label: 'Metabolic Finisher', color: 'bg-red-500/20 text-red-300 border-red-500/40' };
-      case 'LONGEVITY_RECOVERY':
-        return { label: 'Recovery & Decompression', color: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' };
-      default:
-        return { label: 'Exercise', color: 'bg-zinc-800 text-zinc-300 border-zinc-700' };
-    }
+    setGuideExerciseName(guideKeyOrName);
   };
 
   return (
-    <div className="space-y-8 font-sans select-none animate-in fade-in duration-200 max-w-5xl mx-auto pb-16">
+    <div className="space-y-6 font-sans select-none animate-in fade-in duration-200 max-w-4xl mx-auto pb-16 px-2 sm:px-4">
       
-      {/* 1. PROFESSIONAL HEADER */}
-      <div className="border-b border-white/[0.08] pb-5 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-mono text-[10px] font-bold border border-cyan-500/25 uppercase tracking-widest">
-              TITAN ORACLE
-            </span>
-            <span className="text-xs text-zinc-400 font-mono">Dynamic Workout Prescription</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mt-1 font-serif">
-            Clueless? AI Workout Prescription
-          </h1>
-          <p className="text-xs sm:text-sm text-zinc-400 mt-1">
-            Click any exercise to view step-by-step form guides, illustrations, and biomechanics.
-          </p>
+      {/* 1. MINIMALIST EXECUTIVE HEADER */}
+      <div className="text-center sm:text-left space-y-1.5 pt-1 pb-2">
+        <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[10px] font-mono font-bold uppercase tracking-widest">
+          <Sparkles className="h-3 w-3" />
+          <span>AI Sports Science Concierge</span>
         </div>
-
-        <button
-          onClick={handleStartTimerClicked}
-          className="px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-600 via-blue-600 to-cyan-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs sm:text-sm shadow-[0_0_25px_rgba(6,182,212,0.35)] flex items-center gap-2 transition-all active:scale-95"
-        >
-          <Play className="h-4 w-4 fill-white" />
-          <span>START WORKOUT ({durationMinutes}m)</span>
-        </button>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight font-serif">
+          Clueless? Custom Daily Protocol
+        </h1>
+        <p className="text-xs sm:text-sm text-zinc-400 max-w-2xl">
+          Dial in your parameters to receive a tailored, science-backed workout routine with exact tempos, rest intervals, and form guides.
+        </p>
       </div>
 
-      {/* 2. STREAMLINED CONFIGURATION DECK (Clean, Unified, Professional) */}
-      <div className="p-5 sm:p-6 rounded-2xl bg-[#0e0e14] border border-white/[0.08] shadow-lg space-y-5">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xs font-mono font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
-            <Sliders className="h-3.5 w-3.5 text-cyan-400" />
-            <span>EXERCISE CONFIGURATION</span>
-          </h3>
-          <span className="text-[11px] font-mono text-cyan-400/90 font-semibold">
-            {prescription.ageBracketLabel}
-          </span>
-        </div>
-
-        {/* Top Controls Grid: Age, Gender, Environment, Equipment */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          
-          {/* Age Control */}
-          <div className="p-3.5 rounded-xl bg-black/40 border border-white/[0.06] space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-zinc-400 font-medium">Age:</span>
-              <span className="font-mono text-cyan-300 font-bold text-sm">{age} yrs</span>
+      {/* 2. SIMPLISTIC & ELEGANT CONFIGURATOR */}
+      <div className="p-5 sm:p-6 rounded-2xl bg-[#0c0c11]/90 border border-white/[0.08] shadow-xl backdrop-blur-xl space-y-5">
+        
+        {/* Row 1: Age & Gender */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4 border-b border-white/[0.05]">
+          {/* Age Selector */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs font-mono">
+              <span className="text-zinc-400">Biological Age</span>
+              <span className="text-cyan-300 font-bold text-sm bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-500/30">
+                {age} yrs
+              </span>
             </div>
             <input
               type="range"
@@ -164,21 +120,21 @@ export const CluelessHubView: React.FC = () => {
               }}
               className="w-full accent-cyan-400 cursor-pointer h-1.5 bg-zinc-800 rounded-lg"
             />
-            <div className="flex justify-between text-[9px] font-mono text-zinc-500">
-              <span>15 (Youth)</span>
+            <div className="flex justify-between text-[10px] font-mono text-zinc-400">
+              <span>15 (Prime)</span>
               <span>45 (Masters)</span>
-              <span>75 (Senior)</span>
+              <span>75 (Longevity)</span>
             </div>
           </div>
 
           {/* Biological Focus */}
-          <div className="p-3.5 rounded-xl bg-black/40 border border-white/[0.06] space-y-2">
-            <span className="text-xs text-zinc-400 font-medium block">Focus Profile:</span>
-            <div className="grid grid-cols-3 gap-1">
+          <div className="space-y-2">
+            <span className="text-xs font-mono text-zinc-400 block">Biological Focus</span>
+            <div className="grid grid-cols-3 gap-1.5">
               {[
-                { id: 'MALE', label: 'Male 👨' },
-                { id: 'FEMALE', label: 'Female 👩' },
-                { id: 'OTHER', label: 'Custom ⚡' }
+                { id: 'MALE', label: 'Male' },
+                { id: 'FEMALE', label: 'Female' },
+                { id: 'OTHER', label: 'Custom' }
               ].map(g => (
                 <button
                   key={g.id}
@@ -187,10 +143,10 @@ export const CluelessHubView: React.FC = () => {
                     soundEngine.playClick(850);
                     setGender(g.id as GenderType);
                   }}
-                  className={`py-1.5 px-1 rounded-lg text-xs font-bold transition-all border text-center ${
+                  className={`py-2 px-2 rounded-xl text-xs font-semibold transition-all border text-center ${
                     gender === g.id
-                      ? 'bg-cyan-600 text-white border-cyan-400 shadow-sm'
-                      : 'bg-white/[0.02] border-white/[0.06] text-zinc-400 hover:text-white'
+                      ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50 shadow-sm'
+                      : 'bg-white/[0.02] border-white/[0.06] text-zinc-400 hover:text-white hover:border-white/15'
                   }`}
                 >
                   {g.label}
@@ -198,21 +154,24 @@ export const CluelessHubView: React.FC = () => {
               ))}
             </div>
           </div>
+        </div>
 
+        {/* Row 2: Environment & Equipment */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4 border-b border-white/[0.05]">
           {/* Environment */}
-          <div className="p-3.5 rounded-xl bg-black/40 border border-white/[0.06] space-y-2">
-            <span className="text-xs text-zinc-400 font-medium block">Environment:</span>
-            <div className="grid grid-cols-2 gap-1.5">
+          <div className="space-y-2">
+            <span className="text-xs font-mono text-zinc-400 block">Setting</span>
+            <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => {
                   soundEngine.playClick(850);
                   setEnvironment('INDOOR');
                 }}
-                className={`py-1.5 px-2 rounded-lg text-xs font-bold transition-all border text-center flex items-center justify-center gap-1.5 ${
+                className={`py-2 px-3 rounded-xl text-xs font-semibold transition-all border flex items-center justify-center gap-2 ${
                   environment === 'INDOOR'
-                    ? 'bg-cyan-600 text-white border-cyan-400 shadow-sm'
-                    : 'bg-white/[0.02] border-white/[0.06] text-zinc-400 hover:text-white'
+                    ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50 shadow-sm'
+                    : 'bg-white/[0.02] border-white/[0.06] text-zinc-400 hover:text-white hover:border-white/15'
                 }`}
               >
                 <Building className="h-3.5 w-3.5" />
@@ -225,10 +184,10 @@ export const CluelessHubView: React.FC = () => {
                   soundEngine.playClick(850);
                   setEnvironment('OUTDOOR');
                 }}
-                className={`py-1.5 px-2 rounded-lg text-xs font-bold transition-all border text-center flex items-center justify-center gap-1.5 ${
+                className={`py-2 px-3 rounded-xl text-xs font-semibold transition-all border flex items-center justify-center gap-2 ${
                   environment === 'OUTDOOR'
-                    ? 'bg-cyan-600 text-white border-cyan-400 shadow-sm'
-                    : 'bg-white/[0.02] border-white/[0.06] text-zinc-400 hover:text-white'
+                    ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50 shadow-sm'
+                    : 'bg-white/[0.02] border-white/[0.06] text-zinc-400 hover:text-white hover:border-white/15'
                 }`}
               >
                 <TreePine className="h-3.5 w-3.5" />
@@ -238,19 +197,19 @@ export const CluelessHubView: React.FC = () => {
           </div>
 
           {/* Equipment */}
-          <div className="p-3.5 rounded-xl bg-black/40 border border-white/[0.06] space-y-2">
-            <span className="text-xs text-zinc-400 font-medium block">Equipment:</span>
-            <div className="grid grid-cols-2 gap-1.5">
+          <div className="space-y-2">
+            <span className="text-xs font-mono text-zinc-400 block">Gear</span>
+            <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => {
                   soundEngine.playClick(850);
                   setEquipment('EQUIPMENT');
                 }}
-                className={`py-1.5 px-2 rounded-lg text-xs font-bold transition-all border text-center flex items-center justify-center gap-1.5 ${
+                className={`py-2 px-3 rounded-xl text-xs font-semibold transition-all border flex items-center justify-center gap-2 ${
                   equipment === 'EQUIPMENT'
-                    ? 'bg-cyan-600 text-white border-cyan-400 shadow-sm'
-                    : 'bg-white/[0.02] border-white/[0.06] text-zinc-400 hover:text-white'
+                    ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50 shadow-sm'
+                    : 'bg-white/[0.02] border-white/[0.06] text-zinc-400 hover:text-white hover:border-white/15'
                 }`}
               >
                 <Dumbbell className="h-3.5 w-3.5" />
@@ -263,10 +222,10 @@ export const CluelessHubView: React.FC = () => {
                   soundEngine.playClick(850);
                   setEquipment('NO_EQUIPMENT');
                 }}
-                className={`py-1.5 px-2 rounded-lg text-xs font-bold transition-all border text-center flex items-center justify-center gap-1.5 ${
+                className={`py-2 px-3 rounded-xl text-xs font-semibold transition-all border flex items-center justify-center gap-2 ${
                   equipment === 'NO_EQUIPMENT'
-                    ? 'bg-cyan-600 text-white border-cyan-400 shadow-sm'
-                    : 'bg-white/[0.02] border-white/[0.06] text-zinc-400 hover:text-white'
+                    ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50 shadow-sm'
+                    : 'bg-white/[0.02] border-white/[0.06] text-zinc-400 hover:text-white hover:border-white/15'
                 }`}
               >
                 <Activity className="h-3.5 w-3.5" />
@@ -276,15 +235,18 @@ export const CluelessHubView: React.FC = () => {
           </div>
         </div>
 
-        {/* Intensity Level Tabs */}
-        <div className="space-y-2 pt-2 border-t border-white/[0.06]">
-          <span className="text-xs text-zinc-400 font-medium block">Intensity Level:</span>
+        {/* Row 3: Intensity Levels */}
+        <div className="space-y-2 pb-4 border-b border-white/[0.05]">
+          <div className="flex items-center justify-between text-xs font-mono text-zinc-400">
+            <span>Intensity Level</span>
+            <span className="text-cyan-400">{prescription.difficulty}</span>
+          </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {[
-              { id: 'BEGINNER', label: 'Beginner', note: 'RPE 6.5–7.0 (Form & Joint Armor)' },
-              { id: 'INTERMEDIATE', label: 'Intermediate', note: 'RIR 1–2 (Progressive Overload)' },
-              { id: 'ADVANCED', label: 'Advanced', note: 'RIR 0–1 (Near Failure Density)' },
-              { id: 'SUPERHERO', label: 'Superhero ⚡', note: 'RPE 9.5–10 (Spartan MRV Peak)' }
+              { id: 'BEGINNER', label: 'Beginner', note: 'RIR 3 • Joint Armor' },
+              { id: 'INTERMEDIATE', label: 'Intermediate', note: 'RIR 1–2 • Hypertrophy' },
+              { id: 'ADVANCED', label: 'Advanced', note: 'RIR 0–1 • Near Failure' },
+              { id: 'SUPERHERO', label: 'Superhero ⚡', note: 'RPE 10 • Spartan Peak' }
             ].map(lvl => (
               <button
                 key={lvl.id}
@@ -293,10 +255,10 @@ export const CluelessHubView: React.FC = () => {
                   soundEngine.playClick(850);
                   setIntensity(lvl.id as IntensityLevel);
                 }}
-                className={`p-2.5 rounded-xl border text-left transition-all ${
+                className={`p-3 rounded-xl border text-left transition-all ${
                   intensity === lvl.id
-                    ? 'bg-cyan-950/40 border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.25)] ring-1 ring-cyan-400/40'
-                    : 'bg-black/30 border-white/[0.06] text-zinc-400 hover:border-white/20'
+                    ? 'bg-cyan-950/40 border-cyan-400/60 shadow-[0_0_15px_rgba(6,182,212,0.2)]'
+                    : 'bg-white/[0.02] border-white/[0.06] text-zinc-400 hover:border-white/15 hover:text-zinc-200'
                 }`}
               >
                 <span className={`text-xs font-bold block ${intensity === lvl.id ? 'text-white' : 'text-zinc-300'}`}>
@@ -310,18 +272,17 @@ export const CluelessHubView: React.FC = () => {
           </div>
         </div>
 
-        {/* Duration Slider & Chips (15m to 240m) */}
-        <div className="space-y-2.5 pt-2 border-t border-white/[0.06]">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-zinc-400 font-medium flex items-center gap-1.5">
+        {/* Row 4: Duration Slider & Preset Chips */}
+        <div className="space-y-2.5">
+          <div className="flex items-center justify-between text-xs font-mono">
+            <span className="text-zinc-400 flex items-center gap-1.5">
               <Clock className="h-3.5 w-3.5 text-cyan-400" />
-              <span>Available Time Frame:</span>
+              <span>Duration</span>
             </span>
-            <span className="font-mono text-cyan-300 font-bold text-sm">
+            <span className="text-cyan-300 font-bold text-sm">
               {durationMinutes >= 60
                 ? `${Math.floor(durationMinutes / 60)}h ${durationMinutes % 60 > 0 ? `${durationMinutes % 60}m` : ''}`
-                : `${durationMinutes}m`}{' '}
-              {durationMinutes === 240 && '(MAX 4H)'}
+                : `${durationMinutes}m`}
             </span>
           </div>
 
@@ -348,10 +309,10 @@ export const CluelessHubView: React.FC = () => {
                   soundEngine.playClick(850);
                   setDurationMinutes(dur);
                 }}
-                className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all border ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-mono font-semibold transition-all border ${
                   durationMinutes === dur
                     ? 'bg-cyan-500/20 text-cyan-300 border-cyan-400 shadow-sm'
-                    : 'bg-black/40 border-white/[0.06] text-zinc-400 hover:text-white'
+                    : 'bg-white/[0.02] border-white/[0.06] text-zinc-400 hover:text-white hover:border-white/15'
                 }`}
               >
                 {dur >= 60 ? `${dur / 60}h` : `${dur}m`}
@@ -361,180 +322,114 @@ export const CluelessHubView: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. HERO PROTOCOL SUMMARY CARD */}
-      <div className="p-6 rounded-2xl bg-[#0e0e14] border border-cyan-500/30 shadow-[0_0_30px_rgba(6,182,212,0.12)] space-y-5">
-        <div className="flex flex-wrap items-start justify-between gap-4 border-b border-white/[0.08] pb-5">
-          <div className="space-y-1.5 max-w-2xl">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="px-2 py-0.5 rounded bg-cyan-500/15 text-cyan-300 font-mono text-[9px] font-bold border border-cyan-500/30 uppercase tracking-widest">
-                PRESCRIBED PROTOCOL
-              </span>
-              <span className="text-xs text-zinc-400 font-mono">
-                {prescription.difficulty} • {prescription.environment} • {prescription.equipment}
-              </span>
+      {/* 3. ELEGANT PROTOCOL SHOWCASE */}
+      <div className="p-6 rounded-2xl bg-[#0c0c11]/95 border border-cyan-500/20 shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/[0.06]">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-[10px] font-mono text-cyan-400 uppercase tracking-wider">
+              <span>{prescription.difficulty}</span>
+              <span>•</span>
+              <span>{prescription.environment}</span>
+              <span>•</span>
+              <span>{prescription.equipment}</span>
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-white font-serif tracking-tight">
+            <h2 className="text-xl sm:text-2xl font-serif font-bold text-white tracking-tight">
               {prescription.title}
             </h2>
-            <p className="text-xs sm:text-sm text-zinc-400">
-              {prescription.subtitle}
+            <p className="text-xs text-zinc-400">
+              Coached by <span className="text-zinc-300 font-medium">{prescription.coachingSource}</span>
             </p>
-            <div className="text-xs font-mono text-cyan-300/90 flex items-center gap-1.5 pt-1">
-              <BookOpen className="h-3.5 w-3.5 text-cyan-400" />
-              <span>Framework: <strong>{prescription.coachingSource}</strong></span>
-            </div>
           </div>
 
-          {/* Output Telemetry Pills */}
-          <div className="flex flex-wrap items-center gap-2.5">
-            <div className="p-3 rounded-xl bg-black/60 border border-white/[0.08] text-center min-w-[80px]">
-              <span className="text-[9px] font-mono text-zinc-400 block uppercase">Duration</span>
-              <span className="text-sm font-mono font-bold text-cyan-300">{prescription.durationMinutes}m</span>
-            </div>
-            <div className="p-3 rounded-xl bg-black/60 border border-white/[0.08] text-center min-w-[80px]">
-              <span className="text-[9px] font-mono text-zinc-400 block uppercase">Reward</span>
-              <span className="text-sm font-mono font-bold text-amber-400">+{prescription.xpAward} XP</span>
-            </div>
-            <div className="p-3 rounded-xl bg-black/60 border border-white/[0.08] text-center min-w-[90px]">
-              <span className="text-[9px] font-mono text-zinc-400 block uppercase">Burn</span>
-              <span className="text-sm font-mono font-bold text-rose-400">~{prescription.calorieBurnEstimate} kcal</span>
-            </div>
-          </div>
+          <button
+            onClick={handleStartTimerClicked}
+            className="w-full sm:w-auto px-7 py-3 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs sm:text-sm shadow-[0_0_20px_rgba(6,182,212,0.3)] flex items-center justify-center gap-2 transition-all active:scale-95 shrink-0"
+          >
+            <Play className="h-4 w-4 fill-white" />
+            <span>START PROTOCOL ({prescription.durationMinutes}m)</span>
+          </button>
         </div>
 
-        {/* Phase Timeline: Warmup -> Working Sets -> Recovery */}
-        <div className="p-3.5 rounded-xl bg-black/40 border border-white/[0.06] space-y-2">
-          <div className="flex justify-between text-xs font-mono text-zinc-400">
-            <span>Warmup: <strong className="text-amber-400">{prescription.warmupMinutes}m</strong></span>
-            <span>Working Compounds: <strong className="text-cyan-300">{prescription.workMinutes}m</strong></span>
-            <span>Recovery: <strong className="text-emerald-400">{prescription.cooldownMinutes}m</strong></span>
+        {/* 3 Minimal Key Metric Tiles */}
+        <div className="grid grid-cols-3 gap-2.5 pt-1 text-center font-mono">
+          <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.05]">
+            <span className="text-[10px] text-zinc-400 uppercase block">Active Time</span>
+            <span className="text-sm sm:text-base font-bold text-cyan-300">{prescription.durationMinutes}m</span>
           </div>
-          <div className="w-full h-2 bg-zinc-900 rounded-full overflow-hidden flex">
-            <div
-              className="bg-amber-400 h-full"
-              style={{ width: `${(prescription.warmupMinutes / prescription.durationMinutes) * 100}%` }}
-            />
-            <div
-              className="bg-cyan-500 h-full"
-              style={{ width: `${(prescription.workMinutes / prescription.durationMinutes) * 100}%` }}
-            />
-            <div
-              className="bg-emerald-400 h-full"
-              style={{ width: `${(prescription.cooldownMinutes / prescription.durationMinutes) * 100}%` }}
-            />
+          <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.05]">
+            <span className="text-[10px] text-zinc-400 uppercase block">Target Burn</span>
+            <span className="text-sm sm:text-base font-bold text-rose-300">~{prescription.calorieBurnEstimate} kcal</span>
           </div>
-        </div>
-
-        {/* Kinesiology Objective Box */}
-        <div className="p-3.5 rounded-xl bg-cyan-950/20 border border-cyan-500/25 text-xs text-zinc-300 leading-relaxed font-mono">
-          <span className="text-cyan-300 font-bold">PHYSIOLOGICAL OBJECTIVE: </span>
-          {prescription.targetObjective}. {prescription.physiologicalImpact}.
+          <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.05]">
+            <span className="text-[10px] text-zinc-400 uppercase block">Reward</span>
+            <span className="text-sm sm:text-base font-bold text-amber-300">+{prescription.xpAward} XP</span>
+          </div>
         </div>
       </div>
 
-      {/* 4. EXERCISE SEQUENCE LIST (Clear, Full-Width, Clickable for Form Guide) */}
-      <div className="space-y-4">
+      {/* 4. CLEAN EXERCISE SEQUENCE LIST */}
+      <div className="space-y-3">
         <div className="flex items-center justify-between px-1">
-          <h3 className="text-xs font-mono font-bold text-zinc-300 uppercase tracking-wider">
-            STEP-BY-STEP EXERCISE PROTOCOL ({prescription.exerciseSteps.length} MOVEMENTS)
+          <h3 className="text-xs font-mono font-bold text-zinc-400 uppercase tracking-wider">
+            Movement Sequence ({prescription.exerciseSteps.length} Exercises)
           </h3>
-          <span className="text-xs text-cyan-400 font-mono">
-            💡 Click any exercise to view form guide
+          <span className="text-[11px] text-cyan-400 font-mono">
+            Tap any exercise for video guide
           </span>
         </div>
 
-        <div className="space-y-3">
-          {prescription.exerciseSteps.map((step, idx) => {
-            const badge = getCategoryBadge(step.category);
-            return (
-              <div
-                key={step.id || idx}
-                onClick={(e) => handleOpenGuide(e, step.guideKey || step.name)}
-                className="p-4 sm:p-5 rounded-2xl bg-[#0e0e14] border border-white/[0.08] hover:border-cyan-500/40 transition-all space-y-3 shadow-md cursor-pointer group hover:bg-[#11131c]"
-              >
-                {/* Top Row: Number, Name, Form Guide Button, Category Badge, Sets & Reps */}
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-7 w-7 rounded-xl bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 font-mono font-bold text-xs flex items-center justify-center shrink-0 group-hover:bg-cyan-500/20">
-                      {idx + 1}
-                    </div>
-                    <h4 className="text-sm sm:text-base font-bold text-white font-serif leading-snug group-hover:text-cyan-200 transition-colors">
-                      {step.name}
-                    </h4>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      type="button"
-                      onClick={(e) => handleOpenGuide(e, step.guideKey || step.name)}
-                      className="px-2.5 py-1 rounded-lg bg-cyan-950/40 text-cyan-300 border border-cyan-500/30 text-[10px] font-mono font-bold hover:bg-cyan-900/60 transition-all flex items-center gap-1"
-                    >
-                      <BookOpen className="h-3 w-3" />
-                      <span>Form Guide</span>
-                    </button>
-
-                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold border ${badge.color}`}>
-                      {badge.label}
-                    </span>
-                    <span className="px-3 py-1 rounded-lg bg-rose-950/40 text-rose-300 font-mono font-bold text-xs border border-rose-500/30 shadow-sm">
-                      {step.sets} Sets × {step.reps}
-                    </span>
-                  </div>
+        <div className="space-y-2.5">
+          {prescription.exerciseSteps.map((step, idx) => (
+            <div
+              key={step.id || idx}
+              onClick={(e) => handleOpenGuide(e, step.guideKey || step.name)}
+              className="p-4 sm:p-5 rounded-2xl bg-[#0c0c11]/80 border border-white/[0.06] hover:border-cyan-500/40 transition-all space-y-2.5 cursor-pointer group hover:bg-[#101017] shadow-sm"
+            >
+              {/* Header: Number, Title, Form Guide Button, Sets & Reps */}
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="font-mono text-xs font-bold text-cyan-400/80 w-5">
+                    {String(idx + 1).padStart(2, '0')}
+                  </span>
+                  <h4 className="text-sm sm:text-base font-semibold text-white group-hover:text-cyan-200 transition-colors">
+                    {step.name}
+                  </h4>
                 </div>
 
-                {/* Telemetry Row: 4 Clear Columns */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3 rounded-xl bg-black/50 border border-white/[0.05] text-xs font-mono">
-                  <div>
-                    <span className="text-zinc-500 block text-[10px]">Target Muscle:</span>
-                    <span className="text-cyan-300 font-semibold truncate block">{step.targetMuscle}</span>
-                  </div>
-                  <div>
-                    <span className="text-zinc-500 block text-[10px]">Eccentric Tempo:</span>
-                    <span className="text-white font-semibold block">{step.tempo}</span>
-                  </div>
-                  <div>
-                    <span className="text-zinc-500 block text-[10px]">Intensity Gauge:</span>
-                    <span className="text-amber-300 font-semibold block">{step.intensityRirOrRpe}</span>
-                  </div>
-                  <div>
-                    <span className="text-zinc-500 block text-[10px]">Rest Interval:</span>
-                    <span className="text-emerald-400 font-semibold block">
-                      {step.restSeconds > 0 ? `${step.restSeconds}s` : 'Continuous'}
-                    </span>
-                  </div>
-                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={(e) => handleOpenGuide(e, step.guideKey || step.name)}
+                    className="px-2.5 py-1 rounded-lg bg-cyan-950/30 text-cyan-300 border border-cyan-500/20 text-[10px] font-mono font-bold hover:bg-cyan-900/50 transition-all flex items-center gap-1"
+                  >
+                    <BookOpen className="h-3 w-3" />
+                    <span>Guide</span>
+                  </button>
 
-                {/* Coaching & Science Rationale */}
-                <div className="space-y-1 text-xs pl-1">
-                  <p className="text-zinc-200">
-                    <strong className="text-amber-400">💡 Coaching Cue:</strong> {step.coachingCue}
-                  </p>
-                  <p className="text-zinc-400 text-[11px] italic">
-                    <strong className="text-cyan-400 font-mono">🔬 Sports Science:</strong> {step.sportsScienceRationale}
-                  </p>
+                  <span className="px-2.5 py-1 rounded-lg bg-white/[0.04] text-zinc-200 font-mono font-bold text-xs border border-white/[0.08]">
+                    {step.sets} × {step.reps}
+                  </span>
                 </div>
               </div>
-            );
-          })}
-        </div>
-      </div>
 
-      {/* 5. BOTTOM CTA BAR */}
-      <div className="p-5 rounded-2xl bg-[#0e0e14] border border-cyan-500/30 flex flex-wrap items-center justify-between gap-4 shadow-xl">
-        <div className="text-xs text-zinc-400 font-mono">
-          <span>Ready to execute {prescription.durationMinutes} minutes of focused sports science?</span>
-          <span className="text-emerald-400 font-bold block sm:inline sm:ml-2">
-            +{prescription.xpAward} XP + Sliders auto-advance to {Math.floor(prescription.durationMinutes / 60)}h {prescription.durationMinutes % 60 > 0 ? `${prescription.durationMinutes % 60}m` : ''} upon completion.
-          </span>
-        </div>
+              {/* Minimalist Metadata Tags */}
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-mono text-zinc-400 pl-8">
+                <span>Target: <strong className="text-zinc-300 font-normal">{step.targetMuscle}</strong></span>
+                <span>•</span>
+                <span>Tempo: <strong className="text-zinc-300 font-normal">{step.tempo}</strong></span>
+                <span>•</span>
+                <span>Rest: <strong className="text-emerald-400 font-normal">{step.restSeconds > 0 ? `${step.restSeconds}s` : 'Continuous'}</strong></span>
+                <span>•</span>
+                <span>Intensity: <strong className="text-amber-300 font-normal">{step.intensityRirOrRpe}</strong></span>
+              </div>
 
-        <button
-          onClick={handleStartTimerClicked}
-          className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-cyan-600 via-blue-600 to-cyan-600 hover:from-cyan-500 hover:to-blue-500 text-white font-extrabold text-sm shadow-[0_0_25px_rgba(6,182,212,0.35)] flex items-center justify-center gap-2 transition-all active:scale-95"
-        >
-          <Play className="h-4 w-4 fill-white" />
-          <span>START WORKOUT TIMER ({durationMinutes} MIN)</span>
-        </button>
+              {/* Coaching Cue in quiet typography */}
+              <p className="text-xs text-zinc-400 italic pl-8">
+                "{step.coachingCue}"
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Form Guide Detail Modal */}
@@ -548,61 +443,56 @@ export const CluelessHubView: React.FC = () => {
       {/* Initiation Confirmation Dialog */}
       {isConfirmingStart && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-150">
-          <div className="w-full max-w-md bg-[#0e0e14] border-2 border-cyan-500/50 rounded-2xl p-6 space-y-5 shadow-[0_0_50px_rgba(6,182,212,0.3)]">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-2xl bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
-                <Play className="h-6 w-6 fill-cyan-300" />
+          <div className="max-w-md w-full rounded-2xl bg-[#0e0e14] border border-cyan-500/40 p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2 text-cyan-400 font-mono text-xs uppercase font-bold">
+                <Timer className="h-4 w-4" />
+                <span>Mission Lock-In</span>
               </div>
-              <div>
-                <h4 className="text-base font-bold text-white font-serif">
-                  Initiate {durationMinutes}-Minute Workout Protocol?
-                </h4>
-                <p className="text-xs text-zinc-400">{prescription.title}</p>
-              </div>
+              <h3 className="text-lg font-serif font-bold text-white">
+                Initiate {prescription.durationMinutes}-Minute Protocol?
+              </h3>
+              <p className="text-xs text-zinc-400">
+                You will enter active execution mode. XP and streak credit are locked strictly until the full timer expires.
+              </p>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-black/60 border border-white/[0.08] space-y-2 text-xs">
-              <div className="flex justify-between text-zinc-400 font-mono">
+            <div className="p-3.5 rounded-xl bg-black/60 border border-white/[0.08] space-y-1.5 font-mono text-xs">
+              <div className="flex justify-between text-zinc-300">
+                <span>Protocol:</span>
+                <span className="text-white font-bold truncate max-w-[200px]">{prescription.title}</span>
+              </div>
+              <div className="flex justify-between text-zinc-300">
                 <span>Duration:</span>
-                <span className="text-white font-bold">{durationMinutes} Minutes</span>
+                <span className="text-cyan-300 font-bold">{prescription.durationMinutes} Minutes</span>
               </div>
-              <div className="flex justify-between text-zinc-400 font-mono">
-                <span>Framework:</span>
-                <span className="text-cyan-300 font-bold">{prescription.coachingSource}</span>
-              </div>
-              <div className="flex justify-between text-zinc-400 font-mono">
-                <span>XP on Completion:</span>
-                <span className="text-emerald-400 font-bold">+{prescription.xpAward} XP</span>
-              </div>
-              <div className="flex justify-between text-zinc-400 font-mono">
-                <span>Slider Sync:</span>
-                <span className="text-cyan-300 font-bold">Home & Analytics auto-sync</span>
+              <div className="flex justify-between text-zinc-300">
+                <span>Completion Reward:</span>
+                <span className="text-amber-400 font-bold">+{prescription.xpAward} XP</span>
               </div>
             </div>
 
-            <p className="text-[11px] text-zinc-400 italic">
-              💡 You will be able to pause anytime for breaks. If you abort early, zero workout time is recorded.
-            </p>
-
-            <div className="flex items-center gap-2.5 pt-1">
+            <div className="flex items-center gap-3 pt-2">
               <button
-                onClick={handleConfirmStart}
-                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-extrabold text-xs shadow-lg transition-all active:scale-95"
+                type="button"
+                onClick={() => setIsConfirmingStart(false)}
+                className="flex-1 py-2.5 rounded-xl bg-zinc-800/80 text-zinc-300 font-mono text-xs font-bold hover:bg-zinc-700 transition-all border border-white/10"
               >
-                Yes, Start Protocol Timer!
+                Cancel
               </button>
               <button
-                onClick={() => setIsConfirmingStart(false)}
-                className="px-4 py-3 rounded-xl bg-white/[0.06] hover:bg-white/10 text-zinc-300 text-xs font-semibold transition-all border border-white/10"
+                type="button"
+                onClick={handleConfirmStart}
+                className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-mono text-xs font-bold shadow-lg transition-all active:scale-95"
               >
-                Back
+                Confirm & Start
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Active Live Mission Timer HUD */}
+      {/* Active Mission Live HUD */}
       {activeTimerPrescription && (
         <ActiveMissionTimerHUD
           prescription={activeTimerPrescription}
