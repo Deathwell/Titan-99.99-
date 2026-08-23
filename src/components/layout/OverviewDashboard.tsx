@@ -28,7 +28,6 @@ import { triggerGlobalConfetti } from '../effects/ConfettiCanvas';
 import { CountUpNumber } from '../effects/CountUpNumber';
 import { MysteryLootModal, isMysteryDropClaimedToday } from '../modals/MysteryLootModal';
 import { ThreatClockBanner } from './ThreatClockBanner';
-import { TodayMonteCarloOracle } from './TodayMonteCarloOracle';
 import { DarkeningPrecisionSlider } from '../action/DarkeningPrecisionSlider';
 
 export const OverviewDashboard: React.FC = () => {
@@ -393,13 +392,7 @@ export const OverviewDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. The Oracle: Live 10,000-Path Monte Carlo Stochastic Destiny Simulator */}
-      <TodayMonteCarloOracle
-        workoutMinutes={workoutMinutes}
-        financeMinutes={financeMinutes}
-      />
-
-      {/* 4. Guilt-Free Nightly Victory Reward Selector (Requires 4h Workout + 4h Finance MAX) */}
+      {/* 3. Guilt-Free Nightly Victory Reward Selector (Requires 4h Workout + 4h Finance MAX) */}
       {workoutMinutes >= 240 && financeMinutes >= 240 ? (
         <div
           onClick={openVictoryModal}
